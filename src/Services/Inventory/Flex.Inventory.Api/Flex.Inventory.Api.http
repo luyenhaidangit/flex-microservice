@@ -1,0 +1,6 @@
+@Flex.Inventory.Api_HostAddress = http://localhost:5125
+
+GET {{Flex.Inventory.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
