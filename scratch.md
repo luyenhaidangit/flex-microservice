@@ -27,6 +27,15 @@
     dotnet test
     ```
 
+## Migration Command
+
+- Tools > Nuget Package Manager > Package Manager Console > Default Project: Data
+- Add-Migration Example
+- Update-Database
+- Remove-Migration
+- Script-Migration
+- Drop-Database
+
 ## Temporary Design Notes
 
 - **Authentication Flow**:
