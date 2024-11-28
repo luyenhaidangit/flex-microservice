@@ -17,55 +17,55 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiGateways", "ApiGateways"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{6930348E-6306-444F-9C44-7D59D69428DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.OcelotApiGateway", "src\ApiGateways\Flex.OcelotApiGateway\Flex.OcelotApiGateway.csproj", "{158F3AC7-D56A-4B1A-8BDF-4D9F416565B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.OcelotApiGateway", "src\ApiGateways\Flex.OcelotApiGateway\Flex.OcelotApiGateway.csproj", "{158F3AC7-D56A-4B1A-8BDF-4D9F416565B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Common.Logging", "src\BuildingBlocks\Flex.Common.Logging\Flex.Common.Logging.csproj", "{437B6D8E-DA8E-489A-9B8B-B135414D68EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Common.Logging", "src\BuildingBlocks\Flex.Common.Logging\Flex.Common.Logging.csproj", "{437B6D8E-DA8E-489A-9B8B-B135414D68EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Contracts", "src\BuildingBlocks\Flex.Contracts\Flex.Contracts.csproj", "{501C0B59-7BE7-488A-933F-1EB6D78FD27E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Contracts", "src\BuildingBlocks\Flex.Contracts\Flex.Contracts.csproj", "{501C0B59-7BE7-488A-933F-1EB6D78FD27E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Infrastructure", "src\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj", "{72A53505-5E45-4872-97C9-9D4367A3CF9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Infrastructure", "src\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj", "{72A53505-5E45-4872-97C9-9D4367A3CF9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Shared", "src\BuildingBlocks\Flex.Shared\Flex.Shared.csproj", "{D9F67675-2498-4363-90F4-02806E55E131}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Shared", "src\BuildingBlocks\Flex.Shared\Flex.Shared.csproj", "{D9F67675-2498-4363-90F4-02806E55E131}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.EventBus.Messages", "src\BuildingBlocks\Flex.EventBus.Messages\Flex.EventBus.Messages.csproj", "{10580FD6-EB64-4DAC-BF59-B5A52DDA7B8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.EventBus.Messages", "src\BuildingBlocks\Flex.EventBus.Messages\Flex.EventBus.Messages.csproj", "{10580FD6-EB64-4DAC-BF59-B5A52DDA7B8D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApps", "WebApps", "{61FCDE31-2BC4-43B7-9B42-D16A9D45FC26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.WebHealthStatus", "src\WebApps\Flex.WebHealthStatus\Flex.WebHealthStatus.csproj", "{2964D6C5-7E1A-4035-85F6-1D55800B78B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.WebHealthStatus", "src\WebApps\Flex.WebHealthStatus\Flex.WebHealthStatus.csproj", "{2964D6C5-7E1A-4035-85F6-1D55800B78B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Basket.Api", "src\Services\Basket\Flex.Basket.Api\Flex.Basket.Api.csproj", "{E24E3090-E7ED-4AF3-BFC0-DD892925488A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Basket.Api", "src\Services\Basket\Flex.Basket.Api\Flex.Basket.Api.csproj", "{E24E3090-E7ED-4AF3-BFC0-DD892925488A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Basket", "Basket", "{02604B76-D678-4C9D-979D-63542024AA52}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Customer", "Customer", "{03758A70-FAAC-4135-B1F1-39415A45844F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Customer.Api", "src\Services\Customer\Flex.Customer.Api\Flex.Customer.Api.csproj", "{6EAA0CA1-2EB3-40EA-B3A0-E1925E0170C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Customer.Api", "src\Services\Customer\Flex.Customer.Api\Flex.Customer.Api.csproj", "{6EAA0CA1-2EB3-40EA-B3A0-E1925E0170C3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Inventory", "Inventory", "{54CB3AEF-B4EA-4965-8E38-98D6F825E6B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Inventory.Api", "src\Services\Inventory\Flex.Inventory.Api\Flex.Inventory.Api.csproj", "{CB91D525-9248-4F40-8FEC-9654F2C29A4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Inventory.Api", "src\Services\Inventory\Flex.Inventory.Api\Flex.Inventory.Api.csproj", "{CB91D525-9248-4F40-8FEC-9654F2C29A4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Inventory.Grpc", "src\Services\Inventory\Flex.Inventory.Grpc\Flex.Inventory.Grpc.csproj", "{85DC5C63-AED9-484F-BFF2-D45E61C9EBA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Inventory.Grpc", "src\Services\Inventory\Flex.Inventory.Grpc\Flex.Inventory.Grpc.csproj", "{85DC5C63-AED9-484F-BFF2-D45E61C9EBA2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ScheduleJob", "ScheduleJob", "{5B984E77-7749-42AF-8FA2-64E2D181A44F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Hangfire.Api", "src\Services\ScheduleJob\Flex.Hangfire.Api\Flex.Hangfire.Api.csproj", "{034EDC55-1899-4713-9C55-DACA93B53DE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Hangfire.Api", "src\Services\ScheduleJob\Flex.Hangfire.Api\Flex.Hangfire.Api.csproj", "{034EDC55-1899-4713-9C55-DACA93B53DE4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ordering", "Ordering", "{E567425E-5975-482B-9254-68F7FADD9A2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Ordering.Api", "src\Services\Ordering\Flex.Ordering.Api\Flex.Ordering.Api.csproj", "{008A64C5-A820-4B8A-9D94-929FDF0B26F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Ordering.Api", "src\Services\Ordering\Flex.Ordering.Api\Flex.Ordering.Api.csproj", "{008A64C5-A820-4B8A-9D94-929FDF0B26F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Ordering.Domain", "src\Services\Ordering\Flex.Ordering.Domain\Flex.Ordering.Domain.csproj", "{E5B1A21B-24EB-471A-B784-6FB3FE774DB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Ordering.Domain", "src\Services\Ordering\Flex.Ordering.Domain\Flex.Ordering.Domain.csproj", "{E5B1A21B-24EB-471A-B784-6FB3FE774DB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Ordering.Infrastructure", "src\Services\Ordering\Flex.Ordering.Infrastructure\Flex.Ordering.Infrastructure.csproj", "{6215107B-72DB-4CE9-81B7-82D7EB03F31D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Ordering.Infrastructure", "src\Services\Ordering\Flex.Ordering.Infrastructure\Flex.Ordering.Infrastructure.csproj", "{6215107B-72DB-4CE9-81B7-82D7EB03F31D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Ordering.Application", "src\Services\Ordering\Flex.Ordering.Application\Flex.Ordering.Application.csproj", "{DA109878-2557-4ECA-8366-1EA65AF803D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Ordering.Application", "src\Services\Ordering\Flex.Ordering.Application\Flex.Ordering.Application.csproj", "{DA109878-2557-4ECA-8366-1EA65AF803D4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Product", "Product", "{DC8C546D-069E-4948-BD15-3B6ADC307271}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Product.Api", "src\Services\Product\Flex.Product.Api\Flex.Product.Api.csproj", "{FE36B9F4-7B59-4D41-B2FD-0DCF6FBAE268}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Product.Api", "src\Services\Product\Flex.Product.Api\Flex.Product.Api.csproj", "{FE36B9F4-7B59-4D41-B2FD-0DCF6FBAE268}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
