@@ -23,7 +23,7 @@ namespace Flex.Product.Api.Extensions
             //services.ConfigureSwagger();
             services.ConfigureProductDbContext(configuration);
             services.AddInfrastructureServices();
-            //services.AddAutoMapper(cfg => cfg.AddProfile(new MappingProfile()));
+            services.AddAutoMapper(AssemblyReference.Assembly);
             // services.AddJwtAuthentication();
             //services.ConfigureAuthenticationHandler();
             //services.ConfigureAuthorization();
