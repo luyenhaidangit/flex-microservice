@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Flex.Product.Api.Entities;
-using Flex.Shared.DTOs.Products;
+using Flex.Shared.DTOs.Product;
 using Flex.Infrastructure.Mappings;
 
 namespace Flex.Product.Api

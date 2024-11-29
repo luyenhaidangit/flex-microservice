@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Flex.Product.Api.Entities;
 using Flex.Product.Api.Repositories.Interfaces;
-using Flex.Shared.DTOs.Products;
+using Flex.Shared.DTOs.Product;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 

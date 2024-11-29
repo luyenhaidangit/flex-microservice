@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Flex.Shared.DTOs.Products
+namespace Flex.Shared.DTOs.Product
 {
     public class CreateProductDto : CreateOrUpdateProductDto
     {
