@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Shared\Flex.Shared.csproj" />
     <ProjectReference Include="..\Flex.Ordering.Domain\Flex.Ordering.Domain.csproj" />
   </ItemGroup>
 

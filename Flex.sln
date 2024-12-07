@@ -69,7 +69,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.Product.Api", "src\Ser
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "User", "User", "{51C209C9-E40E-404A-99A6-66EC12480C61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.User.OneCert.Api", "src\Services\User\Flex.User.OneCert.Api\Flex.User.OneCert.Api.csproj", "{F7145FCA-A2DD-43E6-822B-35405B3747F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flex.User.OneCert.Api", "src\Services\User\Flex.User.OneCert.Api\Flex.User.OneCert.Api.csproj", "{F7145FCA-A2DD-43E6-822B-35405B3747F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Securities", "Securities", "{CF3ABEFB-6E0C-4A66-BA13-FBDA512F412E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Securities.Api", "src\Services\Securities\Flex.Securities.Api\Flex.Securities.Api.csproj", "{C0DC64B0-02DF-4F25-8C11-EE03FA29C176}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -149,6 +153,10 @@ Global
 		{F7145FCA-A2DD-43E6-822B-35405B3747F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7145FCA-A2DD-43E6-822B-35405B3747F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7145FCA-A2DD-43E6-822B-35405B3747F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0DC64B0-02DF-4F25-8C11-EE03FA29C176}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0DC64B0-02DF-4F25-8C11-EE03FA29C176}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0DC64B0-02DF-4F25-8C11-EE03FA29C176}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0DC64B0-02DF-4F25-8C11-EE03FA29C176}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -183,6 +191,8 @@ Global
 		{FE36B9F4-7B59-4D41-B2FD-0DCF6FBAE268} = {DC8C546D-069E-4948-BD15-3B6ADC307271}
 		{51C209C9-E40E-404A-99A6-66EC12480C61} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
 		{F7145FCA-A2DD-43E6-822B-35405B3747F5} = {51C209C9-E40E-404A-99A6-66EC12480C61}
+		{CF3ABEFB-6E0C-4A66-BA13-FBDA512F412E} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
+		{C0DC64B0-02DF-4F25-8C11-EE03FA29C176} = {CF3ABEFB-6E0C-4A66-BA13-FBDA512F412E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}

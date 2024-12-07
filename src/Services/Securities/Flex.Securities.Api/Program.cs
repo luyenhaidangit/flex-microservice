@@ -1,33 +1,22 @@
 using Serilog;
 using Flex.Common.Logging;
-using Flex.Product.Api.Extensions;
-using Flex.Product.Api.Persistence;
+using Flex.Securities.Api.Bootstraping.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-var services = builder.Services;
-var host = builder.Host;
 var configuration = builder.Configuration;
-var environment = builder.Environment;
 
-SeriLogger.Configure(configuration,environment);
+builder.AddAppConfigurations();
 
+SeriLogger.Configure(builder.Configuration, builder.Environment);
 Log.Information($"Start {builder.Environment.ApplicationName} up");
 
 try
 {
-    //host.AddAppConfigurations();
-
-    services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddInfrastructure(configuration);
 
     var app = builder.Build();
 
     app.UseInfrastructure();
-
-    app.MigrateDatabase<ProductContext>((context, _) =>
-    {
-        ProductContextSeed.SeedProductAsync(context, Log.Logger).Wait();
-    })
-       .Run();
 
     app.Run();
 }

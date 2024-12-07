@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Flex.Product.Api.Extensions
+namespace Flex.Securities.Api.Bootstraping.Extensions
 {
-    public static class ConfigureHostExtensions
+    public static class HostExtensions
     {
         public static void AddAppConfigurations(this WebApplicationBuilder builder)
         {
@@ -15,7 +15,8 @@ namespace Flex.Product.Api.Extensions
                .AddEnvironmentVariables();
         }
 
-        public static IHost MigrateDatabase<TContext>(this IHost host, Action<TContext, IServiceProvider> seeder) where TContext : DbContext
+        public static IHost MigrateDatabase<TContext>(this IHost host, Action<TContext, IServiceProvider> seeder)
+        where TContext : DbContext
         {
             using (var scope = host.Services.CreateScope())
             {
@@ -39,12 +40,14 @@ namespace Flex.Product.Api.Extensions
             return host;
         }
 
-        private static void ExecuteMigrations<TContext>(TContext context) where TContext : DbContext
+        private static void ExecuteMigrations<TContext>(TContext context)
+        where TContext : DbContext
         {
-            context.Database.Migrate();
+            //context.Database.Migrate();
         }
 
-        private static void InvokeSeeder<TContext>(Action<TContext, IServiceProvider> seeder, TContext context,IServiceProvider services) where TContext : DbContext
+        private static void InvokeSeeder<TContext>(Action<TContext, IServiceProvider> seeder, TContext context,
+            IServiceProvider services) where TContext : DbContext
         {
             seeder(context, services);
         }
