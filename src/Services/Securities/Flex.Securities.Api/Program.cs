@@ -12,6 +12,7 @@ Log.Information($"Start {builder.Environment.ApplicationName} up");
 
 try
 {
+    builder.Services.AddConfigurationSettings(configuration);
     builder.Services.AddInfrastructure(configuration);
 
     var app = builder.Build();
