@@ -36,6 +36,10 @@
 - Script-Migration
 - Drop-Database
 
+## Init Oracle Database
+- CREATE USER luyenhaidangit IDENTIFIED BY haidang106;
+- GRANT DBA TO luyenhaidangit;
+
 ## Temporary Design Notes
 
 - **Authentication Flow**:
