@@ -18,6 +18,9 @@ namespace Flex.Securities.Api.Bootstraping.Extensions
             // Database
             services.ConfigureProductDbContext(configuration);
 
+            // AutoMapper
+            services.ConfigureAutoMapper();
+
             //services.AddControllers();
             //services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
             //// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -44,6 +47,13 @@ namespace Flex.Securities.Api.Bootstraping.Extensions
 
             services.AddDbContext<SecuritiesDbContext>(options =>
             options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
+
+            return services;
+        }
+
+        private static IServiceCollection ConfigureAutoMapper(this IServiceCollection services)
+        {
+            services.AddAutoMapper(AssemblyReference.Assembly);
 
             return services;
         }

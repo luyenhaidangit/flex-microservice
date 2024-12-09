@@ -16,7 +16,7 @@ namespace Flex.Securities.Api.Persistence.Seeds
                     {
                         No = "000001",
                         Symbol = "AAA",
-                        IssuerId = "0000000001",
+                        IssuerNo = "0000000001",
                         TradePlace = ETradePlace.Hose,
                         Description = ""
                     }

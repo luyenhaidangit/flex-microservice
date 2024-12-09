@@ -18,7 +18,7 @@ namespace Flex.Securities.Api.Entities
 
         [Required]
         [Column(TypeName = "VARCHAR2(250)")]
-        public string IssuerId { get; set; }
+        public string IssuerNo { get; set; }
 
         [Required]
         [Column(TypeName = "VARCHAR2(250)")]

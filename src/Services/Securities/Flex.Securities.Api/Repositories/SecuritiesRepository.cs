@@ -13,21 +13,50 @@ namespace Flex.Securities.Api.Repositories
         {
         }
 
-        public async Task<IEnumerable<CatalogSecurities>> GetSecuritiesAsync() => await FindAll().ToListAsync();
-
-        public Task<CatalogSecurities> GetSecuritiesAsync(long id) => GetByIdAsync(id);
-
-        public Task<CatalogSecurities> GetSecuritiesByNoAsync(string productNo) =>
-            FindByCondition(x => x.No.Equals(productNo)).SingleOrDefaultAsync();
-
-        public Task CreateSecuritiesAsync(CatalogSecurities product) => CreateAsync(product);
-
-        public Task UpdateSecuritiesAsync(CatalogSecurities product) => UpdateAsync(product);
-
-        public async Task DeleteSecuritiesAsync(long id)
+        #region Query
+        public Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(string issuerNo)
         {
-            var product = await GetSecuritiesAsync(id);
-            if (product != null) await DeleteAsync(product);
+            return this.FindByCondition(x => x.IssuerNo.Equals(issuerNo)).ToListAsync();
         }
+
+        public Task<CatalogSecurities?> GetSecuritiesByNoAsync(string securitiesNo)
+        {
+            return this.FindByCondition(x => x.No.Equals(securitiesNo)).SingleOrDefaultAsync();
+        }
+
+        public async Task<string> GenerateSecuritiesNo()
+        {
+            var maxCode = await this.FindByCondition(s => !s.No.StartsWith("9"))
+                                    .Select(s => int.Parse(s.No))
+                                    .DefaultIfEmpty(0)
+                                    .MaxAsync();
+
+            var newCode = (maxCode + 2).ToString().PadLeft(6, '0');
+
+            return newCode;
+        }
+        #endregion
+
+        #region Command
+        public Task CreateSecuritiesAsync(CatalogSecurities securities) 
+        {
+            return this.CreateAsync(securities);
+        }
+
+        public Task UpdateSecuritiesAsync(CatalogSecurities securities)
+        {
+            return this.UpdateAsync(securities);
+        }
+
+        public async Task DeleteSecuritiesAsync(string securitiesNo)
+        {
+            var securities = await this.GetSecuritiesByNoAsync(securitiesNo);
+
+            if (securities is not null)
+            {
+                await DeleteAsync(securities);
+            }
+        }
+        #endregion
     }
 }

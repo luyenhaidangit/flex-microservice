@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Flex.Securities.Api.Repositories.Interfaces;
+using Flex.Shared.DTOs.Securities;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,14 +10,49 @@ namespace Flex.Securities.Api.Controllers
     [ApiController]
     public class SecuritiesController : ControllerBase
     {
-        //private readonly IProductRepository _repository;
-        //private readonly IMapper _mapper;
+        private readonly ISecuritiesRepository _repository;
+        private readonly IMapper _mapper;
 
-        //public ProductsController(IProductRepository repository, IMapper mapper)
-        //{
-        //    _repository = repository;
-        //    _mapper = mapper;
-        //}
+        public SecuritiesController(ISecuritiesRepository repository, IMapper mapper)
+        {
+            _repository = repository;
+            _mapper = mapper;
+        }
+
+        //// Query
+        //Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(string issuerNo);
+        //Task<CatalogSecurities?> GetSecuritiesByNoAsync(string securitiesNo);
+        //Task<string> GenerateSecuritiesNo();
+
+        //// Command
+        //Task CreateSecuritiesAsync(CatalogSecurities securities);
+        //Task UpdateSecuritiesAsync(CatalogSecurities securities);
+        //Task DeleteSecuritiesAsync(string securitiesNo);
+
+        #region Query
+        [HttpGet("get-securities-by-issuer/{issuerNo}")]
+        public async Task<IActionResult> GetSecuritiesByIssuerAsync([Required] string issuerNo)
+        {
+            var securities = await _repository.GetSecuritiesByIssuerAsync(issuerNo);
+
+            var result = _mapper.Map<IEnumerable<SecuritiesDto>>(securities);
+
+            return Ok(result);
+        }
+
+        [HttpGet("get-securities-by-no/{securitiesNo}")]
+        public async Task<IActionResult> GetSecuritiesByNoAsync([Required] string securitiesNo)
+        {
+            var securities = await _repository.GetSecuritiesByNoAsync(securitiesNo);
+
+            var result = _mapper.Map<SecuritiesDto>(securities);
+
+            return Ok(result);
+        }
+        #endregion
+
+        #region Command
+        #endregion
 
         //#region CRUD
         //[HttpGet]
