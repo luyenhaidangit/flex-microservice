@@ -7,13 +7,12 @@ namespace Flex.Securities.Api.Repositories.Interfaces
     public interface ISecuritiesRepository : IRepositoryBase<CatalogSecurities, long, SecuritiesDbContext>
     {
         // Query
-        Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(string issuerNo);
-        Task<CatalogSecurities?> GetSecuritiesByNoAsync(string securitiesNo);
-        Task<string> GenerateSecuritiesNo();
+        Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(long issuerNo);
+        Task<CatalogSecurities?> GetSecuritiesByIdAsync(long securitiesNo);
 
         // Command
         Task CreateSecuritiesAsync(CatalogSecurities securities);
         Task UpdateSecuritiesAsync(CatalogSecurities securities);
-        Task DeleteSecuritiesAsync(string securitiesNo);
+        Task DeleteSecuritiesAsync(long securitiesNo);
     }
 }

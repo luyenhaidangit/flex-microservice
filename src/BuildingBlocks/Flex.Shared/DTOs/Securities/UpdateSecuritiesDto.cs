@@ -5,6 +5,6 @@ namespace Flex.Shared.DTOs.Securities
     public class UpdateSecuritiesDto : CreateOrUpdateSecuritiesDto
     {
         [Required]
-        public string No { get; set; }
+        public long Id { get; set; }
     }
 }

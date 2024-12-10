@@ -9,19 +9,15 @@ namespace Flex.Securities.Api.Entities
     public class CatalogSecurities : EntityAuditBase<long>
     {
         [Required]
-        [Column(TypeName = "VARCHAR2(150)")]
-        public string No { get; set; }
-
-        [Required]
         [Column(TypeName = "VARCHAR2(250)")]
         public string Symbol { get; set; }
 
         [Required]
         [Column(TypeName = "VARCHAR2(250)")]
-        public string IssuerNo { get; set; }
+        public long IssuerId { get; set; }
 
         [Required]
-        [Column(TypeName = "VARCHAR2(250)")]
+        [Column(TypeName = "NUMBER(10)")]
         public ETradePlace TradePlace { get; set; }
 
         [Column(TypeName = "CLOB")]

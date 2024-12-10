@@ -9,7 +9,7 @@ namespace Flex.Shared.DTOs.Securities
         public string Symbol { get; set; }
 
         [Required]
-        public string IssuerNo { get; set; }
+        public long IssuerId { get; set; }
 
         [Required]
         public int TradePlace { get; set; }

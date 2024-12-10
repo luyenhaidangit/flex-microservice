@@ -1,8 +1,13 @@
 ﻿using Oracle.ManagedDataAccess.Client;
 using Microsoft.EntityFrameworkCore;
 using Flex.Securities.Api.Persistence;
+using Flex.Contracts.Domains.Interfaces;
+using Flex.Infrastructure.Common.Repositories;
+using Flex.Infrastructure.Common;
+using Flex.Securities.Api.Repositories.Interfaces;
+using Flex.Securities.Api.Repositories;
 
-namespace Flex.Securities.Api.Bootstraping.Extensions
+namespace Flex.Securities.Api.Extensions
 {
     public static class ServiceExtensions
     {
@@ -21,6 +26,9 @@ namespace Flex.Securities.Api.Bootstraping.Extensions
             // AutoMapper
             services.ConfigureAutoMapper();
 
+            // Infrastructure
+            services.AddInfrastructureServices();
+
             //services.AddControllers();
             //services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
             //// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -36,7 +44,7 @@ namespace Flex.Securities.Api.Bootstraping.Extensions
             return services;
         }
 
-        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services,IConfiguration configuration)
+        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
             return services;
         }
@@ -56,6 +64,13 @@ namespace Flex.Securities.Api.Bootstraping.Extensions
             services.AddAutoMapper(AssemblyReference.Assembly);
 
             return services;
+        }
+
+        private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+        {
+            return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
+                           .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
+                           .AddScoped<ISecuritiesRepository, SecuritiesRepository>();
         }
 
         //internal static IServiceCollection AddJwtAuthentication(this IServiceCollection services)

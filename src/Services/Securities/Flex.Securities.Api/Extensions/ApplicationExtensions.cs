@@ -1,4 +1,4 @@
-﻿namespace Flex.Securities.Api.Bootstraping.Extensions
+﻿namespace Flex.Securities.Api.Extensions
 {
     public static class ApplicationExtensions
     {
