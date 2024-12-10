@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
-using Flex.Securities.Api.Repositories.Interfaces;
-using Flex.Shared.DTOs.Securities;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using Flex.Securities.Api.Entities;
+using Flex.Securities.Api.Repositories.Interfaces;
+using Flex.Shared.DTOs.Securities;
 
 namespace Flex.Securities.Api.Controllers
 {
@@ -18,16 +19,6 @@ namespace Flex.Securities.Api.Controllers
             _repository = repository;
             _mapper = mapper;
         }
-
-        //// Query
-        //Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(string issuerNo);
-        //Task<CatalogSecurities?> GetSecuritiesByNoAsync(string securitiesNo);
-        //Task<string> GenerateSecuritiesNo();
-
-        //// Command
-        //Task CreateSecuritiesAsync(CatalogSecurities securities);
-        //Task UpdateSecuritiesAsync(CatalogSecurities securities);
-        //Task DeleteSecuritiesAsync(string securitiesNo);
 
         #region Query
         [HttpGet("get-securities-by-issuer/{issuerNo}")]
@@ -52,81 +43,60 @@ namespace Flex.Securities.Api.Controllers
         #endregion
 
         #region Command
-        #endregion
+        [HttpPost("create-securities")]
+        public async Task<IActionResult> CreateSecuritiesAsync([FromBody] CreateSecuritiesDto securitiesDto)
+        {
+            // Validate
+            var securitiesEntity = await _repository.GetSecuritiesByNoAsync(securitiesDto.No);
+            if (securitiesEntity is not null)
+            {
+                return BadRequest($"Product No: {securitiesDto.No} is existed.");
+            }
 
-        //#region CRUD
-        //[HttpGet]
-        //[ClaimRequirement(FunctionCode.PRODUCT, CommandCode.VIEW)]
-        //public async Task<IActionResult> GetProducts()
-        //{
-        //    var products = await _repository.GetProductsAsync();
-        //    var result = _mapper.Map<IEnumerable<ProductDto>>(products);
-        //    return Ok(result);
-        //}
+            // Create
+            var securities = _mapper.Map<CatalogSecurities>(securitiesDto);
+            await _repository.CreateSecuritiesAsync(securities);
 
-        //[HttpGet("{id:long}")]
-        //[ClaimRequirement(FunctionCode.PRODUCT, CommandCode.VIEW)]
-        //public async Task<IActionResult> GetProduct([Required] long id)
-        //{
-        //    var product = await _repository.GetProductAsync(id);
-        //    if (product == null) return NotFound();
+            // Result
+            var result = _mapper.Map<SecuritiesDto>(securities);
 
-        //    var result = _mapper.Map<ProductDto>(product);
-        //    return Ok(result);
-        //}
+            return Ok(result);
+        }
 
-        //[HttpPost]
-        //[ClaimRequirement(FunctionCode.PRODUCT, CommandCode.CREATE)]
-        //public async Task<IActionResult> CreateProduct([FromBody] CreateProductDto productDto)
-        //{
-        //    var productEntity = await _repository.GetProductByNoAsync(productDto.No);
-        //    if (productEntity != null) return BadRequest($"Product No: {productDto.No} is existed.");
+        [HttpPut("update-securities")]
+        public async Task<IActionResult> UpdateSecuritiesAsync([FromBody] UpdateSecuritiesDto securitiesDto)
+        {
+            // Validate
+            var securitiesEntity = await _repository.GetSecuritiesByNoAsync(securitiesDto.No);
+            if (securitiesEntity is null)
+            {
+                return NotFound();
+            }
 
-        //    var product = _mapper.Map<CatalogProduct>(productDto);
-        //    await _repository.CreateProductAsync(product);
-        //    var result = _mapper.Map<ProductDto>(product);
-        //    return Ok(result);
-        //}
+            // Update
+            var updateSecurities = _mapper.Map(securitiesDto, securitiesEntity);
+            await _repository.UpdateSecuritiesAsync(updateSecurities);
 
-        //[HttpPut("{id:long}")]
-        //[ClaimRequirement(FunctionCode.PRODUCT, CommandCode.UPDATE)]
-        //public async Task<IActionResult> UpdateProduct([Required] long id, [FromBody] UpdateProductDto productDto)
-        //{
-        //    var product = await _repository.GetProductAsync(id);
-        //    if (product == null) return NotFound();
+            // Result
+            var result = _mapper.Map<SecuritiesDto>(updateSecurities);
 
-        //    var updateProduct = _mapper.Map(productDto, product);
-        //    await _repository.UpdateProductAsync(updateProduct);
-        //    var result = _mapper.Map<ProductDto>(product);
-        //    return Ok(result);
-        //}
+            return Ok(result);
+        }
 
-        //[HttpDelete("{id:long}")]
-        //[ClaimRequirement(FunctionCode.PRODUCT, CommandCode.DELETE)]
-        //public async Task<IActionResult> DeleteProduct([Required] long id)
-        //{
-        //    var product = await _repository.GetProductAsync(id);
-        //    if (product == null) return NotFound();
+        [HttpPut("delete-securities")]
+        public async Task<IActionResult> DeleteSecuritiesAsync([Required] string securitiesNo)
+        {
+            // Validate
+            var securitiesEntity = await _repository.GetSecuritiesByNoAsync(securitiesNo);
+            if (securitiesEntity is null)
+            {
+                return NotFound();
+            }
 
-        //    await _repository.DeleteProductAsync(id);
-        //    return NoContent();
-        //}
-
-        //#endregion
-
-        //#region Additional Resources
-
-        //[HttpGet("get-product-by-no/{productNo}")]
-        //[ClaimRequirement(FunctionCode.PRODUCT, CommandCode.VIEW)]
-        //public async Task<IActionResult> GetProductByNo([Required] string productNo)
-        //{
-        //    var product = await _repository.GetProductByNoAsync(productNo);
-        //    if (product == null) return NotFound();
-
-        //    var result = _mapper.Map<ProductDto>(product);
-        //    return Ok(result);
-        //}
-
-        //#endregion
+            // Result
+            await _repository.DeleteSecuritiesAsync(securitiesNo);
+            return NoContent();
+        }
+        #endregion Command
     }
 }
