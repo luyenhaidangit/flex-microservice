@@ -22,7 +22,7 @@ namespace Flex.Securities.Api.Controllers
 
         #region Query
         [HttpGet("get-securities-by-issuer/{issuerNo}")]
-        public async Task<IActionResult> GetSecuritiesByIssuerAsync([Required] string issuerNo)
+        public async Task<IActionResult> GetSecuritiesByIssuerAsync([Required] long issuerNo)
         {
             var securities = await _repository.GetSecuritiesByIssuerAsync(issuerNo);
 
@@ -32,9 +32,9 @@ namespace Flex.Securities.Api.Controllers
         }
 
         [HttpGet("get-securities-by-no/{securitiesNo}")]
-        public async Task<IActionResult> GetSecuritiesByNoAsync([Required] string securitiesNo)
+        public async Task<IActionResult> GetSecuritiesByNoAsync([Required] long securitiesNo)
         {
-            var securities = await _repository.GetSecuritiesByNoAsync(securitiesNo);
+            var securities = await _repository.GetSecuritiesByIdAsync(securitiesNo);
 
             var result = _mapper.Map<SecuritiesDto>(securities);
 
@@ -46,13 +46,6 @@ namespace Flex.Securities.Api.Controllers
         [HttpPost("create-securities")]
         public async Task<IActionResult> CreateSecuritiesAsync([FromBody] CreateSecuritiesDto securitiesDto)
         {
-            // Validate
-            var securitiesEntity = await _repository.GetSecuritiesByNoAsync(securitiesDto.No);
-            if (securitiesEntity is not null)
-            {
-                return BadRequest($"Product No: {securitiesDto.No} is existed.");
-            }
-
             // Create
             var securities = _mapper.Map<CatalogSecurities>(securitiesDto);
             await _repository.CreateSecuritiesAsync(securities);
@@ -67,7 +60,7 @@ namespace Flex.Securities.Api.Controllers
         public async Task<IActionResult> UpdateSecuritiesAsync([FromBody] UpdateSecuritiesDto securitiesDto)
         {
             // Validate
-            var securitiesEntity = await _repository.GetSecuritiesByNoAsync(securitiesDto.No);
+            var securitiesEntity = await _repository.GetSecuritiesByIdAsync(securitiesDto.Id);
             if (securitiesEntity is null)
             {
                 return NotFound();
@@ -84,10 +77,10 @@ namespace Flex.Securities.Api.Controllers
         }
 
         [HttpPut("delete-securities")]
-        public async Task<IActionResult> DeleteSecuritiesAsync([Required] string securitiesNo)
+        public async Task<IActionResult> DeleteSecuritiesAsync([Required] long securitiesNo)
         {
             // Validate
-            var securitiesEntity = await _repository.GetSecuritiesByNoAsync(securitiesNo);
+            var securitiesEntity = await _repository.GetSecuritiesByIdAsync(securitiesNo);
             if (securitiesEntity is null)
             {
                 return NotFound();

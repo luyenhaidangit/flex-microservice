@@ -14,26 +14,14 @@ namespace Flex.Securities.Api.Repositories
         }
 
         #region Query
-        public Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(string issuerNo)
+        public Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(long issuerId)
         {
-            return this.FindByCondition(x => x.IssuerNo.Equals(issuerNo)).ToListAsync();
+            return this.FindByCondition(x => x.IssuerId.Equals(issuerId)).ToListAsync();
         }
 
-        public Task<CatalogSecurities?> GetSecuritiesByNoAsync(string securitiesNo)
+        public Task<CatalogSecurities?> GetSecuritiesByIdAsync(long securitiesId)
         {
-            return this.FindByCondition(x => x.No.Equals(securitiesNo)).SingleOrDefaultAsync();
-        }
-
-        public async Task<string> GenerateSecuritiesNo()
-        {
-            var maxCode = await this.FindByCondition(s => !s.No.StartsWith("9"))
-                                    .Select(s => int.Parse(s.No))
-                                    .DefaultIfEmpty(0)
-                                    .MaxAsync();
-
-            var newCode = (maxCode + 2).ToString().PadLeft(6, '0');
-
-            return newCode;
+            return this.FindByCondition(x => x.Id.Equals(securitiesId)).SingleOrDefaultAsync();
         }
         #endregion
 
@@ -48,9 +36,9 @@ namespace Flex.Securities.Api.Repositories
             return this.UpdateAsync(securities);
         }
 
-        public async Task DeleteSecuritiesAsync(string securitiesNo)
+        public async Task DeleteSecuritiesAsync(long securitiesNo)
         {
-            var securities = await this.GetSecuritiesByNoAsync(securitiesNo);
+            var securities = await this.GetSecuritiesByIdAsync(securitiesNo);
 
             if (securities is not null)
             {

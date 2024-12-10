@@ -3,6 +3,7 @@ using System;
 using Flex.Securities.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Oracle.EntityFrameworkCore.Metadata;
 
@@ -11,9 +12,11 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace Flex.Securities.Api.Migrations
 {
     [DbContext(typeof(SecuritiesDbContext))]
-    partial class SecuritiesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241210180131_RenameColumnIssuerNo")]
+    partial class RenameColumnIssuerNo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,19 +39,24 @@ namespace Flex.Securities.Api.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("CLOB");
 
-                    b.Property<string>("IssuerId")
+                    b.Property<string>("IssuerNo")
                         .IsRequired()
                         .HasColumnType("VARCHAR2(250)");
 
                     b.Property<DateTimeOffset?>("LastModifiedDate")
                         .HasColumnType("TIMESTAMP(7) WITH TIME ZONE");
 
+                    b.Property<string>("No")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR2(150)");
+
                     b.Property<string>("Symbol")
                         .IsRequired()
                         .HasColumnType("VARCHAR2(250)");
 
-                    b.Property<int>("TradePlace")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<string>("TradePlace")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR2(250)");
 
                     b.HasKey("Id");
 

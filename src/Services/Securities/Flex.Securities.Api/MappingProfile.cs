@@ -9,6 +9,7 @@ namespace Flex.Securities.Api
         public MappingProfile()
         {
             CreateMap<CatalogSecurities, SecuritiesDto>();
+            CreateMap<CreateSecuritiesDto, CatalogSecurities>();
         }
     }
 }

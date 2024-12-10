@@ -1,6 +1,6 @@
 using Serilog;
 using Flex.Common.Logging;
-using Flex.Securities.Api.Bootstraping.Extensions;
+using Flex.Securities.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
