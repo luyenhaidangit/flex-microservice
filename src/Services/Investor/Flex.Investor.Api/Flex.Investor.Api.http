@@ -1,0 +1,6 @@
+@Flex.Investor.Api_HostAddress = http://localhost:5231
+
+GET {{Flex.Investor.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
