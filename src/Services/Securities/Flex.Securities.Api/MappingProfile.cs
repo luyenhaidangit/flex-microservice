@@ -10,6 +10,7 @@ namespace Flex.Securities.Api
         {
             CreateMap<CatalogSecurities, SecuritiesDto>();
             CreateMap<CreateSecuritiesDto, CatalogSecurities>();
+            CreateMap<UpdateSecuritiesDto, CatalogSecurities>();
         }
     }
 }
