@@ -148,3 +148,6 @@ If you have questions or need help, feel free to open an issue or email the auth
 
 - Thanks to the open-source community for providing the tools and inspiration.
 - Special thanks to [MassTransit](https://masstransit-project.com/) for simplifying RabbitMQ integration.
+
+## Technology
+- IdentityServer
