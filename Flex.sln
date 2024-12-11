@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Investor.Api", "src\Se
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Investor", "Investor", "{34E7A2D0-3A8E-4FC6-A977-53E90C57B0AF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Common.Documentation", "src\BuildingBlocks\Flex.Common.Documentation\Flex.Common.Documentation.csproj", "{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,10 @@ Global
 		{88565B35-C281-4119-B35E-369514860BF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88565B35-C281-4119-B35E-369514860BF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88565B35-C281-4119-B35E-369514860BF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -203,6 +209,7 @@ Global
 		{C0DC64B0-02DF-4F25-8C11-EE03FA29C176} = {CF3ABEFB-6E0C-4A66-BA13-FBDA512F412E}
 		{88565B35-C281-4119-B35E-369514860BF1} = {34E7A2D0-3A8E-4FC6-A977-53E90C57B0AF}
 		{34E7A2D0-3A8E-4FC6-A977-53E90C57B0AF} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
+		{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED} = {6930348E-6306-444F-9C44-7D59D69428DD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}
