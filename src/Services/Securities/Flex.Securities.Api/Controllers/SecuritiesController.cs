@@ -21,20 +21,20 @@ namespace Flex.Securities.Api.Controllers
         }
 
         #region Query
-        [HttpGet("get-securities-by-issuer/{issuerid:long}")]
-        public async Task<IActionResult> GetSecuritiesByIssuerAsync([FromRoute] long issuerid)
+        [HttpGet("get-securities-by-issuer/{issuerId:long}")]
+        public async Task<IActionResult> GetSecuritiesByIssuerAsync([FromRoute] long issuerId)
         {
-            var securities = await _repository.GetSecuritiesByIssuerAsync(issuerid);
+            var securities = await _repository.GetSecuritiesByIssuerAsync(issuerId);
 
             var result = _mapper.Map<IEnumerable<SecuritiesDto>>(securities);
 
             return Ok(result);
         }
 
-        [HttpGet("get-securities-by-no/{securitiesNo}")]
-        public async Task<IActionResult> GetSecuritiesByNoAsync([Required] long securitiesNo)
+        [HttpGet("get-securities-by-id/{securitiesId:long}")]
+        public async Task<IActionResult> GetSecuritiesByNoAsync([FromRoute] long securitiesId)
         {
-            var securities = await _repository.GetSecuritiesByIdAsync(securitiesNo);
+            var securities = await _repository.GetSecuritiesByIdAsync(securitiesId);
 
             var result = _mapper.Map<SecuritiesDto>(securities);
 
@@ -56,7 +56,7 @@ namespace Flex.Securities.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPut("update-securities")]
+        [HttpPost("update-securities")]
         public async Task<IActionResult> UpdateSecuritiesAsync([FromBody] UpdateSecuritiesDto securitiesDto)
         {
             // Validate
@@ -76,18 +76,18 @@ namespace Flex.Securities.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPut("delete-securities")]
-        public async Task<IActionResult> DeleteSecuritiesAsync([Required] long securitiesNo)
+        [HttpPost("delete-securities/{securitiesId:long}")]
+        public async Task<IActionResult> DeleteSecuritiesAsync([FromRoute] long securitiesId)
         {
             // Validate
-            var securitiesEntity = await _repository.GetSecuritiesByIdAsync(securitiesNo);
+            var securitiesEntity = await _repository.GetSecuritiesByIdAsync(securitiesId);
             if (securitiesEntity is null)
             {
                 return NotFound();
             }
 
             // Result
-            await _repository.DeleteSecuritiesAsync(securitiesNo);
+            await _repository.DeleteSecuritiesAsync(securitiesId);
             return NoContent();
         }
         #endregion Command
