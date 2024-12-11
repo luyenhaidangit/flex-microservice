@@ -6,11 +6,13 @@ using Flex.Infrastructure.Common.Repositories;
 using Flex.Infrastructure.Common;
 using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Securities.Api.Repositories;
+using Flex.Common.Documentation;
 
 namespace Flex.Securities.Api.Extensions
 {
     public static class ServiceExtensions
     {
+        #region Config infrastructure service
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Add services to the container.
@@ -18,7 +20,7 @@ namespace Flex.Securities.Api.Extensions
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
+            services.ConfigureSwagger();
 
             // Database
             services.ConfigureProductDbContext(configuration);
@@ -44,8 +46,20 @@ namespace Flex.Securities.Api.Extensions
             return services;
         }
 
-        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection ConfigureSwagger(this IServiceCollection services)
         {
+            services.AddSwaggerGen(c =>
+            {
+                c.DocumentFilter<LowerCaseDocumentFilter>();
+            });
+
+            return services;
+        }
+
+        private static IServiceCollection ConfigureAutoMapper(this IServiceCollection services)
+        {
+            services.AddAutoMapper(AssemblyReference.Assembly);
+
             return services;
         }
 
@@ -59,18 +73,17 @@ namespace Flex.Securities.Api.Extensions
             return services;
         }
 
-        private static IServiceCollection ConfigureAutoMapper(this IServiceCollection services)
-        {
-            services.AddAutoMapper(AssemblyReference.Assembly);
-
-            return services;
-        }
-
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
             return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
                            .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
                            .AddScoped<ISecuritiesRepository, SecuritiesRepository>();
+        }
+        #endregion
+
+        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            return services;
         }
 
         //internal static IServiceCollection AddJwtAuthentication(this IServiceCollection services)
