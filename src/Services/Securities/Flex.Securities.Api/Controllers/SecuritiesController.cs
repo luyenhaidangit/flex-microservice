@@ -21,10 +21,10 @@ namespace Flex.Securities.Api.Controllers
         }
 
         #region Query
-        [HttpGet("get-securities-by-issuer/{issuerNo}")]
-        public async Task<IActionResult> GetSecuritiesByIssuerAsync([Required] long issuerNo)
+        [HttpGet("get-securities-by-issuer/{issuerid:long}")]
+        public async Task<IActionResult> GetSecuritiesByIssuerAsync([FromRoute] long issuerid)
         {
-            var securities = await _repository.GetSecuritiesByIssuerAsync(issuerNo);
+            var securities = await _repository.GetSecuritiesByIssuerAsync(issuerid);
 
             var result = _mapper.Map<IEnumerable<SecuritiesDto>>(securities);
 

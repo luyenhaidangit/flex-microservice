@@ -7,6 +7,7 @@ using Flex.Infrastructure.Common;
 using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Securities.Api.Repositories;
 using Flex.Common.Documentation;
+using Microsoft.Extensions.Options;
 
 namespace Flex.Securities.Api.Extensions
 {
