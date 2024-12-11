@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Flex.Infrastructure.Mappings;
 using Flex.Securities.Api.Entities;
 using Flex.Shared.DTOs.Securities;
 
@@ -10,7 +11,7 @@ namespace Flex.Securities.Api
         {
             CreateMap<CatalogSecurities, SecuritiesDto>();
             CreateMap<CreateSecuritiesDto, CatalogSecurities>();
-            CreateMap<UpdateSecuritiesDto, CatalogSecurities>();
+            CreateMap<UpdateSecuritiesDto, CatalogSecurities>().IgnoreAllNonExisting();
         }
     }
 }
