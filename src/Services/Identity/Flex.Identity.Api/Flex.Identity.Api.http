@@ -1,0 +1,6 @@
+@Flex.Identity.Api_HostAddress = http://localhost:5274
+
+GET {{Flex.Identity.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
