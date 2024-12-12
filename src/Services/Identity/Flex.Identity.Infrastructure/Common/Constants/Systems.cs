@@ -1,6 +1,6 @@
 ﻿namespace Flex.Identity.Infrastructure.Common.Constants
 {
-    public class System
+    public class Systems
     {
         public const string IdentitySchema = "Identity";
     }
