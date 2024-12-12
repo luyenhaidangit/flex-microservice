@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using Flex.Contracts.Domains;
+using Flex.Identity.Infrastructure.Domains;
 
 namespace Flex.Identity.Infrastructure.Entities
 {
