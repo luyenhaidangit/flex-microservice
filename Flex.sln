@@ -81,6 +81,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Investor", "Investor", "{34
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Common.Documentation", "src\BuildingBlocks\Flex.Common.Documentation\Flex.Common.Documentation.csproj", "{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{918223BF-EA2C-4D0E-A3A1-A65E876ED04E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Identity.Api", "src\Services\Identity\Flex.Identity.Api\Flex.Identity.Api.csproj", "{2E4BC2C7-22C9-4C85-BBDD-65198CAA6DD7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Identity.WebApp", "src\Services\Identity\Flex.Identity.WebApp\Flex.Identity.WebApp.csproj", "{03E87859-56B9-4723-A48E-D510414D2417}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Identity.Infrastructure", "src\Services\Identity\Flex.Identity.Infrastructure\Flex.Identity.Infrastructure.csproj", "{45FB5B9D-423D-42B3-8657-FCDB45921C86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +179,18 @@ Global
 		{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E4BC2C7-22C9-4C85-BBDD-65198CAA6DD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E4BC2C7-22C9-4C85-BBDD-65198CAA6DD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E4BC2C7-22C9-4C85-BBDD-65198CAA6DD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E4BC2C7-22C9-4C85-BBDD-65198CAA6DD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03E87859-56B9-4723-A48E-D510414D2417}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03E87859-56B9-4723-A48E-D510414D2417}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03E87859-56B9-4723-A48E-D510414D2417}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03E87859-56B9-4723-A48E-D510414D2417}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45FB5B9D-423D-42B3-8657-FCDB45921C86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45FB5B9D-423D-42B3-8657-FCDB45921C86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45FB5B9D-423D-42B3-8657-FCDB45921C86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45FB5B9D-423D-42B3-8657-FCDB45921C86}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -210,6 +230,10 @@ Global
 		{88565B35-C281-4119-B35E-369514860BF1} = {34E7A2D0-3A8E-4FC6-A977-53E90C57B0AF}
 		{34E7A2D0-3A8E-4FC6-A977-53E90C57B0AF} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
 		{01464AD1-A3A0-4FF8-AAEF-60A2B214C0ED} = {6930348E-6306-444F-9C44-7D59D69428DD}
+		{918223BF-EA2C-4D0E-A3A1-A65E876ED04E} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
+		{2E4BC2C7-22C9-4C85-BBDD-65198CAA6DD7} = {918223BF-EA2C-4D0E-A3A1-A65E876ED04E}
+		{03E87859-56B9-4723-A48E-D510414D2417} = {918223BF-EA2C-4D0E-A3A1-A65E876ED04E}
+		{45FB5B9D-423D-42B3-8657-FCDB45921C86} = {918223BF-EA2C-4D0E-A3A1-A65E876ED04E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}
