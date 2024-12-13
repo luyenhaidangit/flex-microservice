@@ -13,7 +13,7 @@ namespace Flex.Securities.Api.Entities
         public string Symbol { get; set; }
 
         [Required]
-        [Column(TypeName = "VARCHAR2(250)")]
+        [Column(TypeName = "NUMBER(10)")]
         public long IssuerId { get; set; }
 
         [Required]
@@ -22,5 +22,10 @@ namespace Flex.Securities.Api.Entities
 
         [Column(TypeName = "CLOB")]
         public string? Description { get; set; }
+
+        #region Navigation
+        [ForeignKey("IssuerId")]
+        public virtual CatalogIssuer Issuer { get; set; }
+        #endregion
     }
 }
