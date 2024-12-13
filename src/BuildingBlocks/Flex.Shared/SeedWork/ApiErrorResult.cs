@@ -1,4 +1,4 @@
-﻿namespace Flex.Shared.Shared.SeedWork
+﻿namespace Flex.Shared.SeedWork
 {
     public class ApiErrorResult<T> : ApiResult<T>
     {
