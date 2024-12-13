@@ -7,7 +7,7 @@ var configuration = builder.Configuration;
 
 builder.AddAppConfigurations();
 
-SeriLogger.Configure(builder.Configuration, builder.Environment);
+SeriLogger.Configure(builder);
 Log.Information($"Start {builder.Environment.ApplicationName} up");
 
 try

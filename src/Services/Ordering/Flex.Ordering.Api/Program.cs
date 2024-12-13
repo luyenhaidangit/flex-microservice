@@ -9,8 +9,7 @@ var host = builder.Host;
 var configuration = builder.Configuration;
 var environment = builder.Environment;
 
-SeriLogger.Configure(configuration, environment);
-
+SeriLogger.Configure(builder);
 Log.Information($"Start {builder.Environment.ApplicationName} up");
 
 try
