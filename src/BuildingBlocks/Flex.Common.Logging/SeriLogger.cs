@@ -2,15 +2,18 @@
 using Serilog.Sinks.Elasticsearch;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using System;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
 
 namespace Flex.Common.Logging
 {
     public static class SeriLogger
     {
-        public static void Configure(IConfiguration configuration, IHostEnvironment hostingEnvironment)
+        public static void Configure(WebApplicationBuilder builder)
         {
+            var configuration = builder.Configuration;
+            var hostingEnvironment = builder.Environment;
+            var host = builder.Host;
+
             var applicationName = hostingEnvironment.ApplicationName?.ToLowerInvariant().Replace('.', '-') ?? "unknown-application";
             var environmentName = hostingEnvironment.EnvironmentName ?? "Development";
             var elasticUri = configuration["ElasticConfiguration:Uri"];
@@ -46,6 +49,8 @@ namespace Flex.Common.Logging
                 .Enrich.WithProperty("Application", applicationName)
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
+
+            host.UseSerilog();
         }
     }
 }
