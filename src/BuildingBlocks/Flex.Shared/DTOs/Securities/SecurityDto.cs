@@ -1,6 +1,6 @@
 ﻿namespace Flex.Shared.DTOs.Securities
 {
-    public class SecuritiesDto
+    public class SecurityDto
     {
         public long Id { get; set; }
 
