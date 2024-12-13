@@ -11,7 +11,8 @@ namespace Flex.Securities.Api.Persistence
         }
 
         #region DbSet
-        public DbSet<CatalogSecurity> CatalogSecurities { get; set; }
+        public DbSet<CatalogIssuer> Issuer { get; set; }
+        public DbSet<CatalogSecurity> Securities { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
