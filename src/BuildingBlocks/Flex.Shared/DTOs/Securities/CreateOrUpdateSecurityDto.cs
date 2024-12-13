@@ -2,7 +2,7 @@
 
 namespace Flex.Shared.DTOs.Securities
 {
-    public abstract class CreateOrUpdateSecuritiesDto
+    public abstract class CreateOrUpdateSecurityDto
     {
         [Required]
         [MaxLength(20, ErrorMessage = "Maximum length for Product Name is 250 characters.")]

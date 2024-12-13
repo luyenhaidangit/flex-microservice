@@ -78,7 +78,8 @@ namespace Flex.Securities.Api.Extensions
         {
             return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
                            .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
-                           .AddScoped<ISecuritiesRepository, SecuritiesRepository>();
+                           .AddScoped<ISecuritiesRepository, SecuritiesRepository>()
+                           .AddScoped<IIssuerRepository,IssuerRepository >();
         }
         #endregion
 

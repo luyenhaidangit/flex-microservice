@@ -8,7 +8,7 @@ namespace Flex.Securities.Api.Persistence.Seeds
     {
         public static async Task InitAsync(SecuritiesDbContext securitiesContext, ILogger logger)
         {
-            if (!securitiesContext.CatalogSecurities.Any())
+            if (!securitiesContext.Securities.Any())
             {
                 var catalogSecurities = new List<CatalogSecurity>()
                 {

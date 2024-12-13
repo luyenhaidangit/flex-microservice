@@ -9,9 +9,15 @@ namespace Flex.Securities.Api
     {
         public MappingProfile()
         {
-            CreateMap<CatalogSecurity, SecuritiesDto>();
+            // Issuer
+            CreateMap<CatalogIssuer, IssuerDto>();
+            CreateMap<CreateIssuerDto, CatalogIssuer>();
+            CreateMap<UpdateIssuerDto, CatalogIssuer>();
+
+            // Security
+            CreateMap<CatalogSecurity, SecurityDto>();
             CreateMap<CreateSecuritiesDto, CatalogSecurity>();
-            CreateMap<UpdateSecuritiesDto, CatalogSecurity>().IgnoreAllNonExisting();
+            CreateMap<UpdateSecurityDto, CatalogSecurity>().IgnoreAllNonExisting();
         }
     }
 }
