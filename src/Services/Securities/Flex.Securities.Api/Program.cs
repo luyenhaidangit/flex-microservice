@@ -6,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 builder.AddAppConfigurations();
-SeriLogger.Configure(builder);
 
+SeriLogger.Configure(builder);
 Log.Information($"Start {builder.Environment.ApplicationName} up");
 
 try
