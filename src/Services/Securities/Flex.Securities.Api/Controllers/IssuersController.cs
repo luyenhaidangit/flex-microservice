@@ -2,7 +2,7 @@
 using Flex.Securities.Api.Entities;
 using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.Securities;
-using Microsoft.AspNetCore.Http;
+using Flex.Shared.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Flex.Securities.Api.Controllers
@@ -22,10 +22,10 @@ namespace Flex.Securities.Api.Controllers
 
         #region Query
         /// <summary>
-        /// Lấy danh sách tất cả các Issuer.
+        /// Tìm kiếm, phân trang danh sách Tổ chức phát hành.
         /// </summary>
-        [HttpGet("get-all")]
-        public async Task<IActionResult> GetAllIssuersAsync()
+        [HttpGet("get-paging")]
+        public async Task<IActionResult> GetPagingIssuersAsync(GetIssuersPagingRequest request)
         {
             var issuers = await _repository.GetAllIssuersAsync();
             var result = _mapper.Map<IEnumerable<IssuerDto>>(issuers);
@@ -63,6 +63,9 @@ namespace Flex.Securities.Api.Controllers
 
             var issuer = _mapper.Map<CatalogIssuer>(issuerDto);
 
+            // Process
+            issuer.Status = EEntityStatus.Pending;
+
             await _repository.CreateIssuerAsync(issuer);
 
             var result = _mapper.Map<IssuerDto>(issuer);
@@ -92,7 +95,7 @@ namespace Flex.Securities.Api.Controllers
         /// <summary>
         /// Xóa một Issuer theo ID.
         /// </summary>
-        [HttpDelete("delete-issuer/{id:long}")]
+        [HttpPost("delete-issuer/{id:long}")]
         public async Task<IActionResult> DeleteIssuerAsync([FromRoute] long id)
         {
             var issuerEntity = await _repository.GetIssuerByIdAsync(id);
