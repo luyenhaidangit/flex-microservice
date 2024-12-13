@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Flex.Contracts.Domains;
 using Flex.Shared.Enums.Securities;
+using Flex.Shared.Enums;
 
 namespace Flex.Securities.Api.Entities
 {
@@ -10,17 +11,14 @@ namespace Flex.Securities.Api.Entities
     {
         [Required]
         [Column(TypeName = "VARCHAR2(250)")]
-        public string Symbol { get; set; }
+        public string Name { get; set; }
 
         [Required]
         [Column(TypeName = "VARCHAR2(250)")]
-        public long IssuerId { get; set; }
+        public long Description { get; set; }
 
         [Required]
         [Column(TypeName = "NUMBER(10)")]
-        public ETradePlace TradePlace { get; set; }
-
-        [Column(TypeName = "CLOB")]
-        public string? Description { get; set; }
+        public EEntityStatus Status { get; set; }
     }
 }
