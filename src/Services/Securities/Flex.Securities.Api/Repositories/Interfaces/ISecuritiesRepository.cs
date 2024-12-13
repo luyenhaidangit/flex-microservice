@@ -4,15 +4,15 @@ using Flex.Securities.Api.Persistence;
 
 namespace Flex.Securities.Api.Repositories.Interfaces
 {
-    public interface ISecuritiesRepository : IRepositoryBase<CatalogSecurities, long, SecuritiesDbContext>
+    public interface ISecuritiesRepository : IRepositoryBase<CatalogSecurity, long, SecuritiesDbContext>
     {
         // Query
-        Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(long issuerNo);
-        Task<CatalogSecurities?> GetSecuritiesByIdAsync(long securitiesNo);
+        Task<List<CatalogSecurity>> GetSecuritiesByIssuerAsync(long issuerNo);
+        Task<CatalogSecurity?> GetSecuritiesByIdAsync(long securitiesNo);
 
         // Command
-        Task CreateSecuritiesAsync(CatalogSecurities securities);
-        Task UpdateSecuritiesAsync(CatalogSecurities securities);
+        Task CreateSecuritiesAsync(CatalogSecurity securities);
+        Task UpdateSecuritiesAsync(CatalogSecurity securities);
         Task DeleteSecuritiesAsync(long securitiesNo);
     }
 }

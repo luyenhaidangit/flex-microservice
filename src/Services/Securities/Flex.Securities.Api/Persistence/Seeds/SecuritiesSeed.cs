@@ -10,9 +10,9 @@ namespace Flex.Securities.Api.Persistence.Seeds
         {
             if (!securitiesContext.CatalogSecurities.Any())
             {
-                var catalogSecurities = new List<CatalogSecurities>()
+                var catalogSecurities = new List<CatalogSecurity>()
                 {
-                    new CatalogSecurities
+                    new CatalogSecurity
                     {
                         Symbol = "AAA",
                         IssuerId = 1,

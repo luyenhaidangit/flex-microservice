@@ -5,7 +5,7 @@ namespace Flex.Securities.Api.Persistence.Configurations
 {
     public class SecuritiesConfiguration
     {
-        public void Configure(EntityTypeBuilder<CatalogSecurities> builder)
+        public void Configure(EntityTypeBuilder<CatalogSecurity> builder)
         {
         }
     }
