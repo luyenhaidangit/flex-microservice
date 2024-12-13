@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Flex.Common.Logging;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Flex.Securities.Api.Extensions
 {

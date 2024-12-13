@@ -1,4 +1,5 @@
 ﻿using Flex.Infrastructure.Middlewares;
+using Serilog;
 
 namespace Flex.Securities.Api.Extensions
 {
@@ -15,6 +16,9 @@ namespace Flex.Securities.Api.Extensions
                     c.DisplayRequestDuration();
                 });
             }
+
+            // Logging
+            app.UseSerilogRequestLogging();
 
             app.UseMiddleware<ErrorWrappingMiddleware>();
 

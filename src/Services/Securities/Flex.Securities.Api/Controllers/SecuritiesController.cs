@@ -21,6 +21,9 @@ namespace Flex.Securities.Api.Controllers
         }
 
         #region Query
+        /// <summary>
+        /// Lấy thông tin chứng khoán đã được phê duyệt theo ID.
+        /// </summary>
         [HttpGet("get-securities-by-issuer/{issuerId:long}")]
         public async Task<IActionResult> GetSecuritiesByIssuerAsync([FromRoute] long issuerId)
         {

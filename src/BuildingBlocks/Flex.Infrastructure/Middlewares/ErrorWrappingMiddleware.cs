@@ -1,20 +1,20 @@
-﻿using ILogger = Serilog.ILogger;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using ValidationException = Flex.Infrastructure.Exceptions.ValidationException;
 using Flex.Shared.Shared.SeedWork;
+using Microsoft.Extensions.Logging;
 
 namespace Flex.Infrastructure.Middlewares
 {
     public class ErrorWrappingMiddleware
     {
-        private readonly ILogger _logger;
         private readonly RequestDelegate _next;
+        private readonly ILogger<ErrorWrappingMiddleware> _logger;
 
-        public ErrorWrappingMiddleware(RequestDelegate next, ILogger logger)
+        public ErrorWrappingMiddleware(RequestDelegate next, ILogger<ErrorWrappingMiddleware> logger)
         {
             _next = next;
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger;
         }
 
         public async Task Invoke(HttpContext context)
@@ -26,13 +26,13 @@ namespace Flex.Infrastructure.Middlewares
             }
             catch (ValidationException ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, ex.Message);
                 errorMsg = ex.Errors.FirstOrDefault().Value.FirstOrDefault();
                 context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, ex.Message);
+                _logger.LogError(ex, ex.Message);
                 errorMsg = ex.Message;
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             }
