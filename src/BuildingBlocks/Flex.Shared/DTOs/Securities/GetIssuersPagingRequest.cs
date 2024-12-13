@@ -1,5 +1,5 @@
 ﻿using Flex.Shared.Enums;
-using Flex.Shared.Shared.SeedWork;
+using Flex.Shared.SeedWork;
 
 namespace Flex.Shared.DTOs.Securities
 {

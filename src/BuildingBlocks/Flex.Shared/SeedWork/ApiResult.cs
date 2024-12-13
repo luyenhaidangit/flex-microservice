@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Flex.Shared.Shared.SeedWork
+namespace Flex.Shared.SeedWork
 {
     public class ApiResult<T>
     {

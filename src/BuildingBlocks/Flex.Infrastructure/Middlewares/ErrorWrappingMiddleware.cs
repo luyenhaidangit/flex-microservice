@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using ValidationException = Flex.Infrastructure.Exceptions.ValidationException;
-using Flex.Shared.Shared.SeedWork;
+using Flex.Shared.SeedWork;
 using Microsoft.Extensions.Logging;
 
 namespace Flex.Infrastructure.Middlewares
