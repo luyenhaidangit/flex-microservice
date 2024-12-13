@@ -47,7 +47,7 @@ namespace Flex.Securities.Api.Controllers
         public async Task<IActionResult> CreateSecuritiesAsync([FromBody] CreateSecuritiesDto securitiesDto)
         {
             // Create
-            var securities = _mapper.Map<CatalogSecurities>(securitiesDto);
+            var securities = _mapper.Map<CatalogSecurity>(securitiesDto);
             await _repository.CreateSecuritiesAsync(securities);
 
             // Result
