@@ -8,11 +8,6 @@ namespace Flex.Securities.Api.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<CatalogIssuer> builder)
         {
-            // Status
-            builder.Property(i => i.Status)
-                   .HasConversion<int>()
-                   .HasColumnType("NUMBER(10)")
-                   .IsRequired();
         }
     }
 }
