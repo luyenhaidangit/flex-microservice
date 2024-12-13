@@ -8,6 +8,7 @@ using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Securities.Api.Repositories;
 using Flex.Common.Documentation;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 
 namespace Flex.Securities.Api.Extensions
 {
@@ -52,6 +53,10 @@ namespace Flex.Securities.Api.Extensions
             services.AddSwaggerGen(c =>
             {
                 c.DocumentFilter<LowerCaseDocumentFilter>();
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
             });
 
             return services;

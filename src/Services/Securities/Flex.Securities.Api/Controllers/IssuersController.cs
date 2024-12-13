@@ -24,7 +24,7 @@ namespace Flex.Securities.Api.Controllers
 
         #region Query
         /// <summary>
-        /// Tìm kiếm Tổ chức phát hành.
+        /// Lấy danh sách phân trang Tổ chức phát hành.
         /// </summary>
         [HttpGet("get-paging")]
         public async Task<IActionResult> GetPagingIssuersAsync([FromQuery] GetIssuersPagingRequest request)
