@@ -1,6 +1,6 @@
 ﻿namespace Flex.Shared.SeedWork
 {
-    public abstract class PagingRequestParameters
+    public abstract class PagingRequest
     {
         // Page Index
         private int _pageIndex = 1;

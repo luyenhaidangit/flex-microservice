@@ -41,7 +41,7 @@ namespace Flex.Infrastructure.Middlewares
             {
                 context.Response.ContentType = "application/json";
 
-                var response = new ApiErrorResult<bool>("Unauthorized");
+                var response = Result.Failure("Unauthorized!");
 
                 var json = JsonSerializer.Serialize(response);
 
