@@ -1,24 +1,36 @@
-﻿using Oracle.ManagedDataAccess.Client;
+﻿using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Flex.Securities.Api.Persistence;
-using Flex.Contracts.Domains.Interfaces;
-using Flex.Infrastructure.Common.Repositories;
-using Flex.Infrastructure.Common;
-using Flex.Securities.Api.Repositories.Interfaces;
-using Flex.Securities.Api.Repositories;
+using Oracle.ManagedDataAccess.Client;
 using Flex.Common.Documentation;
-using Microsoft.Extensions.Options;
-using System.Reflection;
+using Flex.Shared.SeedWork;
+using Flex.Contracts.Domains.Interfaces;
+using Flex.Infrastructure.Common;
+using Flex.Infrastructure.Common.Repositories;
+using Flex.Securities.Api.Persistence;
+using Flex.Securities.Api.Repositories;
+using Flex.Securities.Api.Repositories.Interfaces;
 
 namespace Flex.Securities.Api.Extensions
 {
     public static class ServiceExtensions
     {
-        #region Config infrastructure service
+        #region Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Add services to the container.
-            services.AddControllers();
+            services.AddControllers()
+                    .AddJsonOptions(options =>
+                    {
+                        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                        options.JsonSerializerOptions.WriteIndented = true;
+                    });
+
+            services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
@@ -33,14 +45,11 @@ namespace Flex.Securities.Api.Extensions
             // Infrastructure
             services.AddInfrastructureServices();
 
-            //services.AddControllers();
-            //services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
+            // Response
+            services.ConfigureValidationErrorResponse();
+
             //// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            //services.AddEndpointsApiExplorer();
             //services.ConfigureSwagger();
-            //services.ConfigureProductDbContext(configuration);
-            //services.AddInfrastructureServices();
-            //services.AddAutoMapper(cfg => cfg.AddProfile(new MappingProfile()));
             //// services.AddJwtAuthentication();
             //services.ConfigureAuthenticationHandler();
             //services.ConfigureAuthorization();
@@ -85,6 +94,40 @@ namespace Flex.Securities.Api.Extensions
                            .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
                            .AddScoped<ISecuritiesRepository, SecuritiesRepository>()
                            .AddScoped<IIssuerRepository,IssuerRepository >();
+        }
+
+        public static IServiceCollection ConfigureNewtonsoftJson(this IServiceCollection services)
+        {
+            services.AddControllers();
+
+            return services;
+        }
+
+        private static IServiceCollection ConfigureValidationErrorResponse(this IServiceCollection services)
+        {
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState
+                        .Where(e => e.Value.Errors.Count > 0)
+                        .ToDictionary(
+                            kvp => kvp.Key,
+                            kvp => kvp.Value.Errors.Select(x => x.ErrorMessage).ToArray()
+                        );
+
+                    var response = new
+                    {
+                        success = false,
+                        message = "Validation failed!",
+                        errors
+                    };
+
+                    return new BadRequestObjectResult(Result.Failure("Validation failed!", errors));
+                };
+            });
+
+            return services;
         }
         #endregion
 
