@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Text.Json;
-using ValidationException = Flex.Infrastructure.Exceptions.ValidationException;
-using Flex.Shared.SeedWork;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Flex.Infrastructure.Exceptions;
+using Flex.Shared.SeedWork;
 
 namespace Flex.Infrastructure.Middlewares
 {
@@ -19,25 +19,24 @@ namespace Flex.Infrastructure.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
-            var errorMsg = string.Empty;
             try
             {
                 await _next.Invoke(context);
             }
             catch (ValidationException ex)
             {
-                _logger.LogError(ex, ex.Message);
-                errorMsg = ex.Errors.FirstOrDefault().Value.FirstOrDefault();
-                context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+                 //var errorMsg = ex.Errors.FirstOrDefault().Value.FirstOrDefault();
+                _logger.LogError(ex, "Unhandled exception: {Message}", ex.Message);
+                await HandleExceptionAsync(context, StatusCodes.Status500InternalServerError, ex.Message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
-                errorMsg = ex.Message;
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                _logger.LogError(ex, "Unhandled exception: {Message}", ex.Message);
+                await HandleExceptionAsync(context, StatusCodes.Status500InternalServerError, ex.Message);
             }
 
-            if (!context.Response.HasStarted && (context.Response.StatusCode == StatusCodes.Status401Unauthorized) ||
+            if (!context.Response.HasStarted && 
+                (context.Response.StatusCode == StatusCodes.Status401Unauthorized) ||
                 context.Response.StatusCode == StatusCodes.Status403Forbidden)
             {
                 context.Response.ContentType = "application/json";
@@ -48,20 +47,20 @@ namespace Flex.Infrastructure.Middlewares
 
                 await context.Response.WriteAsync(json);
             }
+        }
 
-            else if (!context.Response.HasStarted && context.Response.StatusCode != StatusCodes.Status204NoContent &&
-                context.Response.StatusCode != StatusCodes.Status202Accepted &&
-                context.Response.StatusCode != StatusCodes.Status200OK &&
-                context.Response.ContentType != "text/html; charset=utf-8")
+        private async Task HandleExceptionAsync(HttpContext context, int statusCode, string message)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = statusCode;
+
+            var options = new JsonSerializerOptions
             {
-                context.Response.ContentType = "application/json";
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            var responseJson = JsonSerializer.Serialize(Result.Failure(message), options);
 
-                var response = new ApiErrorResult<bool>(errorMsg);
-
-                var json = JsonSerializer.Serialize(response);
-
-                await context.Response.WriteAsync(json);
-            }
+            await context.Response.WriteAsync(responseJson);
         }
     }
 }
