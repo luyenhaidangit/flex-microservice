@@ -3,7 +3,7 @@ using Flex.Shared.SeedWork;
 
 namespace Flex.Shared.DTOs.Securities
 {
-    public class GetIssuersPagingRequest : PagingRequestParameters
+    public class GetIssuersPagingRequest : PagingRequest
     {
         public string Name { get; set; }
 
