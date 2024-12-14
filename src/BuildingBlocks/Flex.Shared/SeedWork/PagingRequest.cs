@@ -1,32 +1,22 @@
-﻿namespace Flex.Shared.SeedWork
+﻿using Flex.Shared.Attributes;
+using System.ComponentModel.DataAnnotations;
+
+namespace Flex.Shared.SeedWork
 {
     public abstract class PagingRequest
     {
-        // Page Index
-        private int _pageIndex = 1;
-        public int PageIndex
-        {
-            get => _pageIndex;
-            set => _pageIndex = value < 1 ? 1 : value;
-        }
+        [Range(1, int.MaxValue, ErrorMessage = "PageIndex must be greater than or equal to 1.")]
+        public int? PageIndex { get; set; } = 1;
 
-        // Page Size
+        [Range(1, int.MaxValue, ErrorMessage = "PageSize must be greater than or equal to 1.")]
         public int? PageSize { get; set; }
 
-        private string? _orderBy;
-        public string? OrderBy
-        {
-            get => _orderBy;
-            set => _orderBy = value?.Trim().ToUpper();
-        }
+        [ValidateOrderBy]
+        public string? OrderBy { get; set; }
 
-        private string? _sortBy;
-        public string? SortBy
-        {
-            get => _sortBy;
-            set => _sortBy = value?.Trim().ToUpper();
-        }
+        [ValidateSortBy]
+        public string? SortBy { get; set; }
 
-        protected virtual Dictionary<string, string> OrderByMappings => new();
+        protected abstract Dictionary<string, string> OrderByMappings { get; }
     }
 }
