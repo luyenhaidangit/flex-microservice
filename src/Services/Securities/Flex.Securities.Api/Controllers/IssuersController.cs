@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Flex.Securities.Api.Entities;
 using Flex.Securities.Api.Repositories.Interfaces;
-using Flex.Shared.Constants;
 using Flex.Shared.DTOs.Securities;
 using Flex.Shared.Enums;
 using Flex.Shared.SeedWork;
@@ -24,7 +23,7 @@ namespace Flex.Securities.Api.Controllers
 
         #region Query
         /// <summary>
-        /// Lấy danh sách phân trang Tổ chức phát hành.
+        /// Phân trang Tổ chức phát hành.
         /// </summary>
         [HttpGet("get-paging")]
         public async Task<IActionResult> GetPagingIssuersAsync([FromQuery] GetIssuersPagingRequest request)
@@ -32,7 +31,7 @@ namespace Flex.Securities.Api.Controllers
             var issuers = await _repository.GetAllIssuersAsync();
             var issuersMapper = _mapper.Map<IEnumerable<IssuerDto>>(issuers);
             
-            return Ok(Result.Success(Message.Success, issuersMapper));
+            return Ok(Result.Success(issuersMapper));
         }
 
         /// <summary>

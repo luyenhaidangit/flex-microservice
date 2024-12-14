@@ -3,6 +3,9 @@ using Flex.Infrastructure.Common.Repositories;
 using Flex.Securities.Api.Entities;
 using Flex.Securities.Api.Persistence;
 using Flex.Securities.Api.Repositories.Interfaces;
+using Flex.Shared.DTOs.Securities;
+using Flex.Shared.SeedWork;
+using Flex.Shared.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Securities.Api.Repositories
@@ -15,6 +18,15 @@ namespace Flex.Securities.Api.Repositories
         }
 
         #region Query
+        public Task<PagedResult<IssuerDto>> GetPagingIssuersAsync(GetIssuersPagingRequest request)
+        {
+            var query = this.FindAll()
+                .WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.Contains(request.Name, StringComparison.OrdinalIgnoreCase))
+                .WhereIf(request.Status.HasValue, b => b.Status == request.Status.Value);
+
+            return null;
+        }
+
         public async Task<List<CatalogIssuer>> GetAllIssuersAsync()
         {
             return await this.FindAll().ToListAsync();

@@ -26,12 +26,12 @@ namespace Flex.Shared.SeedWork
             Errors = errors;
         }
 
-        public static Result Success(string message = Constants.Message.Success, object? data = default)
+        public static Result Success(object? data = default, string message = Constants.Message.Success)
         {
             return new Result(true, message, data);
         }
 
-        public static Result Failure(string message = Constants.Message.Failure, object? errors = default)
+        public static Result Failure(object? errors = default, string message = Constants.Message.Failure)
         {
             return new Result(false, message, default, errors);
         }
