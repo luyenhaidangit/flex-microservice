@@ -21,14 +21,16 @@ namespace Flex.Securities.Api.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Add services to the container.
-            services.AddControllers()
-                    .AddJsonOptions(options =>
-                    {
-                        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-                        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-                        options.JsonSerializerOptions.WriteIndented = true;
-                    });
+            services.AddControllers(options =>
+            {
+            })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                options.JsonSerializerOptions.WriteIndented = true;
+            });
 
             services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
@@ -123,7 +125,7 @@ namespace Flex.Securities.Api.Extensions
                         errors
                     };
 
-                    return new BadRequestObjectResult(Result.Failure("Validation failed!", errors));
+                    return new BadRequestObjectResult(Result.Failure(errors, "Validation failed!"));
                 };
             });
 
