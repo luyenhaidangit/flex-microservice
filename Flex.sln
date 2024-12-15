@@ -8,6 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{
 		resources\flex-architect.jpg = resources\flex-architect.jpg
 		global.json = global.json
 		README.md = README.md
+		requirements.md = requirements.md
 		scratch.md = scratch.md
 	EndProjectSection
 EndProject
