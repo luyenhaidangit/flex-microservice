@@ -1,5 +1,4 @@
-﻿using Flex.Shared.Attributes;
-using Flex.Shared.Enums;
+﻿using Flex.Shared.Enums;
 using Flex.Shared.SeedWork;
 
 namespace Flex.Shared.DTOs.Securities
@@ -12,9 +11,8 @@ namespace Flex.Shared.DTOs.Securities
 
         protected override Dictionary<string, string> OrderByMappings => new()
         {
-            { "NAME", "IssuerName" },
-            { "CREATEDDATE", "CreatedDate" },
-            { "UPDATEDDATE", "UpdatedDate" }
+            { "NAME", "NAME" },
+            { "TIME", "CREATEDDATE" },
         };
     }
 }
