@@ -10,6 +10,7 @@ namespace Flex.Securities.Api
         public MappingProfile()
         {
             // Issuer
+            CreateMap<CatalogIssuer, IssuerPagedDto>();
             CreateMap<CatalogIssuer, IssuerDto>();
             CreateMap<CreateIssuerDto, CatalogIssuer>();
             CreateMap<UpdateIssuerDto, CatalogIssuer>();

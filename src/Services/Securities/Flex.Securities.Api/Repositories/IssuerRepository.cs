@@ -22,7 +22,7 @@ namespace Flex.Securities.Api.Repositories
         public async Task<PagedResult<CatalogIssuer>> GetPagingIssuersAsync(GetIssuersPagingRequest request)
         {
             // Filter
-            var query = this.FindAll().Include(b => b.Securities)
+            var query = this.FindAll()
                 .WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.Contains(request.Name, StringComparison.OrdinalIgnoreCase))
                 .WhereIf(request.Status.HasValue, b => b.Status == request.Status.Value);
 

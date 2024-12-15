@@ -31,7 +31,7 @@ namespace Flex.Securities.Api.Controllers
         {
             var resultPaged = await _repository.GetPagingIssuersAsync(request);
 
-            var resultDtoPaged = resultPaged.MapPagedResult<CatalogIssuer, IssuerDto>(_mapper);
+            var resultDtoPaged = resultPaged.MapPagedResult<CatalogIssuer, IssuerPagedDto>(_mapper);
             
             return Ok(Result.Success(resultDtoPaged));
         }
