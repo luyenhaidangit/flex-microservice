@@ -9,7 +9,7 @@ namespace Flex.Securities.Api.Repositories.Interfaces
     public interface IIssuerRepository : IRepositoryBase<CatalogIssuer, long, SecuritiesDbContext>
     {
         // Query
-        Task<PagedResult<IssuerDto>> GetPagingIssuersAsync(GetIssuersPagingRequest request);
+        Task<PagedResult<CatalogIssuer>> GetPagingIssuersAsync(GetIssuersPagingRequest request);
         Task<List<CatalogIssuer>> GetAllIssuersAsync();
         Task<CatalogIssuer?> GetIssuerByIdAsync(long issuerId);
 

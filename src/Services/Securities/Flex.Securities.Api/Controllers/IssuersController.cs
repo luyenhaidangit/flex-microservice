@@ -5,6 +5,7 @@ using Flex.Shared.DTOs.Securities;
 using Flex.Shared.Enums;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;
+using Flex.Infrastructure.EF;
 
 namespace Flex.Securities.Api.Controllers
 {
@@ -28,10 +29,11 @@ namespace Flex.Securities.Api.Controllers
         [HttpGet("get-paging")]
         public async Task<IActionResult> GetPagingIssuersAsync([FromQuery] GetIssuersPagingRequest request)
         {
-            var issuers = await _repository.GetAllIssuersAsync();
-            var issuersMapper = _mapper.Map<IEnumerable<IssuerDto>>(issuers);
+            var resultPaged = await _repository.GetPagingIssuersAsync(request);
+
+            var resultDtoPaged = resultPaged.MapPagedResult<CatalogIssuer, IssuerDto>(_mapper);
             
-            return Ok(Result.Success(issuersMapper));
+            return Ok(Result.Success(resultDtoPaged));
         }
 
         /// <summary>
