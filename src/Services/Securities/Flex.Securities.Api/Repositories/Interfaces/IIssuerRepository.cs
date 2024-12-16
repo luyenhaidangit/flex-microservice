@@ -10,7 +10,6 @@ namespace Flex.Securities.Api.Repositories.Interfaces
     {
         // Query
         Task<PagedResult<CatalogIssuer>> GetPagingIssuersAsync(GetIssuersPagingRequest request);
-        Task<List<CatalogIssuer>> GetAllIssuersAsync();
         Task<CatalogIssuer?> GetIssuerByIdAsync(long issuerId);
 
         // Command
