@@ -1,4 +1,5 @@
-﻿using Flex.Contracts.Domains.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common.Repositories;
 using Flex.Securities.Api.Entities;
 using Flex.Securities.Api.Persistence;
@@ -6,8 +7,6 @@ using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.Securities;
 using Flex.Shared.SeedWork;
 using Flex.Infrastructure.EF;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace Flex.Securities.Api.Repositories
 {
@@ -32,21 +31,10 @@ namespace Flex.Securities.Api.Repositories
             return result;
         }
 
-        private static Dictionary<string, string> GetOrderByMappings(PagingRequest request)
-        {
-            return request.GetType().GetProperty("OrderByMappings",
-                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy)
-                ?.GetValue(request) as Dictionary<string, string> ?? new Dictionary<string, string>();
-        }
-
-        public async Task<List<CatalogIssuer>> GetAllIssuersAsync()
-        {
-            return await this.FindAll().ToListAsync();
-        }
-
         public async Task<CatalogIssuer?> GetIssuerByIdAsync(long issuerId)
         {
-            return await this.FindByCondition(i => i.Id.Equals(issuerId)).SingleOrDefaultAsync();
+            return await this.FindByCondition(i => i.Id.Equals(issuerId))
+                             .Include(c => c.Securities).FirstOrDefaultAsync();
         }
         #endregion
 

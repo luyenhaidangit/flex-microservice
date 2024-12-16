@@ -37,19 +37,21 @@ namespace Flex.Securities.Api.Controllers
         }
 
         /// <summary>
-        /// Lấy thông tin Issuer theo ID.
+        /// Thông tin Tổ chức phát hành theo Id.
         /// </summary>
         [HttpGet("get-issuer-by-id/{id:long}")]
         public async Task<IActionResult> GetIssuerByIdAsync([FromRoute] long id)
         {
             var issuer = await _repository.GetIssuerByIdAsync(id);
-            if (issuer == null)
+
+            if (issuer is null)
             {
-                return NotFound();
+                return NotFound(Result.Failure(message: "Issuer not found"));
             }
 
             var result = _mapper.Map<IssuerDto>(issuer);
-            return Ok(result);
+
+            return Ok(Result.Success(result));
         }
         #endregion
 
