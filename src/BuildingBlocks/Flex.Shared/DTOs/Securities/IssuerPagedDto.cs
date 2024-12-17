@@ -10,6 +10,6 @@ namespace Flex.Shared.DTOs.Securities
 
         public string? Description { get; set; }
 
-        public EEntityStatus Status { get; set; }
+        public string Status { get; set; }
     }
 }
