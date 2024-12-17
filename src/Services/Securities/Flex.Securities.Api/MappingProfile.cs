@@ -16,9 +16,9 @@ namespace Flex.Securities.Api
             CreateMap<UpdateIssuerDto, CatalogIssuer>();
 
             // Security
-            CreateMap<CatalogSecurity, SecurityDto>();
-            CreateMap<CreateSecuritiesDto, CatalogSecurity>();
-            CreateMap<UpdateSecurityDto, CatalogSecurity>().IgnoreAllNonExisting();
+            CreateMap<CatalogSecurities, SecurityDto>();
+            CreateMap<CreateSecuritiesDto, CatalogSecurities>();
+            CreateMap<UpdateSecuritiesDto, CatalogSecurities>().IgnoreAllNonExisting();
         }
     }
 }

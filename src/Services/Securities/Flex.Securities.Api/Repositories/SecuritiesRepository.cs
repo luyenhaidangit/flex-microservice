@@ -7,31 +7,31 @@ using Flex.Securities.Api.Repositories.Interfaces;
 
 namespace Flex.Securities.Api.Repositories
 {
-    public class SecuritiesRepository : RepositoryBase<CatalogSecurity, long, SecuritiesDbContext>, ISecuritiesRepository
+    public class SecuritiesRepository : RepositoryBase<CatalogSecurities, long, SecuritiesDbContext>, ISecuritiesRepository
     {
         public SecuritiesRepository(SecuritiesDbContext dbContext, IUnitOfWork<SecuritiesDbContext> unitOfWork) : base(dbContext, unitOfWork)
         {
         }
 
         #region Query
-        public Task<List<CatalogSecurity>> GetSecuritiesByIssuerAsync(long issuerId)
+        public Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(long issuerId)
         {
             return this.FindByCondition(x => x.IssuerId.Equals(issuerId)).ToListAsync();
         }
 
-        public Task<CatalogSecurity?> GetSecuritiesByIdAsync(long securitiesId)
+        public Task<CatalogSecurities?> GetSecuritiesByIdAsync(long securitiesId)
         {
             return this.FindByCondition(x => x.Id.Equals(securitiesId)).SingleOrDefaultAsync();
         }
         #endregion
 
         #region Command
-        public Task CreateSecuritiesAsync(CatalogSecurity securities) 
+        public Task CreateSecuritiesAsync(CatalogSecurities securities) 
         {
             return this.CreateAsync(securities);
         }
 
-        public Task UpdateSecuritiesAsync(CatalogSecurity securities)
+        public Task UpdateSecuritiesAsync(CatalogSecurities securities)
         {
             return this.UpdateAsync(securities);
         }

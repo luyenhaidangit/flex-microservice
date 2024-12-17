@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Flex.Securities.Api.Persistence.Configurations
 {
-    public class SecuritiesConfiguration : IEntityTypeConfiguration<CatalogSecurity>
+    public class SecuritiesConfiguration : IEntityTypeConfiguration<CatalogSecurities>
     {
-        public void Configure(EntityTypeBuilder<CatalogSecurity> builder)
+        public void Configure(EntityTypeBuilder<CatalogSecurities> builder)
         {
         }
     }
