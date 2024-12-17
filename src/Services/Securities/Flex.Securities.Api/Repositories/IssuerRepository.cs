@@ -7,6 +7,7 @@ using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.Securities;
 using Flex.Shared.SeedWork;
 using Flex.Infrastructure.EF;
+using Flex.Shared.Enums;
 
 namespace Flex.Securities.Api.Repositories
 {
@@ -42,6 +43,13 @@ namespace Flex.Securities.Api.Repositories
         public Task CreateIssuerAsync(CatalogIssuer issuer)
         {
             return this.CreateAsync(issuer);
+        }
+
+        public async Task ApproveIssuerAsync(CatalogIssuer issuer)
+        {
+            issuer.Status = EEntityStatus.Approved;
+
+            await this.UpdateAsync(issuer);
         }
 
         public Task UpdateIssuerAsync(CatalogIssuer issuer)

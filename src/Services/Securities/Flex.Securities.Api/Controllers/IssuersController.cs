@@ -37,7 +37,7 @@ namespace Flex.Securities.Api.Controllers
         }
 
         /// <summary>
-        /// Thông tin Tổ chức phát hành theo Id.
+        /// Lấy thông tin Tổ chức phát hành theo Id.
         /// </summary>
         [HttpGet("get-issuer-by-id/{id}")]
         public async Task<IActionResult> GetIssuerByIdAsync([FromRoute] long id)
@@ -57,16 +57,11 @@ namespace Flex.Securities.Api.Controllers
 
         #region Command
         /// <summary>
-        /// Tạo một Issuer mới.
+        /// Thêm mới Tổ chức phát hành
         /// </summary>
         [HttpPost("create-issuer")]
         public async Task<IActionResult> CreateIssuerAsync([FromBody] CreateIssuerDto issuerDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var issuer = _mapper.Map<CatalogIssuer>(issuerDto);
 
             // Process
@@ -74,8 +69,37 @@ namespace Flex.Securities.Api.Controllers
 
             await _repository.CreateIssuerAsync(issuer);
 
+            // Result
             var result = _mapper.Map<IssuerDto>(issuer);
-            return CreatedAtAction(nameof(GetIssuerByIdAsync), new { id = issuer.Id }, result);
+
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// Duyệt Tổ chức phát hành
+        /// </summary>
+        [HttpPost("approve-issuer")]
+        public async Task<IActionResult> ApproveIssuerAsync([FromBody] long issuerId)
+        {
+            // Validate
+            var issuer = await _repository.GetIssuerByIdAsync(issuerId);
+
+            if (issuer == null)
+            {
+                throw new ArgumentNullException("Issuer");
+            }
+
+            if (issuer.Status != EEntityStatus.Pending)
+            {
+                throw new InvalidOperationException("Only issuers in 'Pending' status can be approved.");
+            }
+
+            await _repository.ApproveIssuerAsync(issuerId);
+
+            // Result
+            var result = _mapper.Map<IssuerDto>(issuer);
+
+            return Ok(Result.Success(result));
         }
 
         /// <summary>
