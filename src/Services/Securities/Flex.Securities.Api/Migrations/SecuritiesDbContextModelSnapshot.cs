@@ -43,9 +43,6 @@ namespace Flex.Securities.Api.Migrations
                         .IsRequired()
                         .HasColumnType("VARCHAR2(250)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("NUMBER(10)");
-
                     b.HasKey("Id");
 
                     b.ToTable("ISSUERS");
