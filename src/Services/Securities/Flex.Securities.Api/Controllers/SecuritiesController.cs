@@ -55,7 +55,7 @@ namespace Flex.Securities.Api.Controllers
         public async Task<IActionResult> CreateSecuritiesAsync([FromBody] CreateSecuritiesDto securitiesDto)
         {
             // Create
-            var securities = _mapper.Map<CatalogSecurity>(securitiesDto);
+            var securities = _mapper.Map<CatalogSecurities>(securitiesDto);
             await _repository.CreateSecuritiesAsync(securities);
 
             // Result
@@ -68,7 +68,7 @@ namespace Flex.Securities.Api.Controllers
         /// Cập nhật chứng khoán.
         /// </summary>
         [HttpPost("update-security")]
-        public async Task<IActionResult> UpdateSecuritiesAsync([FromBody] UpdateSecurityDto securitiesDto)
+        public async Task<IActionResult> UpdateSecuritiesAsync([FromBody] UpdateSecuritiesDto securitiesDto)
         {
             // Validate
             var securitiesEntity = await _repository.GetSecuritiesByIdAsync(securitiesDto.Id);

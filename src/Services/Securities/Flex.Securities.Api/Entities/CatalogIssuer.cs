@@ -20,7 +20,7 @@ namespace Flex.Securities.Api.Entities
         public string? Description { get; set; }
 
         #region Navigation
-        public virtual ICollection<CatalogSecurity> Securities { get; set; } = new List<CatalogSecurity>();
+        public virtual ICollection<CatalogSecurities> Securities { get; set; } = new List<CatalogSecurities>();
         #endregion
     }
 }

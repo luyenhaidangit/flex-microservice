@@ -6,7 +6,7 @@ using Flex.Shared.Enums.Securities;
 namespace Flex.Securities.Api.Entities
 {
     [Table("SECURITIES")]
-    public class CatalogSecurity : EntityAuditBase<long>
+    public class CatalogSecurities : EntityAuditBase<long>
     {
         [Required]
         [Column(TypeName = "VARCHAR2(250)")]
