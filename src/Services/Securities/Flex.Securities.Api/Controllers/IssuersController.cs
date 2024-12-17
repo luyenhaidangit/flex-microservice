@@ -39,7 +39,7 @@ namespace Flex.Securities.Api.Controllers
         /// <summary>
         /// Thông tin Tổ chức phát hành theo Id.
         /// </summary>
-        [HttpGet("get-issuer-by-id/{id:long}")]
+        [HttpGet("get-issuer-by-id/{id}")]
         public async Task<IActionResult> GetIssuerByIdAsync([FromRoute] long id)
         {
             var issuer = await _repository.GetIssuerByIdAsync(id);
