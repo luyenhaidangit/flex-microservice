@@ -1,10 +1,19 @@
-﻿namespace Flex.Shared.Enums.General
+﻿using Flex.Shared.Attributes;
+
+namespace Flex.Shared.Enums.General
 {
     public enum EEntityStatus
     {
-        PENDING,   // "P"
-        ACTIVE,    // "A"
-        INACTIVE,  // "I"
-        DELETED    // "D"
+        [EnumValue("P")]
+        PENDING,
+
+        [EnumValue("A")]
+        ACTIVE,
+
+        [EnumValue("I")]
+        INACTIVE,
+
+        [EnumValue("D")]
+        DELETED
     }
 }
