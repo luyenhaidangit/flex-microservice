@@ -12,6 +12,10 @@ namespace Flex.Securities.Api.Entities
         [Column(TypeName = "VARCHAR2(250)")]
         public string Name { get; set; }
 
+        [Required]
+        [Column(TypeName = "VARCHAR2(50)")]
+        public EEntityStatus Status { get; set; }
+
         [Column(TypeName = "CLOB")]
         public string? Description { get; set; }
 
