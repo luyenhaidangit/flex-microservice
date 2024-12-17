@@ -12,7 +12,7 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace Flex.Securities.Api.Migrations
 {
     [DbContext(typeof(SecuritiesDbContext))]
-    [Migration("20241217172858_InitDb")]
+    [Migration("20241217174810_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -45,9 +45,6 @@ namespace Flex.Securities.Api.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("VARCHAR2(250)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("NUMBER(10)");
 
                     b.HasKey("Id");
 

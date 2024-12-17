@@ -65,7 +65,7 @@ namespace Flex.Securities.Api.Controllers
             var issuer = _mapper.Map<CatalogIssuer>(issuerDto);
 
             // Process
-            issuer.Status = EEntityStatus.Pending;
+            //issuer.Status = EEntityStatus.Pending;
 
             await _repository.CreateIssuerAsync(issuer);
 
@@ -89,10 +89,10 @@ namespace Flex.Securities.Api.Controllers
                 return BadRequest(Result.Failure(message: "Issuer not found"));
             }
 
-            if (issuer.Status != EEntityStatus.Pending)
-            {
-                return BadRequest(Result.Failure(message: "Only issuers in 'Pending' status can be approved."));
-            }
+            //if (issuer.Status != EEntityStatus.Pending)
+            //{
+            //    return BadRequest(Result.Failure(message: "Only issuers in 'Pending' status can be approved."));
+            //}
 
             await _repository.ApproveIssuerAsync(issuer);
 
@@ -116,10 +116,10 @@ namespace Flex.Securities.Api.Controllers
                 return BadRequest(Result.Failure(message: "Issuer not found"));
             }
 
-            if (issuer.Status is EEntityStatus.Pending)
-            {
-                return BadRequest(Result.Failure(message: "Only issuers in 'Pending' status can be approved."));
-            }
+            //if (issuer.Status is EEntityStatus.Pending)
+            //{
+            //    return BadRequest(Result.Failure(message: "Only issuers in 'Pending' status can be approved."));
+            //}
 
             _mapper.Map(issuerDto, issuer);
 

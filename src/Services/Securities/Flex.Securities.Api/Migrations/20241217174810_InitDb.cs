@@ -18,7 +18,6 @@ namespace Flex.Securities.Api.Migrations
                     Id = table.Column<long>(type: "NUMBER(19)", nullable: false)
                         .Annotation("Oracle:Identity", "START WITH 1 INCREMENT BY 1"),
                     Name = table.Column<string>(type: "VARCHAR2(250)", nullable: false),
-                    Status = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     Description = table.Column<string>(type: "CLOB", nullable: true),
                     CreatedDate = table.Column<DateTimeOffset>(type: "TIMESTAMP(7) WITH TIME ZONE", nullable: false),
                     LastModifiedDate = table.Column<DateTimeOffset>(type: "TIMESTAMP(7) WITH TIME ZONE", nullable: true)
