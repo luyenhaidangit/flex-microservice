@@ -51,7 +51,7 @@ namespace Flex.Securities.Api.Migrations
                     b.ToTable("ISSUERS");
                 });
 
-            modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogSecurity", b =>
+            modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogSecurities", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,7 +85,7 @@ namespace Flex.Securities.Api.Migrations
                     b.ToTable("SECURITIES");
                 });
 
-            modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogSecurity", b =>
+            modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogSecurities", b =>
                 {
                     b.HasOne("Flex.Securities.Api.Entities.CatalogIssuer", "Issuer")
                         .WithMany("Securities")
