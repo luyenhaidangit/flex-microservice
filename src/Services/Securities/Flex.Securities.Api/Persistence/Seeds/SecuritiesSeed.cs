@@ -12,13 +12,13 @@ namespace Flex.Securities.Api.Persistence.Seeds
             {
                 var catalogSecurities = new List<CatalogSecurities>()
                 {
-                    new CatalogSecurities
-                    {
-                        Symbol = "AAA",
-                        IssuerId = 1,
-                        TradePlace = ETradePlace.Hose,
-                        Description = ""
-                    }
+                    //new CatalogSecurities
+                    //{
+                    //    Symbol = "AAA",
+                    //    IssuerId = 1,
+                    //    TradePlace = ETradePlace.Hose,
+                    //    Description = ""
+                    //}
                 };
 
                 securitiesContext.AddRange(catalogSecurities);
