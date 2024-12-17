@@ -1,7 +1,7 @@
 ﻿using Flex.Contracts.Domains;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using Flex.Shared.Enums;
+using Flex.Shared.Enums.General;
 
 namespace Flex.Securities.Api.Entities
 {

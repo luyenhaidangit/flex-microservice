@@ -7,7 +7,7 @@ using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.Securities;
 using Flex.Shared.SeedWork;
 using Flex.Infrastructure.EF;
-using Flex.Shared.Enums;
+using Flex.Shared.Enums.General;
 
 namespace Flex.Securities.Api.Repositories
 {
