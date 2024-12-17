@@ -42,11 +42,11 @@ namespace Flex.Securities.Api.Controllers
         [HttpGet("get-issuer-by-id")]
         public async Task<IActionResult> GetIssuerByIdAsync([FromQuery] EntityKey<long> entityKey)
         {
-            var issuer = await _repository.GetIssuerByIdAsync(entityKey.Key);
+            var issuer = await _repository.GetIssuerByIdAsync(entityKey.Id);
 
             if (issuer is null)
             {
-                return NotFound(Result.Failure(message: "Issuer not found"));
+                return BadRequest(Result.Failure(message: "Issuer not found"));
             }
 
             var result = _mapper.Map<IssuerDto>(issuer);
@@ -70,7 +70,7 @@ namespace Flex.Securities.Api.Controllers
             await _repository.CreateIssuerAsync(issuer);
 
             // Result
-            var result = _mapper.Map<IssuerDto>(issuer);
+            var result = _mapper.Map<IssuerPagedDto>(issuer);
 
             return Ok(Result.Success(result));
         }
@@ -82,28 +82,28 @@ namespace Flex.Securities.Api.Controllers
         public async Task<IActionResult> ApproveIssuerAsync([FromBody] EntityKey<long> entityKey)
         {
             // Validate
-            var issuer = await _repository.GetIssuerByIdAsync(entityKey.Key);
+            var issuer = await _repository.GetIssuerByIdAsync(entityKey.Id);
 
-            if (issuer == null)
+            if (issuer is null)
             {
-                throw new ArgumentNullException("Issuer");
+                return BadRequest(Result.Failure(message: "Issuer not found"));
             }
 
             if (issuer.Status != EEntityStatus.Pending)
             {
-                throw new InvalidOperationException("Only issuers in 'Pending' status can be approved.");
+                return BadRequest(Result.Failure(message: "Only issuers in 'Pending' status can be approved."));
             }
 
-            await _repository.ApproveIssuerAsync(entityKey.Key);
+            await _repository.ApproveIssuerAsync(issuer);
 
             // Result
-            var result = _mapper.Map<IssuerDto>(issuer);
+            var result = _mapper.Map<IssuerPagedDto>(issuer);
 
             return Ok(Result.Success(result));
         }
 
         /// <summary>
-        /// Cập nhật thông tin Issuer.
+        /// Cập nhật Tổ chức phát hành.
         /// </summary>
         [HttpPost("update-issuer")]
         public async Task<IActionResult> UpdateIssuerAsync([FromBody] UpdateIssuerDto issuerDto)

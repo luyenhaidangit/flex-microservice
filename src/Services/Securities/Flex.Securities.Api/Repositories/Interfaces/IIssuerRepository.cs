@@ -14,7 +14,7 @@ namespace Flex.Securities.Api.Repositories.Interfaces
 
         // Command
         Task CreateIssuerAsync(CatalogIssuer issuer);
-        Task ApproveIssuerAsync(long issuerId);
+        Task ApproveIssuerAsync(CatalogIssuer issuer);
         Task UpdateIssuerAsync(CatalogIssuer issuer);
         Task DeleteIssuerAsync(long issuerId);
     }
