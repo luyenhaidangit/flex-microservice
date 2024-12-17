@@ -45,13 +45,11 @@ namespace Flex.Securities.Api.Repositories
             return this.CreateAsync(issuer);
         }
 
-        public async Task ApproveIssuerAsync(long issuerId)
+        public Task ApproveIssuerAsync(CatalogIssuer issuer)
         {
-            var issuer = await GetIssuerByIdAsync(issuerId);
-
             issuer.Status = EEntityStatus.Approved;
 
-            await this.UpdateAsync(issuer);
+            return this.UpdateAsync(issuer);
         }
 
         public Task UpdateIssuerAsync(CatalogIssuer issuer)
