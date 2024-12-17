@@ -108,18 +108,24 @@ namespace Flex.Securities.Api.Controllers
         [HttpPost("update-issuer")]
         public async Task<IActionResult> UpdateIssuerAsync([FromBody] UpdateIssuerDto issuerDto)
         {
-            var issuerEntity = await _repository.GetIssuerByIdAsync(issuerDto.Id);
-            if (issuerEntity == null)
+            // Validate
+            var issuer = await _repository.GetIssuerByIdAsync(issuerDto.Id);
+
+            if (issuer is null)
             {
-                return NotFound();
+                return BadRequest(Result.Failure(message: "Issuer not found"));
             }
 
-            _mapper.Map(issuerDto, issuerEntity);
+            if (issuer.Status is EEntityStatus.Pending)
+            {
+                return BadRequest(Result.Failure(message: "Only issuers in 'Pending' status can be approved."));
+            }
 
-            await _repository.UpdateIssuerAsync(issuerEntity);
+            _mapper.Map(issuerDto, issuer);
 
-            var result = _mapper.Map<IssuerDto>(issuerEntity);
-            return Ok(result);
+            await _repository.UpdateIssuerAsync(issuer);
+
+            return Ok(Result.Success(issuer));
         }
 
         /// <summary>

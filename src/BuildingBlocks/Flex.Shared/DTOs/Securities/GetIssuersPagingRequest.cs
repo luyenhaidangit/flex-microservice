@@ -1,4 +1,4 @@
-﻿using Flex.Shared.Enums;
+﻿using Flex.Shared.Enums.General;
 using Flex.Shared.SeedWork;
 
 namespace Flex.Shared.DTOs.Securities
