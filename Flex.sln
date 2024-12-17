@@ -89,6 +89,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "database", "database", "{0FB87496-E538-4858-9CEF-9A05A1460A54}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "securities", "securities", "{B400DCA0-832E-4D0F-B0BF-7F2947669898}"
+	ProjectSection(SolutionItems) = preProject
+		infrastructure.sql = infrastructure.sql
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
