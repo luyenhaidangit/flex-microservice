@@ -1,4 +1,4 @@
-﻿namespace Flex.Shared.Enums
+﻿namespace Flex.Shared.Enums.General
 {
-    public enum RequestStatus { DRAFT, SUBMITTED, APPROVED, REJECTED }
+    public enum ERequestStatus { DRAFT, SUBMITTED, APPROVED, REJECTED }
 }

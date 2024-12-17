@@ -2,10 +2,10 @@
 using Flex.Securities.Api.Entities;
 using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.Securities;
-using Flex.Shared.Enums;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;
 using Flex.Infrastructure.EF;
+using Flex.Shared.Enums.General;
 
 namespace Flex.Securities.Api.Controllers
 {
