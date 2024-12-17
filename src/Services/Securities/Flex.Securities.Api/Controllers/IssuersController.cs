@@ -65,7 +65,7 @@ namespace Flex.Securities.Api.Controllers
             var issuer = _mapper.Map<CatalogIssuer>(issuerDto);
 
             // Process
-            //issuer.Status = EEntityStatus.Pending;
+            issuer.Status = EEntityStatus.PENDING;
 
             await _repository.CreateIssuerAsync(issuer);
 
