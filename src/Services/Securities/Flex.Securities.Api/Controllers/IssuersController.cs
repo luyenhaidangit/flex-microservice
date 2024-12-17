@@ -39,10 +39,10 @@ namespace Flex.Securities.Api.Controllers
         /// <summary>
         /// Lấy thông tin Tổ chức phát hành theo Id.
         /// </summary>
-        [HttpGet("get-issuer-by-id/{id}")]
-        public async Task<IActionResult> GetIssuerByIdAsync([FromRoute] long id)
+        [HttpGet("get-issuer-by-id")]
+        public async Task<IActionResult> GetIssuerByIdAsync([FromQuery] EntityKey<long> entityKey)
         {
-            var issuer = await _repository.GetIssuerByIdAsync(id);
+            var issuer = await _repository.GetIssuerByIdAsync(entityKey.Key);
 
             if (issuer is null)
             {
@@ -79,10 +79,10 @@ namespace Flex.Securities.Api.Controllers
         /// Duyệt Tổ chức phát hành
         /// </summary>
         [HttpPost("approve-issuer")]
-        public async Task<IActionResult> ApproveIssuerAsync([FromBody] long issuerId)
+        public async Task<IActionResult> ApproveIssuerAsync([FromBody] EntityKey<long> entityKey)
         {
             // Validate
-            var issuer = await _repository.GetIssuerByIdAsync(issuerId);
+            var issuer = await _repository.GetIssuerByIdAsync(entityKey.Key);
 
             if (issuer == null)
             {
@@ -94,7 +94,7 @@ namespace Flex.Securities.Api.Controllers
                 throw new InvalidOperationException("Only issuers in 'Pending' status can be approved.");
             }
 
-            await _repository.ApproveIssuerAsync(issuerId);
+            await _repository.ApproveIssuerAsync(entityKey.Key);
 
             // Result
             var result = _mapper.Map<IssuerDto>(issuer);
