@@ -3,6 +3,9 @@ using Flex.Shared.Constants;
 using Flex.Shared.Enums.General;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Elasticsearch.Net.Specification.SecurityApi;
+using Flex.Shared.SeedWork;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Flex.Securities.Api.Entities
 {
@@ -19,5 +22,17 @@ namespace Flex.Securities.Api.Entities
 
         [Column(TypeName = "CLOB")]
         public string DataProposed { get; set; } = Json.EMPTY_JSON;
+
+        public CatalogIssuerRequest(string dataProposed, ERequestType type, ERequestStatus status)
+        {
+            this.DataProposed = dataProposed;
+            this.Type = type;
+            this.Status = status;
+        }
+
+        public static CatalogIssuerRequest Create(string dataProposed, ERequestType type, ERequestStatus status)
+        {
+            return new CatalogIssuerRequest(dataProposed, type, status);
+        }
     }
 }
