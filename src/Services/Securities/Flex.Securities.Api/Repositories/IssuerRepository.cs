@@ -34,8 +34,8 @@ namespace Flex.Securities.Api.Repositories
 
         public async Task<CatalogIssuer?> GetIssuerByIdAsync(long issuerId)
         {
-            return await this.FindByCondition(i => i.Id.Equals(issuerId))
-                             .Include(c => c.Securities).FirstOrDefaultAsync();
+            return await this.FindByCondition(i => i.Id.Equals(issuerId)).FirstOrDefaultAsync();
+                             //.Include(c => c.Securities).FirstOrDefaultAsync();
         }
         #endregion
 

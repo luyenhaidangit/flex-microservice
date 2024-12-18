@@ -12,8 +12,8 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace Flex.Securities.Api.Migrations
 {
     [DbContext(typeof(SecuritiesDbContext))]
-    [Migration("20241218053049_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20241218072615_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -118,25 +118,7 @@ namespace Flex.Securities.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IssuerId");
-
                     b.ToTable("SECURITIES");
-                });
-
-            modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogSecurities", b =>
-                {
-                    b.HasOne("Flex.Securities.Api.Entities.CatalogIssuer", "Issuer")
-                        .WithMany("Securities")
-                        .HasForeignKey("IssuerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Issuer");
-                });
-
-            modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogIssuer", b =>
-                {
-                    b.Navigation("Securities");
                 });
 #pragma warning restore 612, 618
         }

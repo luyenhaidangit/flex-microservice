@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Flex.Securities.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -62,18 +62,7 @@ namespace Flex.Securities.Api.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SECURITIES", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_SECURITIES_ISSUERS_IssuerId",
-                        column: x => x.IssuerId,
-                        principalTable: "ISSUERS",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SECURITIES_IssuerId",
-                table: "SECURITIES",
-                column: "IssuerId");
         }
 
         /// <inheritdoc />
@@ -83,10 +72,10 @@ namespace Flex.Securities.Api.Migrations
                 name: "ISSUERREQUESTS");
 
             migrationBuilder.DropTable(
-                name: "SECURITIES");
+                name: "ISSUERS");
 
             migrationBuilder.DropTable(
-                name: "ISSUERS");
+                name: "SECURITIES");
         }
     }
 }
