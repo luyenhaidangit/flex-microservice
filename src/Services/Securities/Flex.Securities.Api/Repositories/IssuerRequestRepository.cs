@@ -14,14 +14,5 @@ namespace Flex.Securities.Api.Repositories
             : base(dbContext, unitOfWork)
         {
         }
-
-        //public Task CreateIssuerRequestAsync(CatalogIssuer issuer)
-        //{
-        //    var dataProposed = JsonConvert.SerializeObject(issuer);
-
-        //    var request = CatalogIssuerRequest.Create(dataProposed,ERequestType.ADD,ERequestStatus.DRAFT);
-
-        //    return this.CreateAsync(request);
-        //}
     }
 }

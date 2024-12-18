@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
+using Newtonsoft.Json;
 using Flex.Securities.Api.Entities;
 using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.Securities;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;
 using Flex.Infrastructure.EF;
-using Flex.Shared.Enums.General;
-using Newtonsoft.Json;
 using Flex.Shared.Constants;
+using Flex.Shared.Enums.General;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Securities.Api.Controllers
 {
@@ -67,20 +68,33 @@ namespace Flex.Securities.Api.Controllers
         public async Task<IActionResult> CreateIssuerAsync([FromBody] CreateIssuerDto issuerDto)
         {
             // Validate
+            var draftRequests = await _issuerRequestRepository.FindByCondition(x => x.Status == ERequestStatus.DRAFT).ToListAsync();
+
+            var isNameExists = draftRequests.Any(candidate =>
+            {
+                try
+                {
+                    var data = JsonConvert.DeserializeObject<CatalogIssuer>(candidate.DataProposed);
+                    return data is not null && data.Name.ToUpper().Contains(issuerDto.Name.ToUpper());
+                }
+                catch
+                {
+                    return false;
+                }
+            });
 
             // Process
             // Log request create
             var issuer = _mapper.Map<CatalogIssuer>(issuerDto);
-
             var dataProposed = JsonConvert.SerializeObject(issuer);
 
-            var request = CatalogIssuerRequest.Create(dataProposed,ERequestType.ADD,ERequestStatus.DRAFT);
+            var request = CatalogIssuerRequest.Create(dataProposed);
 
             await _issuerRequestRepository.CreateAsync(request);
 
             // Result
 
-            return Ok(Result.Success(Message.Success));
+            return Ok(Result.Success());
         }
 
         /// <summary>
