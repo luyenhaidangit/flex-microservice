@@ -25,7 +25,7 @@ namespace Flex.Securities.Api.Entities
 
         #region Navigation
         //[ForeignKey("IssuerId")]
-        public virtual CatalogIssuer Issuer { get; set; }
+        //public virtual CatalogIssuer Issuer { get; set; }
         #endregion
     }
 }
