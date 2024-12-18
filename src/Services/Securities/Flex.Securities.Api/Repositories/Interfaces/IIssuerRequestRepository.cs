@@ -6,6 +6,6 @@ namespace Flex.Securities.Api.Repositories.Interfaces
 {
     public interface IIssuerRequestRepository : IRepositoryBase<CatalogIssuerRequest, long, SecuritiesDbContext>
     {
-        Task CreateIssuerRequestAsync(CatalogIssuerRequest issuer);
+        Task CreateIssuerRequestAsync(CatalogIssuer issuer);
     }
 }

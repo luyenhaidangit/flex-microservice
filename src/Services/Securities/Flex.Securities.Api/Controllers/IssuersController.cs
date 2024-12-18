@@ -6,6 +6,8 @@ using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;
 using Flex.Infrastructure.EF;
 using Flex.Shared.Enums.General;
+using Newtonsoft.Json;
+using Flex.Shared.Constants;
 
 namespace Flex.Securities.Api.Controllers
 {
@@ -14,12 +16,14 @@ namespace Flex.Securities.Api.Controllers
     public class IssuersController : ControllerBase
     {
         private readonly IIssuerRepository _issuerRepository;
+        private readonly IIssuerRequestRepository _issuerRequestRepository;
         private readonly IMapper _mapper;
 
         public IssuersController(IMapper mapper, IIssuerRepository repository, IIssuerRequestRepository issuerRequestRepository)
         {
             _mapper = mapper;
             _issuerRepository = repository;
+            _issuerRequestRepository = issuerRequestRepository;
         }
 
         #region Query
@@ -64,19 +68,19 @@ namespace Flex.Securities.Api.Controllers
         {
             // Validate
 
-
             // Process
+            // Log request create
             var issuer = _mapper.Map<CatalogIssuer>(issuerDto);
 
-            // Process
-            issuer.Status = EEntityStatus.PENDING;
+            var dataProposed = JsonConvert.SerializeObject(issuer);
 
-            await _issuerRepository.CreateIssuerAsync(issuer);
+            var request = CatalogIssuerRequest.Create(dataProposed,ERequestType.ADD,ERequestStatus.DRAFT);
+
+            await _issuerRequestRepository.CreateAsync(request);
 
             // Result
-            var result = _mapper.Map<IssuerPagedDto>(issuer);
 
-            return Ok(Result.Success(result));
+            return Ok(Result.Success(Message.Success));
         }
 
         /// <summary>

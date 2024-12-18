@@ -4,6 +4,7 @@ using Flex.Securities.Api.Entities;
 using Flex.Securities.Api.Persistence;
 using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Shared.Enums.General;
+using Newtonsoft.Json;
 
 namespace Flex.Securities.Api.Repositories
 {
@@ -14,11 +15,13 @@ namespace Flex.Securities.Api.Repositories
         {
         }
 
-        public Task CreateIssuerRequestAsync(CatalogIssuerRequest issuerRequest)
-        {
-            issuerRequest.Status = ERequestStatus.DRAFT;
+        //public Task CreateIssuerRequestAsync(CatalogIssuer issuer)
+        //{
+        //    var dataProposed = JsonConvert.SerializeObject(issuer);
 
-            throw new NotImplementedException();
-        }
+        //    var request = CatalogIssuerRequest.Create(dataProposed,ERequestType.ADD,ERequestStatus.DRAFT);
+
+        //    return this.CreateAsync(request);
+        //}
     }
 }
