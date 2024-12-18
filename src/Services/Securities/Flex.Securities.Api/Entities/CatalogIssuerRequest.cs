@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Flex.Securities.Api.Entities
 {
     [Table("ISSUERREQUESTS")]
-    public class CatalogIssuerRequest : EntityRequestAuditBase<long>
+    public class CatalogIssuerRequest : EntityRequestAuditBase<long, long?>
     {
         [Required]
         [Column(TypeName = "VARCHAR2(50)")]

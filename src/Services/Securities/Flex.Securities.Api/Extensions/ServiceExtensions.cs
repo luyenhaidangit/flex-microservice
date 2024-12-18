@@ -95,7 +95,8 @@ namespace Flex.Securities.Api.Extensions
             return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
                            .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
                            .AddScoped<ISecuritiesRepository, SecuritiesRepository>()
-                           .AddScoped<IIssuerRepository,IssuerRepository >();
+                           .AddScoped<IIssuerRepository,IssuerRepository >()
+                           .AddScoped<IIssuerRequestRepository, IssuerRequestRepository>();
         }
 
         public static IServiceCollection ConfigureNewtonsoftJson(this IServiceCollection services)
