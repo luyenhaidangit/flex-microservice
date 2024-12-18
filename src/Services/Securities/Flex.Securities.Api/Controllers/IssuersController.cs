@@ -68,29 +68,29 @@ namespace Flex.Securities.Api.Controllers
         public async Task<IActionResult> CreateIssuerAsync([FromBody] CreateIssuerDto issuerDto)
         {
             // Validate
-            var draftRequests = await _issuerRequestRepository.FindByCondition(x => x.Status == ERequestStatus.DRAFT).ToListAsync();
+            var isNameExists = await _issuerRequestRepository.FindByCondition(x => x.Code.ToUpper() == issuerDto.Code.ToUpper()).AnyAsync();
 
-            var isNameExists = draftRequests.Any(candidate =>
-            {
-                try
-                {
-                    var data = JsonConvert.DeserializeObject<CatalogIssuer>(candidate.DataProposed);
-                    return data is not null && data.Name.ToUpper().Contains(issuerDto.Name.ToUpper());
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            //var isNameExists = draftRequests.Any(candidate =>
+            //{
+            //    try
+            //    {
+            //        var data = JsonConvert.DeserializeObject<CatalogIssuer>(candidate.DataProposed);
+            //        return data is not null && data.Name.ToUpper().Contains(issuerDto.Name.ToUpper());
+            //    }
+            //    catch
+            //    {
+            //        return false;
+            //    }
+            //});
 
-            // Process
-            // Log request create
-            var issuer = _mapper.Map<CatalogIssuer>(issuerDto);
-            var dataProposed = JsonConvert.SerializeObject(issuer);
+            //// Process
+            //// Log request create
+            //var issuer = _mapper.Map<CatalogIssuer>(issuerDto);
+            //var dataProposed = JsonConvert.SerializeObject(issuer);
 
-            var request = CatalogIssuerRequest.Create(dataProposed);
+            //var request = CatalogIssuerRequest.Create(dataProposed);
 
-            await _issuerRequestRepository.CreateAsync(request);
+            //await _issuerRequestRepository.CreateAsync(request);
 
             // Result
 

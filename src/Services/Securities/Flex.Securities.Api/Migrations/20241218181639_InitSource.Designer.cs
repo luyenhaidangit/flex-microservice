@@ -3,6 +3,7 @@ using System;
 using Flex.Securities.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Oracle.EntityFrameworkCore.Metadata;
 
@@ -11,9 +12,11 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace Flex.Securities.Api.Migrations
 {
     [DbContext(typeof(SecuritiesDbContext))]
-    partial class SecuritiesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241218181639_InitSource")]
+    partial class InitSource
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,7 +55,7 @@ namespace Flex.Securities.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ISSUERS", (string)null);
+                    b.ToTable("ISSUERS");
                 });
 
             modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogIssuerRequest", b =>
@@ -85,7 +88,7 @@ namespace Flex.Securities.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ISSUERREQUESTS", (string)null);
+                    b.ToTable("ISSUERREQUESTS");
                 });
 
             modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogSecurities", b =>
@@ -117,7 +120,7 @@ namespace Flex.Securities.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SECURITIES", (string)null);
+                    b.ToTable("SECURITIES");
                 });
 #pragma warning restore 612, 618
         }

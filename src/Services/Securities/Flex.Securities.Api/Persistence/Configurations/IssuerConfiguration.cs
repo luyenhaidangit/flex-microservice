@@ -10,11 +10,11 @@ namespace Flex.Securities.Api.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<CatalogIssuer> builder)
         {
-            builder.Property(e => e.Status)
-                .HasConversion(
-                    v => v.ToValue(),
-                    v => EnumExtension.FromValue<EEntityStatus>(v)
-                );
+            //builder.Property(e => e.Status)
+            //    .HasConversion(
+            //        v => v.ToValue(),
+            //        v => EnumExtension.FromValue<EEntityStatus>(v)
+            //    );
         }
     }
 }
