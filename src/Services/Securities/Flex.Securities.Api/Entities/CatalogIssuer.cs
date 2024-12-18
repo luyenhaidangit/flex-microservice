@@ -14,13 +14,13 @@ namespace Flex.Securities.Api.Entities
 
         [Required]
         [Column(TypeName = "VARCHAR2(50)")]
-        public EEntityStatus Status { get; set; }
+        public string Code { get; set; }
 
         [Column(TypeName = "CLOB")]
         public string? Description { get; set; }
 
-        #region Navigation
-        //public virtual ICollection<CatalogSecurities> Securities { get; set; } = new List<CatalogSecurities>();
-        #endregion
+        [Required]
+        [Column(TypeName = "NUMBER(10)")]
+        public EProcessStatus ProcessStatus { get; set; }
     }
 }

@@ -11,17 +11,17 @@ namespace Flex.Securities.Api.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<CatalogIssuerRequest> builder)
         {
-            builder.Property(e => e.Status)
-                .HasConversion(
-                    v => v.ToValue(),
-                    v => EnumExtension.FromValue<ERequestStatus>(v)
-                );
+            //builder.Property(e => e.Status)
+            //    .HasConversion(
+            //        v => v.ToValue(),
+            //        v => EnumExtension.FromValue<EProcessStatus>(v)
+            //    );
 
-            builder.Property(e => e.Type)
-                .HasConversion(
-                    v => v.ToValue(),
-                    v => EnumExtension.FromValue<ERequestType>(v)
-            );
+            //builder.Property(e => e.Type)
+            //    .HasConversion(
+            //        v => v.ToValue(),
+            //        v => EnumExtension.FromValue<ERequestType>(v)
+            //);
 
             builder.Property(e => e.EntityId).IsRequired(false);
         }

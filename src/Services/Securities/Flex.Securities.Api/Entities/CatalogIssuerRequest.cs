@@ -1,6 +1,4 @@
 ﻿using Flex.Contracts.Domains;
-using Flex.Shared.Constants;
-using Flex.Shared.Enums.General;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
@@ -10,26 +8,14 @@ namespace Flex.Securities.Api.Entities
     public class CatalogIssuerRequest : EntityRequestAuditBase<long, long?>
     {
         [Required]
-        [Column(TypeName = "VARCHAR2(50)")]
-        public ERequestType Type { get; set; }
+        [Column(TypeName = "VARCHAR2(250)")]
+        public string Name { get; set; }
 
         [Required]
         [Column(TypeName = "VARCHAR2(50)")]
-        public ERequestStatus Status { get; set; }
+        public string Code { get; set; }
 
         [Column(TypeName = "CLOB")]
-        public string DataProposed { get; set; } = Json.EMPTY_JSON;
-
-        public CatalogIssuerRequest(string dataProposed, ERequestType type, ERequestStatus status)
-        {
-            this.DataProposed = dataProposed;
-            this.Type = ERequestType.ADD;
-            this.Status = status;
-        }
-
-        public static CatalogIssuerRequest Create(string dataProposed)
-        {
-            return new CatalogIssuerRequest(dataProposed, ERequestType.ADD, ERequestStatus.DRAFT);
-        }
+        public string? Description { get; set; }
     }
 }

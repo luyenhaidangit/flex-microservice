@@ -14,6 +14,12 @@ namespace Flex.Infrastructure.EF
         {
             return condition ? source.Where(predicate) : source;
         }
+
+        public static bool EqualsIgnoreCase(this string source, string target)
+        {
+            if (source == null || target == null) return false;
+            return source.ToUpper().Equals(target.ToUpper());
+        }
         #endregion
 
         #region Paging
