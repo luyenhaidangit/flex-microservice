@@ -11,7 +11,8 @@ namespace Flex.Securities.Api.Persistence
         }
 
         #region DbSet
-        public DbSet<CatalogIssuer> Issuer { get; set; }
+        public DbSet<CatalogIssuer> Issuers { get; set; }
+        public DbSet<CatalogIssuerRequest> IssuerRequests { get; set; }
         public DbSet<CatalogSecurities> Securities { get; set; }
         #endregion
 
