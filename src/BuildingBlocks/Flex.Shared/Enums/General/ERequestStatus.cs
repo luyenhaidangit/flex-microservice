@@ -1,4 +1,16 @@
-﻿namespace Flex.Shared.Enums.General
+﻿using Flex.Shared.Attributes;
+
+namespace Flex.Shared.Enums.General
 {
-    public enum ERequestStatus { DRAFT, SUBMITTED, APPROVED, REJECTED }
+    public enum ERequestStatus 
+    {
+        [EnumValue("D")]
+        DRAFT,
+
+        [EnumValue("A")]
+        APPROVED,
+
+        [EnumValue("R")]
+        REJECTED 
+    }
 }
