@@ -2,8 +2,8 @@
 
 namespace Flex.Contracts.Domains
 {
-    public abstract class EntityRequestAuditBase<T> : EntityAuditBase<T>, IEntityRequestAuditBase<T>
+    public abstract class EntityRequestAuditBase<TId, TEntityId> : EntityAuditBase<TId>, IEntityRequestAuditBase<TId, TEntityId>
     {
-        public T? EntityId { get; set; }
+        public TEntityId? EntityId { get; set; }
     }
 }

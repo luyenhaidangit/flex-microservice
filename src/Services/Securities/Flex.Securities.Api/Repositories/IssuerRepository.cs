@@ -13,9 +13,12 @@ namespace Flex.Securities.Api.Repositories
 {
     public class IssuerRepository : RepositoryBase<CatalogIssuer, long, SecuritiesDbContext>, IIssuerRepository
     {
-        public IssuerRepository(SecuritiesDbContext dbContext, IUnitOfWork<SecuritiesDbContext> unitOfWork)
+        private readonly IIssuerRequestRepository _issuerRequestRepository;
+
+        public IssuerRepository(SecuritiesDbContext dbContext, IUnitOfWork<SecuritiesDbContext> unitOfWork, IIssuerRequestRepository issuerRequestRepository)
             : base(dbContext, unitOfWork)
         {
+            _issuerRequestRepository = issuerRequestRepository;
         }
 
         #region Query

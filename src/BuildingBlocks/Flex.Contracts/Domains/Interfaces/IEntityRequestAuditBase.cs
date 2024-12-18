@@ -1,7 +1,7 @@
 ﻿namespace Flex.Contracts.Domains.Interfaces
 {
-    public interface IEntityRequestAuditBase<T> : IEntityAuditBase<T>
+    public interface IEntityRequestAuditBase<TId, TEntityId> : IEntityAuditBase<TId>
     {
-        T? EntityId { get; set; }
+        TEntityId? EntityId { get; set; }
     }
 }
