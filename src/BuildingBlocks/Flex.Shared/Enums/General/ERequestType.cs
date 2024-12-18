@@ -1,4 +1,16 @@
-﻿namespace Flex.Shared.Enums.General
+﻿using Flex.Shared.Attributes;
+
+namespace Flex.Shared.Enums.General
 {
-    public enum RequestType { ADD, EDIT, DELETE }
+    public enum ERequestType 
+    {
+        [EnumValue("A")]
+        ADD,
+
+        [EnumValue("E")]
+        EDIT,
+
+        [EnumValue("D")]
+        DELETE 
+    }
 }
