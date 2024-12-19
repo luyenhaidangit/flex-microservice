@@ -39,7 +39,7 @@ namespace Flex.Infrastructure.EF
             else if (!string.IsNullOrWhiteSpace(request.OrderBy))
             {
                 var orderByMappings = GetOrderByMappings(request);
-                var mappedOrderBy = orderByMappings.TryGetValue(request.OrderBy.ToLower(), out var mappedValue)
+                var mappedOrderBy = orderByMappings.TryGetValue(request.OrderBy.ToUpper(), out var mappedValue)
                     ? mappedValue
                     : request.OrderBy;
 
