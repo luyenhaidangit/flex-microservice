@@ -10,12 +10,5 @@ namespace Flex.Securities.Api.Repositories.Interfaces
     {
         // Query
         Task<PagedResult<CatalogIssuer>> GetPagingIssuersAsync(GetIssuersPagingRequest request);
-        Task<CatalogIssuer?> GetIssuerByIdAsync(long issuerId);
-
-        // Command
-        Task CreateIssuerAsync(CatalogIssuer issuer);
-        Task ApproveIssuerAsync(CatalogIssuer issuer);
-        Task UpdateIssuerAsync(CatalogIssuer issuer);
-        Task DeleteIssuerAsync(long issuerId);
     }
 }

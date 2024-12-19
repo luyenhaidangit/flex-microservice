@@ -1,18 +1,13 @@
 ﻿using AutoMapper;
-using Newtonsoft.Json;
 using Flex.Securities.Api.Entities;
 using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.Securities;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;
 using Flex.Infrastructure.EF;
-using Flex.Shared.Constants;
 using Flex.Shared.Enums.General;
 using Microsoft.EntityFrameworkCore;
 using Flex.Shared.SeedWork.General;
-using Flex.Contracts.Domains.Interfaces;
-using Flex.Securities.Api.Persistence;
-using Flex.Infrastructure.Exceptions;
 
 namespace Flex.Securities.Api.Controllers
 {
@@ -22,16 +17,13 @@ namespace Flex.Securities.Api.Controllers
     {
         private readonly IIssuerRepository _issuerRepository;
         private readonly IIssuerRequestRepository _issuerRequestRepository;
-        private readonly IUnitOfWork<SecuritiesDbContext> _unitOfWork;
         private readonly IMapper _mapper;
 
         public IssuersController(IMapper mapper,
-            IUnitOfWork<SecuritiesDbContext> unitOfWork,
             IIssuerRepository repository, 
             IIssuerRequestRepository issuerRequestRepository)
         {
             _mapper = mapper;
-            _unitOfWork = unitOfWork;
             _issuerRepository = repository;
             _issuerRequestRepository = issuerRequestRepository;
         }
@@ -56,12 +48,13 @@ namespace Flex.Securities.Api.Controllers
         [HttpGet("get-issuer-by-id")]
         public async Task<IActionResult> GetIssuerByIdAsync([FromQuery] EntityKey<long> entityKey)
         {
-            var issuer = await _issuerRepository.GetIssuerByIdAsync(entityKey.Id);
-
-            if (issuer is null)
+            var isExistIssuer = await _issuerRepository.FindByCondition(x => x.Id == entityKey.Id).AnyAsync();
+            if (!isExistIssuer)
             {
-                return BadRequest(Result.Failure(message: "Issuer not found"));
+                return BadRequest(Result.Failure(message: "Issuer not found."));
             }
+
+            var issuer = await _issuerRepository.FindByCondition(x => x.Id == entityKey.Id).FirstAsync();
 
             var result = _mapper.Map<IssuerDto>(issuer);
 
@@ -71,7 +64,7 @@ namespace Flex.Securities.Api.Controllers
 
         #region Command
         /// <summary>
-        /// Thêm mới Tổ chức phát hành
+        /// Thêm mới Tổ chức phát hành.
         /// </summary>
         [HttpPost("create-issuer")]
         public async Task<IActionResult> CreateIssuerAsync([FromBody] CreateIssuerDto issuerDto)
@@ -98,44 +91,6 @@ namespace Flex.Securities.Api.Controllers
             // Create issuer request
             var issuerRequest = _mapper.Map<CatalogIssuerRequest>(issuerDto);
             await _issuerRequestRepository.CreateAsync(issuerRequest);
-
-            // Result
-
-            return Ok(Result.Success());
-        }
-
-        /// <summary>
-        /// Duyệt Tổ chức phát hành.
-        /// </summary>
-        [HttpPost("approve-issuer")]
-        public async Task<IActionResult> ApproveIssuerAsync([FromBody] ApproveRequest<long> request)
-        {
-            if (request.RequestTypeEnum == ERequestType.ADD)
-            {
-                // Validate
-                var isExistRequests = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).AnyAsync();
-
-                if(!isExistRequests)
-                {
-                    return BadRequest(Result.Failure(message: "Issuer request not found"));
-                }
-
-                // Begin: Transaction
-                var transaction = _issuerRepository.BeginTransactionAsync();
-
-                var issuerRequest = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
-               
-                // Create issuers
-                var issuer = _mapper.Map<CatalogIssuer>(issuerRequest);
-                issuer.ProcessStatus = EProcessStatus.Complete;
-                _issuerRepository.Create(issuer);
-
-                // Delete add request
-                _issuerRequestRepository.Delete(issuerRequest);
-
-                await _issuerRepository.EndTransactionAsync();
-                // End: Transaction
-            }
 
             // Result
 
@@ -194,50 +149,103 @@ namespace Flex.Securities.Api.Controllers
         }
 
         /// <summary>
-        /// Xóa một Issuer theo ID.
+        /// Xóa tổ chức phát hành.
         /// </summary>
-        [HttpPost("delete-issuer/{id:long}")]
-        public async Task<IActionResult> DeleteIssuerAsync([FromRoute] long id)
+        [HttpPost("delete-issuer")]
+        public async Task<IActionResult> DeleteIssuerAsync(EntityKey<long> entityKey)
         {
-            var issuerEntity = await _issuerRepository.GetIssuerByIdAsync(id);
-            if (issuerEntity == null)
+            // Validate
+            var isExistIssuer = await _issuerRepository.FindByCondition(x => x.Id == entityKey.Id).AnyAsync();
+            if (!isExistIssuer)
             {
-                return NotFound();
+                return BadRequest(Result.Failure(message: "Issuer not found."));
             }
 
-            await _issuerRepository.DeleteIssuerAsync(id);
+            // Process
+            var issuer = await _issuerRepository.FindByCondition(x => x.Id == entityKey.Id).FirstAsync();
+            issuer.ProcessStatus = EProcessStatus.PendingDelete;
 
-            return NoContent();
+            await _issuerRepository.UpdateAsync(issuer);
+
+            return Ok(Result.Success());
+        }
+
+        /// <summary>
+        /// Duyệt Tổ chức phát hành.
+        /// </summary>
+        [HttpPost("approve-issuer")]
+        public async Task<IActionResult> ApproveIssuerAsync([FromBody] ApproveRequest<long> request)
+        {
+            if (request.RequestTypeEnum == ERequestType.ADD)
+            {
+                // Validate
+                var isExistRequests = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).AnyAsync();
+
+                if (!isExistRequests)
+                {
+                    return BadRequest(Result.Failure(message: "Issuer request not found."));
+                }
+
+                // Begin: Transaction
+                var transaction = _issuerRepository.BeginTransactionAsync();
+
+                var issuerRequest = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
+
+                // Create issuers
+                var issuer = _mapper.Map<CatalogIssuer>(issuerRequest);
+                issuer.ProcessStatus = EProcessStatus.Complete;
+                _issuerRepository.Create(issuer);
+
+                // Delete add request
+                _issuerRequestRepository.Delete(issuerRequest);
+
+                await _issuerRepository.EndTransactionAsync();
+                // End: Transaction
+            }
+            else if (request.RequestTypeEnum == ERequestType.EDIT)
+            {
+                // Validate
+                var isExistRequests = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).AnyAsync();
+
+                if (!isExistRequests)
+                {
+                    return BadRequest(Result.Failure(message: "Issuer request not found."));
+                }
+
+                // Begin: Transaction
+                var transaction = _issuerRepository.BeginTransactionAsync();
+
+                var issuerRequest = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
+
+                // Update issuers
+                var issuer = _mapper.Map<CatalogIssuer>(issuerRequest);
+                issuer.ProcessStatus = EProcessStatus.Complete;
+                _issuerRepository.Update(issuer);
+
+                // Delete add request
+                _issuerRequestRepository.Delete(issuerRequest);
+
+                await _issuerRepository.EndTransactionAsync();
+                // End: Transaction
+            } else if(request.RequestTypeEnum == ERequestType.DELETE)
+            {
+                // Validate
+                var isExistEntity = await _issuerRepository.FindByCondition(x => x.Id == request.Id).AnyAsync();
+                if (!isExistEntity)
+                {
+                    return BadRequest(Result.Failure(message: "Issuer not found."));
+                }
+
+                // Process
+                var issuer = await _issuerRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
+                await _issuerRepository.DeleteAsync(issuer);
+                // End: Transaction
+            }
+
+            // Result
+
+            return Ok(Result.Success());
         }
         #endregion Command
-
-        #region Common
-        private async Task<bool> IsIssuerCodeExistAsync(string code)
-        {
-            var queryIssuer = _issuerRepository.FindAll();
-            var queryIssuerRequest = _issuerRequestRepository.FindAll();
-
-            var isCodeExistRequests = await queryIssuerRequest
-                .Where(x => x.Code.ToUpper() == code.ToUpper() &&
-                            !queryIssuer.Any(i => i.Code.ToUpper() == x.Code.ToUpper()))
-                .AnyAsync();
-
-            if (isCodeExistRequests)
-            {
-                throw new BadRequestException($"Issuer code '{code}' already exists in requests.");
-            }
-
-            var isCodeExistEntities = await queryIssuer
-                .Where(x => x.Code.ToUpper() == code.ToUpper())
-                .AnyAsync();
-
-            if (isCodeExistEntities)
-            {
-                throw new BadRequestException($"Issuer code '{code}' already exists in issuers.");
-            }
-
-            return false;
-        }
-        #endregion
     }
 }
