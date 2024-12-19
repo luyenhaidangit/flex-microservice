@@ -7,18 +7,13 @@ using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.Securities;
 using Flex.Shared.SeedWork;
 using Flex.Infrastructure.EF;
-using Flex.Shared.Enums.General;
 
 namespace Flex.Securities.Api.Repositories
 {
     public class IssuerRepository : RepositoryBase<CatalogIssuer, long, SecuritiesDbContext>, IIssuerRepository
     {
-        private readonly IIssuerRequestRepository _issuerRequestRepository;
-
-        public IssuerRepository(SecuritiesDbContext dbContext, IUnitOfWork<SecuritiesDbContext> unitOfWork, IIssuerRequestRepository issuerRequestRepository)
-            : base(dbContext, unitOfWork)
+        public IssuerRepository(SecuritiesDbContext dbContext, IUnitOfWork<SecuritiesDbContext> unitOfWork) : base(dbContext, unitOfWork)
         {
-            _issuerRequestRepository = issuerRequestRepository;
         }
 
         #region Query
@@ -33,40 +28,6 @@ namespace Flex.Securities.Api.Repositories
             var result = await query.ToPagedResultAsync(request);
 
             return result;
-        }
-
-        public async Task<CatalogIssuer?> GetIssuerByIdAsync(long issuerId)
-        {
-            return await this.FindByCondition(i => i.Id.Equals(issuerId)).FirstOrDefaultAsync();
-                             //.Include(c => c.Securities).FirstOrDefaultAsync();
-        }
-        #endregion
-
-        #region Command
-        public Task CreateIssuerAsync(CatalogIssuer issuer)
-        {
-            return this.CreateAsync(issuer);
-        }
-
-        public Task ApproveIssuerAsync(CatalogIssuer issuer)
-        {
-            //issuer.Status = EEntityStatus.Approved;
-
-            return this.UpdateAsync(issuer);
-        }
-
-        public Task UpdateIssuerAsync(CatalogIssuer issuer)
-        {
-            return this.UpdateAsync(issuer);
-        }
-
-        public async Task DeleteIssuerAsync(long issuerId)
-        {
-            var issuer = await GetIssuerByIdAsync(issuerId);
-            if (issuer != null)
-            {
-                await DeleteAsync(issuer);
-            }
         }
         #endregion
     }
