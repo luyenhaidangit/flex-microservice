@@ -3,8 +3,6 @@ using Flex.Infrastructure.Common.Repositories;
 using Flex.Securities.Api.Entities;
 using Flex.Securities.Api.Persistence;
 using Flex.Securities.Api.Repositories.Interfaces;
-using Flex.Shared.Enums.General;
-using Newtonsoft.Json;
 
 namespace Flex.Securities.Api.Repositories
 {

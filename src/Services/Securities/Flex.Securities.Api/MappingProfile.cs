@@ -12,6 +12,7 @@ namespace Flex.Securities.Api
         {
             // Issuer
             CreateMap<CreateIssuerDto, CatalogIssuerRequest>();
+            CreateMap<CatalogIssuerRequest, CatalogIssuer>().ForMember(dest => dest.Id, opt => opt.Ignore());
             //CreateMap<CatalogIssuer, IssuerPagedDto>().ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToValue()));
             CreateMap<CatalogIssuer, IssuerPagedDto>();
             CreateMap<CatalogIssuer, IssuerDto>();

@@ -4,7 +4,7 @@ namespace Flex.Shared.Enums.General
 {
     public enum EProcessStatus 
     {
-        [EnumValue("PC")]
+        [EnumValue("PA")]
         PendingCreate,
 
         [EnumValue("PU")]
@@ -14,6 +14,6 @@ namespace Flex.Shared.Enums.General
         PendingDelete,
 
         [EnumValue("C")]
-        Completed
+        Complete,
     }
 }
