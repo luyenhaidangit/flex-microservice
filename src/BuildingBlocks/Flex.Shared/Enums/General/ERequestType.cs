@@ -4,13 +4,13 @@ namespace Flex.Shared.Enums.General
 {
     public enum ERequestType 
     {
-        [EnumValue("A")]
+        [EnumValue("ADD")]
         ADD,
 
-        [EnumValue("E")]
+        [EnumValue("EDIT")]
         EDIT,
 
-        [EnumValue("D")]
+        [EnumValue("DELETE")]
         DELETE 
     }
 }

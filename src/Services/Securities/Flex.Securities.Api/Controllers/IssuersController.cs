@@ -28,21 +28,6 @@ namespace Flex.Securities.Api.Controllers
 
         #region Query
         /// <summary>
-        /// Phân trang Tổ chức phát hành.
-        /// </summary>
-        [HttpGet("get-paging")]
-        public async Task<IActionResult> GetPagingIssuersAsync([FromQuery] GetIssuersPagingRequest request)
-        {
-            var query = _issuerRepository.FindAll().WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.ToUpper().Contains(request.Name.ToUpper()));
-
-            var resultPaged = await query.ToPagedResultAsync(request);
-
-            var resultDtoPaged = resultPaged.MapPagedResult<CatalogIssuer, IssuerPagedDto>(_mapper);
-            
-            return Ok(Result.Success(resultDtoPaged));
-        }
-
-        /// <summary>
         /// Phân trang Yêu cầu Tổ chức phát hành.
         /// </summary>
         [HttpGet("get-request-paging")]
@@ -58,6 +43,21 @@ namespace Flex.Securities.Api.Controllers
         }
 
         /// <summary>
+        /// Phân trang Tổ chức phát hành.
+        /// </summary>
+        [HttpGet("get-paging")]
+        public async Task<IActionResult> GetPagingIssuersAsync([FromQuery] GetIssuersPagingRequest request)
+        {
+            var query = _issuerRepository.FindAll().WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.ToUpper().Contains(request.Name.ToUpper()));
+
+            var resultPaged = await query.ToPagedResultAsync(request);
+
+            var resultDtoPaged = resultPaged.MapPagedResult<CatalogIssuer, IssuerPagedDto>(_mapper);
+            
+            return Ok(Result.Success(resultDtoPaged));
+        }
+
+        /// <summary>
         /// Lấy thông tin Tổ chức phát hành theo Id.
         /// </summary>
         [HttpGet("get-issuer-by-id")]
@@ -69,7 +69,7 @@ namespace Flex.Securities.Api.Controllers
                 return BadRequest(Result.Failure(message: "Issuer not found."));
             }
 
-            var issuer = await _issuerRepository.FindByCondition(x => x.Id == entityKey.Id).FirstAsync();
+            var issuer = await _issuerRepository.FindByCondition(x => x.Id == entityKey.Id).Include(x => x.Securities).FirstAsync();
 
             var result = _mapper.Map<IssuerDto>(issuer);
 
@@ -201,10 +201,14 @@ namespace Flex.Securities.Api.Controllers
                     return BadRequest(Result.Failure(message: "Issuer request not found."));
                 }
 
+                var issuerRequest = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
+                if (issuerRequest.EntityId is not null)
+                {
+                    return BadRequest(Result.Failure(message: "Issuer request is not pending create."));
+                }
+
                 // Begin: Transaction
                 var transaction = _issuerRepository.BeginTransactionAsync();
-
-                var issuerRequest = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
 
                 // Create issuers
                 var issuer = _mapper.Map<CatalogIssuer>(issuerRequest);

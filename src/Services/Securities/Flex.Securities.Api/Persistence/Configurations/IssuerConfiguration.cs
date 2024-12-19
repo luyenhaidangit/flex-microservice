@@ -10,11 +10,12 @@ namespace Flex.Securities.Api.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<CatalogIssuer> builder)
         {
-            //builder.Property(e => e.Status)
-            //    .HasConversion(
-            //        v => v.ToValue(),
-            //        v => EnumExtension.FromValue<EEntityStatus>(v)
-            //    );
+            // Securities
+            builder.HasMany(e => e.Securities)
+                   .WithOne(e => e.Issuer)
+                   .HasForeignKey(e => e.IssuerId)
+                   .OnDelete(DeleteBehavior.NoAction)
+                   .HasConstraintName(null);
         }
     }
 }

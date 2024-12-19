@@ -50,7 +50,7 @@ namespace Flex.Securities.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ISSUERS");
+                    b.ToTable("ISSUERS", (string)null);
                 });
 
             modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogIssuerRequest", b =>
@@ -81,7 +81,7 @@ namespace Flex.Securities.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ISSUERREQUESTS");
+                    b.ToTable("ISSUERREQUESTS", (string)null);
                 });
 
             modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogSecurities", b =>
@@ -113,7 +113,7 @@ namespace Flex.Securities.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SECURITIES");
+                    b.ToTable("SECURITIES", (string)null);
                 });
 #pragma warning restore 612, 618
         }

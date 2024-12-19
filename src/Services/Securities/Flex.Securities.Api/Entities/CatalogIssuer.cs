@@ -18,5 +18,9 @@ namespace Flex.Securities.Api.Entities
 
         [Column(TypeName = "NUMBER(10)")]
         public EProcessStatus? ProcessStatus { get; set; }
+
+        #region Navigation
+        public virtual ICollection<CatalogSecurities> Securities { get; set; } = new List<CatalogSecurities>();
+        #endregion
     }
 }
