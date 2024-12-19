@@ -9,6 +9,9 @@ using Flex.Infrastructure.EF;
 using Flex.Shared.Constants;
 using Flex.Shared.Enums.General;
 using Microsoft.EntityFrameworkCore;
+using Flex.Shared.SeedWork.General;
+using Flex.Contracts.Domains.Interfaces;
+using Flex.Securities.Api.Persistence;
 
 namespace Flex.Securities.Api.Controllers
 {
@@ -18,11 +21,16 @@ namespace Flex.Securities.Api.Controllers
     {
         private readonly IIssuerRepository _issuerRepository;
         private readonly IIssuerRequestRepository _issuerRequestRepository;
+        private readonly IUnitOfWork<SecuritiesDbContext> _unitOfWork;
         private readonly IMapper _mapper;
 
-        public IssuersController(IMapper mapper, IIssuerRepository repository, IIssuerRequestRepository issuerRequestRepository)
+        public IssuersController(IMapper mapper,
+            IUnitOfWork<SecuritiesDbContext> unitOfWork,
+            IIssuerRepository repository, 
+            IIssuerRequestRepository issuerRequestRepository)
         {
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
             _issuerRepository = repository;
             _issuerRequestRepository = issuerRequestRepository;
         }
@@ -113,27 +121,36 @@ namespace Flex.Securities.Api.Controllers
         /// Duyệt Tổ chức phát hành
         /// </summary>
         [HttpPost("approve-issuer")]
-        public async Task<IActionResult> ApproveIssuerAsync([FromBody] EntityKey<long> entityKey)
+        public async Task<IActionResult> ApproveIssuerAsync([FromBody] ApproveRequest<long> request)
         {
-            // Validate
-            var issuer = await _issuerRepository.GetIssuerByIdAsync(entityKey.Id);
-
-            if (issuer is null)
+            if (request.RequestTypeEnum == ERequestType.ADD)
             {
-                return BadRequest(Result.Failure(message: "Issuer not found"));
+                // Validate
+                var isExistRequests = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).AnyAsync();
+
+                if(!isExistRequests)
+                {
+                    return BadRequest(Result.Failure(message: "Issuer request not found"));
+                }
+
+                // Process
+                // Delete add request
+                // Create issuers
+                var issuerRequest = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
+
+                await _issuerRequestRepository.DeleteAsync(issuerRequest);
+
+                var issuer = _mapper.Map<CatalogIssuer>(issuerRequest);
+                issuer.ProcessStatus = EProcessStatus.Complete;
+
+                await _issuerRepository.CreateIssuerAsync(issuer);
+
+                await _unitOfWork.CommitAsync();
             }
 
-            //if (issuer.Status != EEntityStatus.Pending)
-            //{
-            //    return BadRequest(Result.Failure(message: "Only issuers in 'Pending' status can be approved."));
-            //}
-
-            await _issuerRepository.ApproveIssuerAsync(issuer);
-
             // Result
-            var result = _mapper.Map<IssuerPagedDto>(issuer);
 
-            return Ok(Result.Success(result));
+            return Ok(Result.Success());
         }
 
         /// <summary>
