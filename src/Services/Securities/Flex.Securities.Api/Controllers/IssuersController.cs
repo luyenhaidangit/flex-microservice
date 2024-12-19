@@ -79,7 +79,7 @@ namespace Flex.Securities.Api.Controllers
             var queryIssuerRequest = _issuerRequestRepository.FindAll();
 
             // Validate
-            // Check if issuer code or name is already exists in database
+            // Check if issuer code is already exists in database
             var isCodeExistRequests = await queryIssuerRequest.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper() &&
                 !queryIssuer.Any(i => i.Code.ToUpper() == x.Code.ToUpper())).AnyAsync();
             if (isCodeExistRequests)
@@ -94,6 +94,7 @@ namespace Flex.Securities.Api.Controllers
                 return BadRequest(Result.Failure(message: "Issuer name is already exists in request list."));
             }
 
+            // Check if issuer name is already exists in database
             var isCodeExistEntities = await queryIssuer.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper()).AnyAsync();
             if (isCodeExistEntities)
             {
@@ -133,19 +134,19 @@ namespace Flex.Securities.Api.Controllers
                     return BadRequest(Result.Failure(message: "Issuer request not found"));
                 }
 
-                // Process
-                // Delete add request
-                // Create issuers
+                // Process with transaction
                 var issuerRequest = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
+                var transaction = _issuerRequestRepository.BeginTransactionAsync();
 
-                await _issuerRequestRepository.DeleteAsync(issuerRequest);
+                // Delete add request
+                _issuerRequestRepository.Delete(issuerRequest);
 
+                // Create issuers
                 var issuer = _mapper.Map<CatalogIssuer>(issuerRequest);
                 issuer.ProcessStatus = EProcessStatus.Complete;
+                _issuerRepository.Create(issuer);
 
-                await _issuerRepository.CreateIssuerAsync(issuer);
-
-                await _unitOfWork.CommitAsync();
+                await _issuerRequestRepository.EndTransactionAsync();
             }
 
             // Result
