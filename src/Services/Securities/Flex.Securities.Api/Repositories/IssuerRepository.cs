@@ -15,20 +15,5 @@ namespace Flex.Securities.Api.Repositories
         public IssuerRepository(SecuritiesDbContext dbContext, IUnitOfWork<SecuritiesDbContext> unitOfWork) : base(dbContext, unitOfWork)
         {
         }
-
-        #region Query
-        public async Task<PagedResult<CatalogIssuer>> GetPagingIssuersAsync(GetIssuersPagingRequest request)
-        {
-            // Filter
-            var query = this.FindAll()
-                .WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.ToUpper().Contains(request.Name.ToUpper()));
-                //.WhereIf(request.Status.HasValue, b => b.Status == request.Status.Value);
-
-            // Paging
-            var result = await query.ToPagedResultAsync(request);
-
-            return result;
-        }
-        #endregion
     }
 }

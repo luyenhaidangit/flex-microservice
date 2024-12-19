@@ -19,9 +19,7 @@ namespace Flex.Securities.Api.Controllers
         private readonly IIssuerRequestRepository _issuerRequestRepository;
         private readonly IMapper _mapper;
 
-        public IssuersController(IMapper mapper,
-            IIssuerRepository repository, 
-            IIssuerRequestRepository issuerRequestRepository)
+        public IssuersController(IMapper mapper,IIssuerRepository repository, IIssuerRequestRepository issuerRequestRepository)
         {
             _mapper = mapper;
             _issuerRepository = repository;
@@ -35,10 +33,27 @@ namespace Flex.Securities.Api.Controllers
         [HttpGet("get-paging")]
         public async Task<IActionResult> GetPagingIssuersAsync([FromQuery] GetIssuersPagingRequest request)
         {
-            var resultPaged = await _issuerRepository.GetPagingIssuersAsync(request);
+            var query = _issuerRepository.FindAll().WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.ToUpper().Contains(request.Name.ToUpper()));
+
+            var resultPaged = await query.ToPagedResultAsync(request);
 
             var resultDtoPaged = resultPaged.MapPagedResult<CatalogIssuer, IssuerPagedDto>(_mapper);
             
+            return Ok(Result.Success(resultDtoPaged));
+        }
+
+        /// <summary>
+        /// Phân trang Yêu cầu Tổ chức phát hành.
+        /// </summary>
+        [HttpGet("get-request-paging")]
+        public async Task<IActionResult> GetRequestPagingIssuersAsync([FromQuery] GetIssuersPagingRequest request)
+        {
+            var query = _issuerRequestRepository.FindAll().WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.ToUpper().Contains(request.Name.ToUpper()));
+
+            var resultPaged = await query.ToPagedResultAsync(request);
+
+            var resultDtoPaged = resultPaged.MapPagedResult<CatalogIssuerRequest, IssuerPagedDto>(_mapper);
+
             return Ok(Result.Success(resultDtoPaged));
         }
 
