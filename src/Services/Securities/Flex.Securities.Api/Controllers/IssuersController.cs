@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Flex.Shared.SeedWork.General;
 using Flex.Contracts.Domains.Interfaces;
 using Flex.Securities.Api.Persistence;
+using Flex.Infrastructure.Exceptions;
 
 namespace Flex.Securities.Api.Controllers
 {
@@ -87,30 +88,15 @@ namespace Flex.Securities.Api.Controllers
                 return BadRequest(Result.Failure(message: "Issuer code is already exists in request list."));
             }
 
-            var isNameExistRequests = await queryIssuerRequest.Where(x => x.Name.ToUpper() == issuerDto.Name.ToUpper() &&
-                !queryIssuer.Any(i => i.Name.ToUpper() == x.Name.ToUpper())).AnyAsync();
-            if (isNameExistRequests)
-            {
-                return BadRequest(Result.Failure(message: "Issuer name is already exists in request list."));
-            }
-
-            // Check if issuer name is already exists in database
             var isCodeExistEntities = await queryIssuer.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper()).AnyAsync();
             if (isCodeExistEntities)
             {
                 return BadRequest(Result.Failure(message: "Issuer code is already exists."));
             }
 
-            var isNameExistEntities = await queryIssuer.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper()).AnyAsync();
-            if (isCodeExistEntities)
-            {
-                return BadRequest(Result.Failure(message: "Issuer name is already exists."));
-            }
-
-            var issuerRequest = _mapper.Map<CatalogIssuerRequest>(issuerDto);
-
             // Process
             // Create issuer request
+            var issuerRequest = _mapper.Map<CatalogIssuerRequest>(issuerDto);
             await _issuerRequestRepository.CreateAsync(issuerRequest);
 
             // Result
@@ -119,7 +105,7 @@ namespace Flex.Securities.Api.Controllers
         }
 
         /// <summary>
-        /// Duyệt Tổ chức phát hành
+        /// Duyệt Tổ chức phát hành.
         /// </summary>
         [HttpPost("approve-issuer")]
         public async Task<IActionResult> ApproveIssuerAsync([FromBody] ApproveRequest<long> request)
@@ -134,19 +120,21 @@ namespace Flex.Securities.Api.Controllers
                     return BadRequest(Result.Failure(message: "Issuer request not found"));
                 }
 
-                // Process with transaction
+                // Begin: Transaction
+                var transaction = _issuerRepository.BeginTransactionAsync();
+
                 var issuerRequest = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
-                var transaction = _issuerRequestRepository.BeginTransactionAsync();
-
-                // Delete add request
-                _issuerRequestRepository.Delete(issuerRequest);
-
+               
                 // Create issuers
                 var issuer = _mapper.Map<CatalogIssuer>(issuerRequest);
                 issuer.ProcessStatus = EProcessStatus.Complete;
                 _issuerRepository.Create(issuer);
 
-                await _issuerRequestRepository.EndTransactionAsync();
+                // Delete add request
+                _issuerRequestRepository.Delete(issuerRequest);
+
+                await _issuerRepository.EndTransactionAsync();
+                // End: Transaction
             }
 
             // Result
@@ -160,24 +148,49 @@ namespace Flex.Securities.Api.Controllers
         [HttpPost("update-issuer")]
         public async Task<IActionResult> UpdateIssuerAsync([FromBody] UpdateIssuerDto issuerDto)
         {
-            // Validate
-            var issuer = await _issuerRepository.GetIssuerByIdAsync(issuerDto.Id);
+            var queryIssuer = _issuerRepository.FindAll();
+            var queryIssuerRequest = _issuerRequestRepository.FindAll();
 
-            if (issuer is null)
+            // Validate
+            // Check if issuer code is already exists in database
+            var isCodeExistRequests = await queryIssuerRequest.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper() &&
+                !queryIssuer.Any(i => i.Code.ToUpper() == x.Code.ToUpper())).AnyAsync();
+            if (isCodeExistRequests)
             {
-                return BadRequest(Result.Failure(message: "Issuer not found"));
+                return BadRequest(Result.Failure(message: "Issuer code is already exists in request list."));
             }
 
-            //if (issuer.Status is EEntityStatus.Pending)
-            //{
-            //    return BadRequest(Result.Failure(message: "Only issuers in 'Pending' status can be approved."));
-            //}
+            var isCodeExistEntities = await queryIssuer.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper()).AnyAsync();
+            if (isCodeExistEntities)
+            {
+                return BadRequest(Result.Failure(message: "Issuer code is already exists."));
+            }
 
-            _mapper.Map(issuerDto, issuer);
+            // Check if issuer id is already exists
+            var isExistIssuer = await _issuerRepository.FindByCondition(x => x.Id == issuerDto.Id).AnyAsync();
+            if (!isExistIssuer)
+            {
+                return BadRequest(Result.Failure(message: "Issuer not found."));
+            }
 
-            await _issuerRepository.UpdateIssuerAsync(issuer);
+            // Process
+            // Begin: Transaction
+            var transaction = _issuerRepository.BeginTransactionAsync();
 
-            return Ok(Result.Success(issuer));
+            // Update issuer
+            var issuer = await _issuerRepository.FindByCondition(x => x.Id == issuerDto.Id).FirstAsync();
+            issuer.ProcessStatus = EProcessStatus.PendingUpdate;
+            _issuerRepository.Update(issuer);
+
+            // Create issuer request
+            var issuerRequest = _mapper.Map<CatalogIssuerRequest>(issuerDto);
+            issuerRequest.EntityId = issuerDto.Id;
+            _issuerRequestRepository.Create(issuerRequest);
+
+            await _issuerRepository.EndTransactionAsync();
+            // End: Transaction
+
+            return Ok(Result.Success());
         }
 
         /// <summary>
@@ -197,5 +210,34 @@ namespace Flex.Securities.Api.Controllers
             return NoContent();
         }
         #endregion Command
+
+        #region Common
+        private async Task<bool> IsIssuerCodeExistAsync(string code)
+        {
+            var queryIssuer = _issuerRepository.FindAll();
+            var queryIssuerRequest = _issuerRequestRepository.FindAll();
+
+            var isCodeExistRequests = await queryIssuerRequest
+                .Where(x => x.Code.ToUpper() == code.ToUpper() &&
+                            !queryIssuer.Any(i => i.Code.ToUpper() == x.Code.ToUpper()))
+                .AnyAsync();
+
+            if (isCodeExistRequests)
+            {
+                throw new BadRequestException($"Issuer code '{code}' already exists in requests.");
+            }
+
+            var isCodeExistEntities = await queryIssuer
+                .Where(x => x.Code.ToUpper() == code.ToUpper())
+                .AnyAsync();
+
+            if (isCodeExistEntities)
+            {
+                throw new BadRequestException($"Issuer code '{code}' already exists in issuers.");
+            }
+
+            return false;
+        }
+        #endregion
     }
 }
