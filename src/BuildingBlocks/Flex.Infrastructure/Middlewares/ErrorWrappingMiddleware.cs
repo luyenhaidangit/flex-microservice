@@ -23,6 +23,11 @@ namespace Flex.Infrastructure.Middlewares
             {
                 await _next.Invoke(context);
             }
+            catch (BadRequestException ex)
+            {
+                _logger.LogError(ex, "Bad request exception: {Message}", ex.Message);
+                await HandleExceptionAsync(context, StatusCodes.Status400BadRequest, ex.Message);
+            }
             catch (ValidationException ex)
             {
                  //var errorMsg = ex.Errors.FirstOrDefault().Value.FirstOrDefault();
