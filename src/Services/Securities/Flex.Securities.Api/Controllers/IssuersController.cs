@@ -67,30 +67,42 @@ namespace Flex.Securities.Api.Controllers
         [HttpPost("create-issuer")]
         public async Task<IActionResult> CreateIssuerAsync([FromBody] CreateIssuerDto issuerDto)
         {
+            var queryIssuer = _issuerRepository.FindAll();
+            var queryIssuerRequest = _issuerRequestRepository.FindAll();
+
             // Validate
-            var isNameExists = await _issuerRequestRepository.FindByCondition(x => x.Code.ToUpper() == issuerDto.Code.ToUpper()).AnyAsync();
+            // Check if issuer code or name is already exists in database
+            var isCodeExistRequests = await queryIssuerRequest.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper() &&
+                !queryIssuer.Any(i => i.Code.ToUpper() == x.Code.ToUpper())).AnyAsync();
+            if (isCodeExistRequests)
+            {
+                return BadRequest(Result.Failure(message: "Issuer code is already exists in request list."));
+            }
 
-            //var isNameExists = draftRequests.Any(candidate =>
-            //{
-            //    try
-            //    {
-            //        var data = JsonConvert.DeserializeObject<CatalogIssuer>(candidate.DataProposed);
-            //        return data is not null && data.Name.ToUpper().Contains(issuerDto.Name.ToUpper());
-            //    }
-            //    catch
-            //    {
-            //        return false;
-            //    }
-            //});
+            var isNameExistRequests = await queryIssuerRequest.Where(x => x.Name.ToUpper() == issuerDto.Name.ToUpper() &&
+                !queryIssuer.Any(i => i.Name.ToUpper() == x.Name.ToUpper())).AnyAsync();
+            if (isNameExistRequests)
+            {
+                return BadRequest(Result.Failure(message: "Issuer name is already exists in request list."));
+            }
 
-            //// Process
-            //// Log request create
-            //var issuer = _mapper.Map<CatalogIssuer>(issuerDto);
-            //var dataProposed = JsonConvert.SerializeObject(issuer);
+            var isCodeExistEntities = await queryIssuer.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper()).AnyAsync();
+            if (isCodeExistEntities)
+            {
+                return BadRequest(Result.Failure(message: "Issuer code is already exists."));
+            }
 
-            //var request = CatalogIssuerRequest.Create(dataProposed);
+            var isNameExistEntities = await queryIssuer.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper()).AnyAsync();
+            if (isCodeExistEntities)
+            {
+                return BadRequest(Result.Failure(message: "Issuer name is already exists."));
+            }
 
-            //await _issuerRequestRepository.CreateAsync(request);
+            var issuerRequest = _mapper.Map<CatalogIssuerRequest>(issuerDto);
+
+            // Process
+            // Create issuer request
+            await _issuerRequestRepository.CreateAsync(issuerRequest);
 
             // Result
 

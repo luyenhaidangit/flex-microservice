@@ -11,6 +11,7 @@ namespace Flex.Securities.Api
         public MappingProfile()
         {
             // Issuer
+            CreateMap<CreateIssuerDto, CatalogIssuerRequest>();
             //CreateMap<CatalogIssuer, IssuerPagedDto>().ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToValue()));
             CreateMap<CatalogIssuer, IssuerPagedDto>();
             CreateMap<CatalogIssuer, IssuerDto>();
