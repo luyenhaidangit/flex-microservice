@@ -122,25 +122,31 @@ namespace Flex.Securities.Api.Controllers
             var queryIssuerRequest = _issuerRequestRepository.FindAll();
 
             // Validate
+            // Check if issuer id is already exists
+            var issuer = await _issuerRepository.FindByCondition(x => x.Id == issuerDto.Id).FirstOrDefaultAsync();
+            if (issuer == null)
+            {
+                return BadRequest(Result.Failure(message: "Issuer not found."));
+            }
+
+            if (issuer.Name.Equals(issuerDto.Name, StringComparison.OrdinalIgnoreCase) &&
+                issuer.Code.Equals(issuerDto.Code, StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(Result.Failure(message: "No changes detected for Name or Code."));
+            }
+
             // Check if issuer code is already exists in database
             var isCodeExistRequests = await queryIssuerRequest.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper() &&
-                !queryIssuer.Any(i => i.Code.ToUpper() == x.Code.ToUpper())).AnyAsync();
+                !queryIssuer.Any(i => i.Code.ToUpper() == x.Code.ToUpper() && x.EntityId != issuerDto.Id)).AnyAsync();
             if (isCodeExistRequests)
             {
                 return BadRequest(Result.Failure(message: "Issuer code is already exists in request list."));
             }
 
-            var isCodeExistEntities = await queryIssuer.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper()).AnyAsync();
+            var isCodeExistEntities = await queryIssuer.Where(x => x.Code.ToUpper() == issuerDto.Code.ToUpper() && x.Id != issuerDto.Id).AnyAsync();
             if (isCodeExistEntities)
             {
                 return BadRequest(Result.Failure(message: "Issuer code is already exists."));
-            }
-
-            // Check if issuer id is already exists
-            var isExistIssuer = await _issuerRepository.FindByCondition(x => x.Id == issuerDto.Id).AnyAsync();
-            if (!isExistIssuer)
-            {
-                return BadRequest(Result.Failure(message: "Issuer not found."));
             }
 
             // Process
@@ -148,7 +154,6 @@ namespace Flex.Securities.Api.Controllers
             var transaction = _issuerRepository.BeginTransactionAsync();
 
             // Update issuer
-            var issuer = await _issuerRepository.FindByCondition(x => x.Id == issuerDto.Id).FirstAsync();
             issuer.ProcessStatus = EProcessStatus.PendingUpdate;
             _issuerRepository.Update(issuer);
 
