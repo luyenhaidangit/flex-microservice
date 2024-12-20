@@ -16,7 +16,7 @@ namespace Flex.Securities.Api.Entities
         [Column(TypeName = "CLOB")]
         public string? Description { get; set; }
 
-        [Column(TypeName = "NUMBER(10)")]
+        [Column(TypeName = "VARCHAR2(50)")]
         public EProcessStatus? ProcessStatus { get; set; }
 
         #region Navigation
