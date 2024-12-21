@@ -1,6 +1,6 @@
 ﻿namespace Flex.Shared.DTOs.Securities
 {
-    public class SecurityDto
+    public class SecuritiesDto
     {
         public long Id { get; set; }
 
@@ -8,7 +8,7 @@
 
         public long IssuerId { get; set; }
 
-        public int TradePlace { get; set; }
+        public string TradePlace { get; set; }
 
         public string? Description { get; set; }
     }
