@@ -8,6 +8,6 @@
 
         public string? Description { get; set; }
 
-        public ICollection<SecurityDto>? Securities { get; set; }
+        public ICollection<SecuritiesDto>? Securities { get; set; }
     }
 }

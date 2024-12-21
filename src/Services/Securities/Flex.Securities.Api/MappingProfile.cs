@@ -10,23 +10,10 @@ namespace Flex.Securities.Api
     {
         public MappingProfile()
         {
-            // Issuer
-            CreateMap<CatalogIssuerRequest, IssuerPagedDto>();
-
-            CreateMap<CreateIssuerDto, CatalogIssuerRequest>();
-            CreateMap<UpdateIssuerDto, CatalogIssuerRequest>().IgnoreAllNonExisting();
-            CreateMap<CatalogIssuerRequest, CatalogIssuer>().ForMember(dest => dest.Id, opt => opt.Ignore());
-            CreateMap<UpdateIssuerDto, CatalogIssuerRequest>().IgnoreAllNonExisting();
-            //CreateMap<CatalogIssuer, IssuerPagedDto>().ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToValue()));
-            CreateMap<CatalogIssuer, IssuerPagedDto>();
-            CreateMap<CatalogIssuer, IssuerDto>();
-            CreateMap<CreateIssuerDto, CatalogIssuer>();
-            CreateMap<UpdateIssuerDto, CatalogIssuer>();
-
             // Security
-            CreateMap<CatalogSecurities, SecurityDto>();
-            CreateMap<CreateSecuritiesDto, CatalogSecurities>();
-            CreateMap<UpdateSecuritiesDto, CatalogSecurities>().IgnoreAllNonExisting();
+            CreateMap<CatalogSecurities, SecuritiesDto>();
+            CreateMap<CreateSecuritiesRequest, CatalogSecurities>();
+            CreateMap<UpdateSecuritiesRequest, CatalogSecurities>().IgnoreAllNonExisting();
         }
     }
 }
