@@ -3,6 +3,7 @@ using System;
 using Flex.Securities.Api.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Oracle.EntityFrameworkCore.Metadata;
 
@@ -11,9 +12,11 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace Flex.Securities.Api.Migrations
 {
     [DbContext(typeof(SecuritiesDbContext))]
-    partial class SecuritiesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241222184445_DropTable1221")]
+    partial class DropTable1221
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

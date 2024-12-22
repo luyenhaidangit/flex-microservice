@@ -17,9 +17,5 @@ namespace Flex.Securities.Api.Entities
 
         [Column(TypeName = "CLOB")]
         public string? Description { get; set; }
-
-        #region Navigation
-        public virtual CatalogIssuer? Issuer { get; set; }
-        #endregion
     }
 }
