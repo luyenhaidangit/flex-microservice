@@ -10,8 +10,6 @@ namespace Flex.Shared.DTOs.Securities
         [MaxLength(20, ErrorMessage = "Maximum length for Securities Name is 250 characters.")]
         public string? Symbol { get; set; }
 
-        public long? IssuerId { get; set; }
-
         public string? TradePlace { get; set; }
 
         public string? Description { get; set; }

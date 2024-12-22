@@ -12,8 +12,8 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace Flex.Securities.Api.Migrations
 {
     [DbContext(typeof(SecuritiesDbContext))]
-    [Migration("20241219175141_ChangeTypeTableNull")]
-    partial class ChangeTypeTableNull
+    [Migration("20241222123859_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,8 +48,8 @@ namespace Flex.Securities.Api.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("VARCHAR2(250)");
 
-                    b.Property<int?>("ProcessStatus")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<string>("ProcessStatus")
+                        .HasColumnType("VARCHAR2(50)");
 
                     b.HasKey("Id");
 
@@ -101,8 +101,8 @@ namespace Flex.Securities.Api.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("CLOB");
 
-                    b.Property<int>("IssuerId")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<long?>("IssuerId")
+                        .HasColumnType("NUMBER(19)");
 
                     b.Property<DateTimeOffset?>("LastModifiedDate")
                         .HasColumnType("TIMESTAMP(7) WITH TIME ZONE");
@@ -111,12 +111,29 @@ namespace Flex.Securities.Api.Migrations
                         .IsRequired()
                         .HasColumnType("VARCHAR2(250)");
 
-                    b.Property<int>("TradePlace")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<string>("TradePlace")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR2(10)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("IssuerId");
+
                     b.ToTable("SECURITIES");
+                });
+
+            modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogSecurities", b =>
+                {
+                    b.HasOne("Flex.Securities.Api.Entities.CatalogIssuer", "Issuer")
+                        .WithMany("Securities")
+                        .HasForeignKey("IssuerId");
+
+                    b.Navigation("Issuer");
+                });
+
+            modelBuilder.Entity("Flex.Securities.Api.Entities.CatalogIssuer", b =>
+                {
+                    b.Navigation("Securities");
                 });
 #pragma warning restore 612, 618
         }

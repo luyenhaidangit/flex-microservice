@@ -38,6 +38,9 @@ namespace Flex.Securities.Api.Controllers
             return Ok(Result.Success(resultDtoPaged));
         }
 
+        /// <summary>
+        /// Thông tin Chi tiết chứng khoán.
+        /// </summary>
         [HttpGet("get-security-by-id")]
         public async Task<IActionResult> GetSecuritiesByIdAsync([FromQuery] EntityKey<long> entityKey)
         {
@@ -54,8 +57,11 @@ namespace Flex.Securities.Api.Controllers
         #endregion
 
         #region Command 
+        /// <summary>
+        /// Thêm mới Chứng khoán.
+        /// </summary>
         [HttpPost("create-securities")]
-        public async Task<IActionResult> CreateSecuritiesAsync([FromBody] CreateSecuritiesDto request)
+        public async Task<IActionResult> CreateSecuritiesAsync([FromBody] CreateSecuritiesRequest request)
         {
             // Validate
             // Check if symbol code is already exists in database
@@ -75,6 +81,9 @@ namespace Flex.Securities.Api.Controllers
             return Ok(Result.Success());
         }
 
+        /// <summary>
+        /// Cập nhật Chứng khoán.
+        /// </summary>
         [HttpPost("update-securities")]
         public async Task<IActionResult> UpdateSecuritiesAsync([FromBody] UpdateSecuritiesRequest request)
         {
@@ -106,6 +115,9 @@ namespace Flex.Securities.Api.Controllers
             return Ok(Result.Success());
         }
 
+        /// <summary>
+        /// Xoá Chứng khoán.
+        /// </summary>
         [HttpPost("delete-securities")]
         public async Task<IActionResult> DeleteSecuritiesAsync([FromBody] EntityKey<long> request)
         {

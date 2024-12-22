@@ -12,11 +12,7 @@ namespace Flex.Securities.Api.Entities
         public string? Symbol { get; set; }
 
         [Required]
-        [Column(TypeName = "NUMBER(10)")]
-        public long? IssuerId { get; set; }
-
-        [Required]
-        [Column(TypeName = "NUMBER(10)")]
+        [Column(TypeName = "VARCHAR2(10)")]
         public string? TradePlace { get; set; }
 
         [Column(TypeName = "CLOB")]

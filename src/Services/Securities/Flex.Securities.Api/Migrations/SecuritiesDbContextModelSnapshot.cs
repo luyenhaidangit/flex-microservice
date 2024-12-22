@@ -98,8 +98,8 @@ namespace Flex.Securities.Api.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("CLOB");
 
-                    b.Property<int>("IssuerId")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<long?>("IssuerId")
+                        .HasColumnType("NUMBER(19)");
 
                     b.Property<DateTimeOffset?>("LastModifiedDate")
                         .HasColumnType("TIMESTAMP(7) WITH TIME ZONE");
@@ -108,8 +108,9 @@ namespace Flex.Securities.Api.Migrations
                         .IsRequired()
                         .HasColumnType("VARCHAR2(250)");
 
-                    b.Property<int>("TradePlace")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<string>("TradePlace")
+                        .IsRequired()
+                        .HasColumnType("VARCHAR2(10)");
 
                     b.HasKey("Id");
 
@@ -122,9 +123,7 @@ namespace Flex.Securities.Api.Migrations
                 {
                     b.HasOne("Flex.Securities.Api.Entities.CatalogIssuer", "Issuer")
                         .WithMany("Securities")
-                        .HasForeignKey("IssuerId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .HasForeignKey("IssuerId");
 
                     b.Navigation("Issuer");
                 });
