@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Flex.Shared.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace Flex.Shared.DTOs.Securities
 {
@@ -7,9 +8,11 @@ namespace Flex.Shared.DTOs.Securities
         [Required]
         public long Id { get; set; }
 
-        [MaxLength(20, ErrorMessage = "Maximum length for Securities Name is 250 characters.")]
+        [Required]
         public string? Symbol { get; set; }
 
+        [Required]
+        [AllowedConstantValues(typeof(AllowedConstantValuesAttribute))]
         public string? TradePlace { get; set; }
 
         public string? Description { get; set; }
