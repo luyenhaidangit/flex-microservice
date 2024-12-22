@@ -16,7 +16,7 @@ namespace Flex.Securities.Api.Repositories
         #region Query
         public Task<List<CatalogSecurities>> GetSecuritiesByIssuerAsync(long issuerId)
         {
-            return this.FindByCondition(x => x.IssuerId.Equals(issuerId)).ToListAsync();
+            return null;
         }
 
         public Task<CatalogSecurities?> GetSecuritiesByIdAsync(long securitiesId)
