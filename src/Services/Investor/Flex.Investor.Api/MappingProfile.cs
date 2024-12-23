@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Flex.Shared.DTOs.Securities;
+using Flex.Shared.DTOs.Investor;
 
 namespace Flex.Investor.Api
 {
@@ -7,6 +7,9 @@ namespace Flex.Investor.Api
     {
         public MappingProfile()
         {
+            CreateMap<CreateInvestorRequest, Entities.Investor>();
+            CreateMap<UpdateInvestorRequest, Entities.Investor>();
+            CreateMap<Entities.Investor, InvestorDto>();
         }
     }
 }

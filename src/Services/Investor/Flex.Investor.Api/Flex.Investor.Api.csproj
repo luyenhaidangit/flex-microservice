@@ -25,9 +25,4 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repositories\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>
