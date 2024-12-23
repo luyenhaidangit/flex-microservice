@@ -5,19 +5,19 @@ namespace Flex.Shared.DTOs.Investor
     public class CreateInvestorRequest
     {
         [Required]
-        [StringLength(100, MinimumLength = 2)]
-        public string Name { get; set; }
+        [StringLength(150)]
+        public string No { get; set; } = string.Empty;
 
         [Required]
+        [StringLength(250)]
+        public string FullName { get; set; } = string.Empty;
+
         [EmailAddress]
-        public string Email { get; set; }
+        [StringLength(250)]
+        public string? Email { get; set; }
 
         [Required]
-        [Phone]
-        public string PhoneNumber { get; set; }
-
-        [Required]
-        [StringLength(200)]
-        public string Address { get; set; }
+        [StringLength(250)]
+        public string Phone { get; set; } = string.Empty;
     }
 }
