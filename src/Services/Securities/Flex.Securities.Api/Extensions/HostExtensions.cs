@@ -15,41 +15,35 @@ namespace Flex.Securities.Api.Extensions
                .AddEnvironmentVariables();
         }
 
-        public static IHost MigrateDatabase<TContext>(this IHost host, Action<TContext, IServiceProvider> seeder)
-        where TContext : DbContext
+        public static async Task<IHost> MigrateDatabase<TContext>(this IHost host, Func<TContext, IServiceProvider, Task> seeder) where TContext : DbContext
         {
-            using (var scope = host.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var logger = services.GetRequiredService<ILogger<TContext>>();
-                var context = services.GetService<TContext>();
+            using var scope = host.Services.CreateScope();
+            var services = scope.ServiceProvider;
 
-                try
+            var logger = services.GetRequiredService<ILogger<TContext>>();
+
+            var context = services.GetRequiredService<TContext>();
+
+            try
+            {
+                // Migrate database
+                logger.LogInformation("Starting database migration for {DbContextName}...",typeof(TContext).Name);
+                await context.Database.MigrateAsync();
+                logger.LogInformation("Database migration completed for {DbContextName}.",typeof(TContext).Name);
+
+                // Seed database
+                if (seeder != null)
                 {
-                    logger.LogInformation("Migrating mysql database.");
-                    ExecuteMigrations(context);
-                    logger.LogInformation("Migrated mysql database.");
-                    InvokeSeeder(seeder, context, services);
+                    await seeder(context, services);
+                    logger.LogInformation("Database seeding completed for {DbContextName}.",typeof(TContext).Name);
                 }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "An error occurred while migrating the mysql database");
-                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,"An error occurred while migrating or seeding the database for {DbContextName}.",typeof(TContext).Name);
             }
 
             return host;
-        }
-
-        private static void ExecuteMigrations<TContext>(TContext context)
-        where TContext : DbContext
-        {
-            //context.Database.Migrate();
-        }
-
-        private static void InvokeSeeder<TContext>(Action<TContext, IServiceProvider> seeder, TContext context,
-            IServiceProvider services) where TContext : DbContext
-        {
-            seeder(context, services);
         }
     }
 }
