@@ -1,5 +1,4 @@
 ﻿using Flex.Contracts.Domains.Interfaces;
-using Flex.Investor.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Investor.Api.Persistence
@@ -11,7 +10,7 @@ namespace Flex.Investor.Api.Persistence
         }
 
         #region DbSet
-        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Entities.Investor> Investors { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

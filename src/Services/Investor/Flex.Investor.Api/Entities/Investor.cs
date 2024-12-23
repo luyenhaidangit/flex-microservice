@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Flex.Investor.Api.Entities
 {
-    public class Account : EntityAuditBase<long>
+    public class Investor : EntityAuditBase<long>
     {
         [Required]
         [Column(TypeName = "VARCHAR2(150)")]
