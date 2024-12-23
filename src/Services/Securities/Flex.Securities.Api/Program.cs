@@ -1,6 +1,7 @@
 using Serilog;
 using Flex.Common.Logging;
 using Flex.Securities.Api.Extensions;
+using Flex.Securities.Api.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -16,8 +17,12 @@ try
     builder.Services.AddInfrastructure(configuration);
 
     var app = builder.Build();
-
     app.UseInfrastructure();
+
+    await app.MigrateDatabase<SecuritiesDbContext>(async (context, services) =>
+    {
+        await SecuritiesDbSeed.InitAsync(context, Log.Logger);
+    });
 
     app.Run();
 }

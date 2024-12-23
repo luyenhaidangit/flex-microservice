@@ -1,6 +1,5 @@
 ﻿using ILogger = Serilog.ILogger;
 using Flex.Securities.Api.Entities;
-using Flex.Shared.Enums.Securities;
 
 namespace Flex.Securities.Api.Persistence.Seeds
 {

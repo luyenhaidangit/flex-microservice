@@ -50,12 +50,6 @@ namespace Flex.Securities.Api.Extensions
             // Response
             services.ConfigureValidationErrorResponse();
 
-            //// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            //services.ConfigureSwagger();
-            //// services.AddJwtAuthentication();
-            //services.ConfigureAuthenticationHandler();
-            //services.ConfigureAuthorization();
-            //services.ConfigureHealthChecks();
             return services;
         }
 
@@ -95,8 +89,6 @@ namespace Flex.Securities.Api.Extensions
             return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
                            .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
                            .AddScoped<ISecuritiesRepository, SecuritiesRepository>();
-                           //.AddScoped<IIssuerRepository,IssuerRepository >()
-                           //.AddScoped<IIssuerRequestRepository, IssuerRequestRepository>();
         }
 
         public static IServiceCollection ConfigureNewtonsoftJson(this IServiceCollection services)
