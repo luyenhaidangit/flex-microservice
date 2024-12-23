@@ -3,7 +3,10 @@ using Flex.Infrastructure.EF;
 using Flex.Investor.Api.Repositories.Interfaces;
 using Flex.Investor.Api.Services.Interfaces;
 using Flex.Shared.DTOs.Investor;
+using Flex.Shared.DTOs.Securities;
 using Flex.Shared.SeedWork;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Investor.Api.Services
 {
@@ -11,6 +14,7 @@ namespace Flex.Investor.Api.Services
     {
         private readonly IInvestorRepository _investorRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<InvestorService> _logger;
 
         public InvestorService(IInvestorRepository investorRepository, IMapper mapper)
         {
@@ -18,21 +22,10 @@ namespace Flex.Investor.Api.Services
             _mapper = mapper;
         }
 
-        public Task<Result> CreateInvestorAsync(CreateInvestorRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Result> DeleteInvestorAsync(long id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<InvestorDto> GetInvestorByIdAsync(long id)
-        {
-            throw new NotImplementedException();
-        }
-
+        #region Query
+        /// <summary>
+        /// Phân trang Nhà đầu tư.
+        /// </summary>
         public async Task<IResult> GetPagingInvestorsAsync(GetInvestorsPagingRequest request)
         {
             var query = _investorRepository.FindAll()
@@ -46,40 +39,109 @@ namespace Flex.Investor.Api.Services
             return Results.Ok(Result.Success(resultDtoPaged));
         }
 
-        public Task<Result> UpdateInvestorAsync(UpdateInvestorRequest request)
+        /// <summary>
+        /// Thông tin Chi tiết nhà đầu tư.
+        /// </summary>
+        public async Task<IResult> GetInvestorByIdAsync([FromQuery] EntityKey<long> entityKey)
         {
-            throw new NotImplementedException();
+            var securities = await _investorRepository.FindByCondition(x => x.Id == entityKey.Id).FirstOrDefaultAsync();
+            if (securities is null)
+            {
+                return Results.BadRequest(Result.Failure(message: "Securities not found."));
+            }
+
+            var result = _mapper.Map<InvestorDto>(securities);
+
+            return Results.Ok(Result.Success(result));
+        }
+        #endregion
+
+        #region Command
+        /// <summary>
+        /// Thêm mới Nhà đầu tư.
+        /// </summary>
+        public async Task<Result> CreateInvestorAsync(CreateInvestorRequest request)
+        {
+            // Check if No already exists
+            var isExist = await _investorRepository.FindByCondition(x => x.No.ToUpper() == request.No.ToUpper()).AnyAsync();
+            if (isExist)
+            {
+                return Result.Failure(message: "Investor with the provided No already exists.");
+            }
+
+            var investor = _mapper.Map<Entities.Investor>(request);
+
+            await _investorRepository.CreateAsync(investor);
+
+            return Result.Success();
         }
 
-        Task<PagedResult<InvestorDto>> IInvestorService.GetPagingInvestorsAsync(GetInvestorsPagingRequest request)
+        /// <summary>
+        /// Cập nhật Nhà đầu tư.
+        /// </summary>
+        public async Task<Result> UpdateInvestorAsync(UpdateInvestorRequest request)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var investor = await _investorRepository.FindByCondition(x => x.Id == request.Id).FirstOrDefaultAsync();
+                if (investor is null)
+                {
+                    return Result.Failure(message: "Investor not found.");
+                }
+
+                // Kiểm tra tồn tại No nếu có thay đổi
+                if (!string.Equals(investor.No, request.No, StringComparison.OrdinalIgnoreCase))
+                {
+                    var isNoExist = await _investorRepository.FindByCondition(x => x.No.ToUpper() == request.No.ToUpper() && x.Id != request.Id).AnyAsync();
+                    if (isNoExist)
+                    {
+                        _logger.Warning("Investor with No: {InvestorNo} already exists.", request.No);
+                        return Result.Failure(message: "Another investor with the provided No already exists.");
+                    }
+                }
+
+                _mapper.Map(request, investor);
+                investor.UpdatedAt = DateTime.UtcNow;
+
+                await _investorRepository.UpdateAsync(investor);
+
+                _logger.Information("Updated investor with ID: {InvestorId}", investor.Id);
+
+                return Result.Success(message: "Investor updated successfully.", data: _mapper.Map<InvestorDto>(investor));
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error occurred while updating investor with ID: {InvestorId}", request.Id);
+                return Result.Failure(message: "An error occurred while updating the investor.");
+            }
         }
 
-        //public async Task<InvestorDto> GetInvestorByIdAsync(long id)
-        //{
-        //    var entity = await _repository.GetInvestorByIdAsync(id);
-        //    return _mapper.Map<InvestorDto>(entity);
-        //}
+        /// <summary>
+        /// Xoá Nhà đầu tư.
+        /// </summary>
+        public async Task<Result> DeleteInvestorAsync(long id)
+        {
+            try
+            {
+                var investor = await _investorRepository.FindByCondition(x => x.Id == id).FirstOrDefaultAsync();
+                if (investor is null)
+                {
+                    _logger.Warning("Investor with ID: {InvestorId} not found for deletion.", id);
+                    return Result.Failure(message: "Investor not found.");
+                }
 
-        //public async Task<Result> CreateInvestorAsync(CreateInvestorRequest request)
-        //{
-        //    var entity = _mapper.Map<Investor>(request);
-        //    var result = await _repository.CreateInvestorAsync(entity);
-        //    return new Result { Success = result, Message = result ? "Investor created successfully" : "Failed to create investor" };
-        //}
+                await _investorRepository.DeleteAsync(investor);
 
-        //public async Task<Result> UpdateInvestorAsync(UpdateInvestorRequest request)
-        //{
-        //    var entity = _mapper.Map<Investor>(request);
-        //    var result = await _repository.UpdateInvestorAsync(entity);
-        //    return new Result { Success = result, Message = result ? "Investor updated successfully" : "Failed to update investor" };
-        //}
+                _logger.Information("Deleted investor with ID: {InvestorId}", id);
 
-        //public async Task<Result> DeleteInvestorAsync(long id)
-        //{
-        //    var result = await _repository.DeleteInvestorAsync(id);
-        //    return new Result { Success = result, Message = result ? "Investor deleted successfully" : "Failed to delete investor" };
-        //}
+                return Result.Success(message: "Investor deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error occurred while deleting investor with ID: {InvestorId}", id);
+                return Result.Failure(message: "An error occurred while deleting the investor.");
+            }
+        }
+        #endregion
     }
 }
