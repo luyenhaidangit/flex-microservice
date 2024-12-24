@@ -85,6 +85,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "securities", "securities", 
 		infrastructure.sql = infrastructure.sql
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Email", "Email", "{B5CC9686-7E77-4064-B8D9-CB43AEE3C665}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Email.Runtime.Api", "src\Services\Email\Flex.Email.Runtime.Api\Flex.Email.Runtime.Api.csproj", "{936FBC3C-AC76-490C-8247-1036896B9A74}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -175,6 +179,10 @@ Global
 		{45FB5B9D-423D-42B3-8657-FCDB45921C86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{45FB5B9D-423D-42B3-8657-FCDB45921C86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{45FB5B9D-423D-42B3-8657-FCDB45921C86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{936FBC3C-AC76-490C-8247-1036896B9A74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{936FBC3C-AC76-490C-8247-1036896B9A74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{936FBC3C-AC76-490C-8247-1036896B9A74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{936FBC3C-AC76-490C-8247-1036896B9A74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -214,6 +222,8 @@ Global
 		{45FB5B9D-423D-42B3-8657-FCDB45921C86} = {918223BF-EA2C-4D0E-A3A1-A65E876ED04E}
 		{0FB87496-E538-4858-9CEF-9A05A1460A54} = {691646AA-F5F5-4DA8-BB49-BA2617EAAB3F}
 		{B400DCA0-832E-4D0F-B0BF-7F2947669898} = {0FB87496-E538-4858-9CEF-9A05A1460A54}
+		{B5CC9686-7E77-4064-B8D9-CB43AEE3C665} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
+		{936FBC3C-AC76-490C-8247-1036896B9A74} = {B5CC9686-7E77-4064-B8D9-CB43AEE3C665}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}
