@@ -1,6 +1,0 @@
-@Flex.Email.Runtime.Api_HostAddress = http://localhost:5188
-
-GET {{Flex.Email.Runtime.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
