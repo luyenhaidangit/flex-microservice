@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Flex.Common.Logging\Flex.Common.Logging.csproj" />
     <ProjectReference Include="..\Flex.Contracts\Flex.Contracts.csproj" />
     <ProjectReference Include="..\Flex.Shared\Flex.Shared.csproj" />
   </ItemGroup>
