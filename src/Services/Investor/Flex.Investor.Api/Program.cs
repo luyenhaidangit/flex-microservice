@@ -1,5 +1,5 @@
 using Serilog;
-using Flex.Common.Logging;
+using Flex.SeriLog;
 using Flex.Investor.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
