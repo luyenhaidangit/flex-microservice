@@ -1,4 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using FastReport;
+using FastReport.Export.PdfSimple;
+using Flex.Email.Runtime.Api.Models;
 
 namespace Flex.Email.Runtime.Api.Controllers
 {
@@ -28,6 +31,27 @@ namespace Flex.Email.Runtime.Api.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpGet("InvestorReport")]
+        public IActionResult GetInvestorReport()
+        {
+            var reportsFolder = "Report/";
+
+            var report = new Report();
+            var reportPath = @"C:\Users\Admin\Desktop\FlexTool\flex-microservice\src\Services\Email\Flex.Email.Runtime.Api\Reports\PersonsReport.frx";
+            report.Load(reportPath);
+
+            report.RegisterData(new Person().GetPersons(), "Persons");
+
+            report.Prepare();
+
+            var pdfExport = new PDFSimpleExport();
+
+            pdfExport.Export(report, $"PersonsReport_{DateTime.Now.ToString("HHmmss")}.pdf");
+
+            // Trả về file PDF
+            return Ok("OKHEHE");
         }
     }
 }

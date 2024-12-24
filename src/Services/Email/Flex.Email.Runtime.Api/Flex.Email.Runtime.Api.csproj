@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FastReport.OpenSource" Version="2025.1.0" />
+    <PackageReference Include="FastReport.OpenSource.Export.PdfSimple" Version="2025.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Microsoft.PowerBI.Api" Version="4.22.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,5 +18,11 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Common.Logging\Flex.Common.Logging.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Update="Report\PersonsReport.frx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 </Project>
