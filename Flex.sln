@@ -77,7 +77,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "securities", "securities", 
 		infrastructure.sql = infrastructure.sql
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Job", "Job", "{0B2FF970-E38E-4677-8564-4C67979E82EC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ScheduledJob", "ScheduledJob", "{0B2FF970-E38E-4677-8564-4C67979E82EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.EmailJob.Api", "src\Services\Job\Flex.EmailJob.Api\Flex.EmailJob.Api.csproj", "{DA205867-A411-4E58-A6E2-8E724D1A7CDD}"
 EndProject
