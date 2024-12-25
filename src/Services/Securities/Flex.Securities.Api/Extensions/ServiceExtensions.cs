@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Oracle.ManagedDataAccess.Client;
-using Flex.Common.Documentation;
 using Flex.Shared.SeedWork;
 using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common;
@@ -12,6 +11,7 @@ using Flex.Infrastructure.Common.Repositories;
 using Flex.Securities.Api.Persistence;
 using Flex.Securities.Api.Repositories;
 using Flex.Securities.Api.Repositories.Interfaces;
+using Flex.Swashbuckle;
 
 namespace Flex.Securities.Api.Extensions
 {
