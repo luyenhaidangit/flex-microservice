@@ -11,7 +11,7 @@ using Flex.Infrastructure.Common.Repositories;
 using Flex.Securities.Api.Persistence;
 using Flex.Securities.Api.Repositories;
 using Flex.Securities.Api.Repositories.Interfaces;
-using Flex.Swashbuckle;
+using Flex.Infrastructure.Swashbuckle;
 
 namespace Flex.Securities.Api.Extensions
 {

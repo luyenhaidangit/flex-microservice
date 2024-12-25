@@ -14,7 +14,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Contracts\Flex.Contracts.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\Modules\Flex.Swashbuckle\Flex.Swashbuckle.csproj" />
   </ItemGroup>
 
 </Project>
