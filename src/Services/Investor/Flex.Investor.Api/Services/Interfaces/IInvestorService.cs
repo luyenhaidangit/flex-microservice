@@ -1,6 +1,4 @@
-﻿using Flex.Shared.SeedWork;
-
-namespace Flex.Investor.Api.Services.Interfaces
+﻿namespace Flex.Investor.Api.Services.Interfaces
 {
     public interface IInvestorService
     {
