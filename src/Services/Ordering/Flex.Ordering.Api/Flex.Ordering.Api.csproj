@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Common.Logging\Flex.Common.Logging.csproj" />
     <ProjectReference Include="..\Flex.Ordering.Application\Flex.Ordering.Application.csproj" />
     <ProjectReference Include="..\Flex.Ordering.Infrastructure\Flex.Ordering.Infrastructure.csproj" />
   </ItemGroup>

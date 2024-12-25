@@ -17,10 +17,10 @@
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.6.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Common.Logging\Flex.Common.Logging.csproj" />
+  <ItemGroup>	
+	<ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
+	<ProjectReference Include="..\..\..\Modules\Flex.Swashbuckle\Flex.Swashbuckle.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\Modules\Flex.Swashbuckle\Flex.Swashbuckle.csproj" />
   </ItemGroup>
 
 </Project>

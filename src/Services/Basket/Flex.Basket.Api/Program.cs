@@ -1,5 +1,5 @@
 using Flex.Basket.Api.Extensions;
-using Flex.Common.Logging;
+using Flex.SeriLog;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
