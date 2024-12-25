@@ -1,23 +1,35 @@
+using Serilog;
+using Flex.SeriLog;
+using Flex.EmailJob.Api.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
-// Add services to the container.
+builder.AddAppConfigurations();
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+SeriLogger.Configure(builder);
+Log.Information($"Start {builder.Environment.ApplicationName} up");
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+try
 {
-    app.MapOpenApi();
+    builder.Services.AddConfigurationSettings(configuration);
+    builder.Services.AddInfrastructure(configuration);
+
+    var app = builder.Build();
+    app.UseInfrastructure();
+
+    app.Run();
 }
 
-app.UseHttpsRedirection();
+catch (Exception ex)
+{
+    string type = ex.GetType().Name;
+    if (type.Equals("StopTheHostException", StringComparison.Ordinal)) throw;
 
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+    Log.Fatal(ex, $"Unhandled exception: {ex.Message}");
+}
+finally
+{
+    Log.Information($"Shutdown {builder.Environment.ApplicationName} complete");
+    Log.CloseAndFlush();
+}
