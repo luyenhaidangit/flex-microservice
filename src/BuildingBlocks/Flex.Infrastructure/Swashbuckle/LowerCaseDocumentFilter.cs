@@ -2,7 +2,7 @@
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text.RegularExpressions;
 
-namespace Flex.Swashbuckle
+namespace Flex.Infrastructure.Swashbuckle
 {
     public class LowerCaseDocumentFilter : IDocumentFilter
     {
