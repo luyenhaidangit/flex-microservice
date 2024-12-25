@@ -1,6 +1,7 @@
 using Serilog;
 using Flex.SeriLog;
 using Flex.Investor.Api.Extensions;
+using Flex.Investor.Api.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -16,6 +17,9 @@ try
     builder.Services.AddInfrastructure(configuration);
 
     var app = builder.Build();
+
+    // Endpoints
+    app.MapInvestorsApi();
 
     app.UseInfrastructure();
 

@@ -1,5 +1,4 @@
 ﻿using Flex.Investor.Api.Services.Interfaces;
-using Flex.Shared.SeedWork;
 
 namespace Flex.Investor.Api.Controllers
 {
@@ -7,10 +6,10 @@ namespace Flex.Investor.Api.Controllers
     {
         public static void MapInvestorsApi(this WebApplication app)
         {
-            app.MapGet("/api/investors",
-                async (EntityKey<long> entityKey, IInvestorService customerService) =>
+            app.MapGet("/api/investors/get-investor-by-id",
+                async (long id, IInvestorService customerService) =>
                 {
-                    var result = await customerService.GetInvestorByIdAsync(entityKey.Id);
+                    var result = await customerService.GetInvestorByIdAsync(id);
                     return result;
                 });
         }
