@@ -1,5 +1,5 @@
 using Serilog;
-using Flex.Common.Logging;
+using Flex.SeriLog;
 using Flex.Securities.Api.Extensions;
 using Flex.Securities.Api.Persistence;
 

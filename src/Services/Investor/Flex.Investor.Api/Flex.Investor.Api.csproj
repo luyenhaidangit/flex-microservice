@@ -18,7 +18,6 @@
 	  </PackageReference>
 	  <PackageReference Include="Oracle.EntityFrameworkCore" Version="9.23.60" />
 	  <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.6.1" />
-	  <PackageReference Include="Swashbuckle.AspNetCore" Version="7.1.0" />
   </ItemGroup>
 
   <ItemGroup>

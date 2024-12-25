@@ -87,8 +87,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Hangfire", "src\Module
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.SeriLog", "src\Modules\Flex.SeriLog\Flex.SeriLog.csproj", "{C27D713F-D508-4326-9721-047B351D8A9B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Swashbuckle", "src\Modules\Flex.Swashbuckle\Flex.Swashbuckle.csproj", "{A7D1464D-1FC5-453D-8FFA-1B1C7E7F6697}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -179,10 +177,6 @@ Global
 		{C27D713F-D508-4326-9721-047B351D8A9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C27D713F-D508-4326-9721-047B351D8A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C27D713F-D508-4326-9721-047B351D8A9B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A7D1464D-1FC5-453D-8FFA-1B1C7E7F6697}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A7D1464D-1FC5-453D-8FFA-1B1C7E7F6697}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A7D1464D-1FC5-453D-8FFA-1B1C7E7F6697}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A7D1464D-1FC5-453D-8FFA-1B1C7E7F6697}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -223,7 +217,6 @@ Global
 		{530D590E-4271-451D-A935-ABDA3636EDA9} = {267D124B-9BBF-4716-BE75-480995D88776}
 		{273BD10D-B08E-40B2-910B-14E93AFC3AAC} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 		{C27D713F-D508-4326-9721-047B351D8A9B} = {530D590E-4271-451D-A935-ABDA3636EDA9}
-		{A7D1464D-1FC5-453D-8FFA-1B1C7E7F6697} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}

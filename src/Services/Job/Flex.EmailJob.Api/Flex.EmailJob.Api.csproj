@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\..\..\Modules\Flex.Swashbuckle\Flex.Swashbuckle.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
   </ItemGroup>
 
