@@ -1,5 +1,5 @@
 using Serilog;
-using Flex.Common.Logging;
+using Flex.SeriLog;
 using Flex.Ordering.Infrastructure.Persistence;
 using Flex.Ordering.Infrastructure;
 
