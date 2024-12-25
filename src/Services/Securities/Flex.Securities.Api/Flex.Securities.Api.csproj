@@ -18,9 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Common.Documentation\Flex.Common.Documentation.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Common.Logging\Flex.Common.Logging.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Modules\Flex.Swashbuckle\Flex.Swashbuckle.csproj" />
   </ItemGroup>
 
 </Project>
