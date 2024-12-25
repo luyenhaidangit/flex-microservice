@@ -91,13 +91,6 @@ namespace Flex.Securities.Api.Extensions
                            .AddScoped<ISecuritiesRepository, SecuritiesRepository>();
         }
 
-        public static IServiceCollection ConfigureNewtonsoftJson(this IServiceCollection services)
-        {
-            services.AddControllers();
-
-            return services;
-        }
-
         private static IServiceCollection ConfigureValidationErrorResponse(this IServiceCollection services)
         {
             services.Configure<ApiBehaviorOptions>(options =>

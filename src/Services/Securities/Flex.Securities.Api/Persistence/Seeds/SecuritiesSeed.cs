@@ -16,7 +16,7 @@ namespace Flex.Securities.Api.Persistence.Seeds
                 securitiesContext.AddRange(catalogSecurities);
 
                 await securitiesContext.SaveChangesAsync();
-                logger.Information("Seeded data for Product DB associated with context {DbContextName}", nameof(securitiesContext));
+                logger.Information("Seeded data for Securites DB associated with context {DbContextName}", nameof(securitiesContext));
             }
         }
     }
