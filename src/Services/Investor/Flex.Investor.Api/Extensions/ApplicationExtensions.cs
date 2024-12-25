@@ -1,4 +1,7 @@
-﻿namespace Flex.Investor.Api.Extensions
+﻿using Flex.Infrastructure.Middlewares;
+using Serilog;
+
+namespace Flex.Investor.Api.Extensions
 {
     public static class ApplicationExtensions
     {
@@ -8,12 +11,23 @@
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.DisplayRequestDuration();
+                });
             }
+
+            // Logging
+            app.UseSerilogRequestLogging();
+
+            app.UseMiddleware<ErrorWrappingMiddleware>();
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseRouting();
 
             app.MapControllers();
         }

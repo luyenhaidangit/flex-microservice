@@ -20,15 +20,12 @@ namespace Flex.Investor.Api.Services
         }
 
         #region Query
-        /// <summary>
-        /// Thông tin Chi tiết nhà đầu tư.
-        /// </summary>
-        public async Task<IResult> GetInvestorByIdAsync([FromQuery] EntityKey<long> entityKey)
+        public async Task<IResult> GetInvestorByIdAsync(long id)
         {
-            var securities = await _investorRepository.GetSampleData().Where(x => x.Id == entityKey.Id).FirstOrDefaultAsync();
+            var securities = await _investorRepository.GetSampleData().Where(x => x.Id == id).FirstOrDefaultAsync();
             if (securities is null)
             {
-                return Results.BadRequest(Result.Failure(message: "Securities not found."));
+                return Results.BadRequest(Result.Failure(message: "Investor not found."));
             }
 
             var result = _mapper.Map<InvestorDto>(securities);
