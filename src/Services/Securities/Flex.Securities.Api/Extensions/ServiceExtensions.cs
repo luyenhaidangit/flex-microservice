@@ -17,7 +17,6 @@ namespace Flex.Securities.Api.Extensions
 {
     public static class ServiceExtensions
     {
-        #region Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Add services to the container.
@@ -53,6 +52,12 @@ namespace Flex.Securities.Api.Extensions
             return services;
         }
 
+        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            return services;
+        }
+
+        #region Infrastructure
         private static IServiceCollection ConfigureSwagger(this IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
@@ -118,10 +123,5 @@ namespace Flex.Securities.Api.Extensions
             return services;
         }
         #endregion
-
-        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
-        {
-            return services;
-        }
     }
 }
