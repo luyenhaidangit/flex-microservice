@@ -1,0 +1,12 @@
+{
+    "settings": {
+      "intellisense": {
+        "sql": {
+          "enabled": false,
+          "autoListMembers": false,
+          "parameterInformation": false
+        }
+      },
+      "_comment": "Disable IntelliSense for SQL files in Visual Studio"
+    }
+  }
