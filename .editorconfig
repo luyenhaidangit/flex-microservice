@@ -2,4 +2,4 @@ root = true
 
 # SQL
 [*.sql]
-dotnet_diagnostic.SQL80001.severity = none
+dotnet_analyzer_diagnostic_severity = none
