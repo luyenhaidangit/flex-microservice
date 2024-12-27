@@ -25,9 +25,11 @@ namespace Flex.Securities.Api.Controllers
                 return BadRequest(Result.Failure("Connection string is missing or invalid."));
             }
 
+            var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "Migrations/Scripts");
+
             var upgrader = DeployChanges.To
-            .OracleDatabaseWithDefaultDelimiter("")
-            .WithScriptsFromFileSystem(Path.Combine(AppContext.BaseDirectory, "Migrations/Scripts"))
+            .OracleDatabaseWithDefaultDelimiter(connectionString)
+            .WithScriptsFromFileSystem(scriptPath)
             .LogToConsole()
             .Build();
 
@@ -37,7 +39,6 @@ namespace Flex.Securities.Api.Controllers
             {
                 return StatusCode(500, Result.Failure("Database migration failed: " + result.Error.ToString()));
             }
-
 
             return Ok(Result.Success());
         }
