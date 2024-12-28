@@ -36,10 +36,6 @@
 - Script-Migration
 - Drop-Database
 
-## Init Oracle Database
-- CREATE USER luyenhaidangit IDENTIFIED BY haidang106;
-- GRANT DBA TO luyenhaidangit;
-
 ## Temporary Design Notes
 
 - **Authentication Flow**:
@@ -62,3 +58,7 @@
 - [MassTransit Documentation](https://masstransit-project.com/documentation/)
 
 Feel free to add more notes or remove anything that becomes outdated.
+
+## Init Securities DB in Oracle
+- CREATE USER luyenhaidangit IDENTIFIED BY haidang106;
+- GRANT DBA TO luyenhaidangit;
