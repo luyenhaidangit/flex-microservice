@@ -6,6 +6,5 @@
 
     -- Trường audit
     CreatedDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, -- Ngày tạo
-    LastModifiedDate TIMESTAMP,                              -- Ngày chỉnh sửa cuối cùng
-    CONSTRAINT PK_SECURITIES PRIMARY KEY (Id)                -- Khóa chính
+    LastModifiedDate TIMESTAMP                              -- Ngày chỉnh sửa cuối cùng
 );
