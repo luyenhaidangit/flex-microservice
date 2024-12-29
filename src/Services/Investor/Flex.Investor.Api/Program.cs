@@ -2,6 +2,7 @@ using Serilog;
 using Flex.SeriLog;
 using Flex.Investor.Api.Extensions;
 using Flex.Investor.Api.Controllers;
+using Flex.Investor.Api.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -22,6 +23,8 @@ try
     app.MapInvestorsApi();
 
     app.UseInfrastructure();
+
+    await app.SeedsDataAsync();
 
     app.Run();
 }
