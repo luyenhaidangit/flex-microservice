@@ -62,3 +62,7 @@ Feel free to add more notes or remove anything that becomes outdated.
 ## Init Securities DB in Oracle
 - CREATE USER luyenhaidangit IDENTIFIED BY haidang106;
 - GRANT DBA TO luyenhaidangit;
+
+## Init Investor DB in Oracle
+- CREATE USER luyenhaidangit IDENTIFIED BY haidang106;
+- GRANT DBA TO luyenhaidangit;
