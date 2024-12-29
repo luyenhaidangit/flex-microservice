@@ -16,21 +16,25 @@ namespace Flex.Securities.Api.Controllers
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Migrate Database.
+        /// </summary>
         [HttpPost("migration-database")]
         public IActionResult MigrationDatabase()
         {
             var connectionString = _configuration.GetConnectionString("DefaultConnection");
             if (string.IsNullOrEmpty(connectionString))
             {
-                return BadRequest(Result.Failure("Connection string is missing or invalid."));
+                return StatusCode(500, Result.Failure("Connection string is missing or invalid."));
             }
 
-            var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "Migrations/Scripts");
+            var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "Migrations");
 
             var upgrader = DeployChanges.To
-            .OracleDatabaseWithDefaultDelimiter(connectionString)
+            .OracleDatabase(connectionString, delimiter: '/')
             .WithScriptsFromFileSystem(scriptPath)
             .LogToConsole()
+            .LogScriptOutput()
             .Build();
 
             var result = upgrader.PerformUpgrade();
