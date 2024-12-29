@@ -23,8 +23,4 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Migrations\Scripts\" />
-  </ItemGroup>
-
 </Project>
