@@ -1,11 +1,8 @@
 ﻿using Flex.Basket.Api.Entities;
 using Flex.Basket.Api.Repositories.Interfaces;
-using Microsoft.AspNetCore.Http;
+using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
-using System.ComponentModel.DataAnnotations;
-using System.Net;
-using ILogger = Serilog.ILogger;
 
 namespace Flex.Basket.Api.Controllers
 {
@@ -14,50 +11,55 @@ namespace Flex.Basket.Api.Controllers
     public class BasketsController : ControllerBase
     {
         private readonly IBasketRepository _basketRepository;
-        private readonly ILogger _logger;
+        private readonly ILogger<BasketsController> _logger;
 
-        public BasketsController(IBasketRepository basketRepository, ILogger logger)
+        public BasketsController(IBasketRepository basketRepository, ILogger<BasketsController> logger)
         {
             _basketRepository = basketRepository;
             _logger = logger;
         }
 
-        [HttpGet("{username}", Name = "GetBasket")]
-        [ProducesResponseType(typeof(Cart), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Cart>> GetBasket([Required] string username)
+        /// <summary>
+        /// Lấy giỏ lệnh theo nhà đầu tư.
+        /// </summary>
+        [HttpGet("get-basket-by-investor")]
+        public async Task<IActionResult> GetBasketByInvestor([FromQuery] EntityKey<string> entityKey)
         {
-            _logger.Information($"BEGIN: GetBasketByUserName {username}");
-            var result = await _basketRepository.GetBasketByInvestorIdAsync(username);
-            _logger.Information($"END: GetBasketByUserName {username}");
+            _logger.LogInformation($"BEGIN: GetBasketByInvestor {entityKey.Id}");
+            var result = await _basketRepository.GetBasketByInvestorIdAsync(entityKey.Id);
+            _logger.LogInformation($"END: GetBasketByInvestor {entityKey.Id}");
 
-            return Ok(result);
+            return Ok(Result.Success(result));
         }
 
-        [HttpPost(Name = "UpdateBasket")]
-        [ProducesResponseType(typeof(Cart), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<Cart>> UpdateBasket([FromBody] Cart cart)
+        /// <summary>
+        /// Cập nhật giỏ lệnh theo nhà đầu tư.
+        /// </summary>
+        [HttpPost("update-basket")]
+        public async Task<IActionResult> UpdateBasket([FromBody] Cart cart)
         {
-            _logger.Information($"BEGIN: UpdateBasket for {cart.InvestorId}");
+            _logger.LogInformation($"BEGIN: UpdateBasket for {cart.InvestorId}");
             var options = new DistributedCacheEntryOptions()
-                //set the absolute expiration time.
                 .SetAbsoluteExpiration(DateTime.UtcNow.AddMinutes(10))
-                //a cached object will be expired if it not being requested for a defined amount of time period.
-                //Sliding Expiration should always be set lower than the absolute expiration.
                 .SetSlidingExpiration(TimeSpan.FromMinutes(2));
 
             var result = await _basketRepository.UpdateBasketAsync(cart, options);
-            _logger.Information($"END: UpdateBasket for {cart.InvestorId}");
-            return Ok(result);
+            _logger.LogInformation($"END: UpdateBasket for {cart.InvestorId}");
+
+            return Ok(Result.Success(result));
         }
 
-        [HttpDelete("{username}", Name = "DeleteBasket")]
-        [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<bool>> DeleteBasket([Required] string username)
+        /// <summary>
+        /// Xóa giỏ lệnh theo nhà đầu tư.
+        /// </summary>
+        [HttpPost("delete-basket")]
+        public async Task<ActionResult<bool>> DeleteBasket([FromBody] EntityKey<string> entityKey)
         {
-            _logger.Information($"BEGIN: DeleteBasket {username}");
-            var result = await _basketRepository.DeleteBasketByInvestorIdAsync(username);
-            _logger.Information($"END: DeleteBasket {username}");
-            return Ok(result);
+            _logger.LogInformation($"BEGIN: DeleteBasket {entityKey.Id}");
+            var result = await _basketRepository.DeleteBasketByInvestorIdAsync(entityKey.Id);
+            _logger.LogInformation($"END: DeleteBasket {entityKey.Id}");
+
+            return Ok(Result.Success());
         }
     }
 }

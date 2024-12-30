@@ -2,15 +2,20 @@
 {
     public static class HostExtension
     {
-        public static void AddAppConfigurations(this ConfigureHostBuilder host)
+        public static void AddAppConfigurations(this WebApplicationBuilder builder)
         {
-            host.ConfigureAppConfiguration((context, config) =>
-            {
-                var env = context.HostingEnvironment;
-                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                    .AddEnvironmentVariables();
-            });
+            var env = builder.Environment;
+
+            //  Adds application configurations from JSON files and environment variables.
+            builder.Configuration
+               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+               .AddEnvironmentVariables();
+        }
+
+        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            return services;
         }
     }
 }
