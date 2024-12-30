@@ -1,11 +1,18 @@
-﻿namespace Flex.Basket.Api.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Flex.Basket.Api.Entities
 {
     public class BasketCheckout
     {
-        public string UserName { get; set; }
+        [Required]
+        public string InvestorId { get; set; }
+
         public decimal TotalPrice { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+
+        public string FullName { get; set; }
+
+        [Required]
+        [EmailAddress]
         public string EmailAddress { get; set; }
     }
 }

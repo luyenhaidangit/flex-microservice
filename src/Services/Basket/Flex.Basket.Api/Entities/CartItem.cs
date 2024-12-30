@@ -10,9 +10,9 @@ namespace Flex.Basket.Api.Entities
 
         [Required]
         [Range(0.1, double.PositiveInfinity, ErrorMessage = "The field {0} must be >= {1}.")]
-        public decimal ItemPrice { get; set; }
+        public decimal Price { get; set; }
 
-        public string ItemNo { get; set; }
-        public string ItemName { get; set; }
+        [Required]
+        public string SecuritiesId { get; set; }
     }
 }

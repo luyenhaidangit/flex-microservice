@@ -2,19 +2,16 @@
 {
     public class Cart
     {
-        public string Username { get; set; }
+        public string InvestorId { get; set; }
 
-        public List<CartItem> Items { get; set; } = new();
+        public string Email { get; set; }
 
-        public Cart()
-        {
-        }
+        public decimal TotalPrice => Items.Sum(item => item.Price * item.Quantity);
 
-        public Cart(string username)
-        {
-            Username = username;
-        }
+        public DateTimeOffset LastModifiedDate { get; set; } = DateTimeOffset.UtcNow;
 
-        public decimal TotalPrice => Items.Sum(item => item.ItemPrice * item.Quantity);
+        public virtual List<CartItem> Items { get; set; } = new List<CartItem>();
+
+        public string? JobId { get; set; }
     }
 }
