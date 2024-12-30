@@ -7,18 +7,23 @@ namespace Flex.Basket.Api.Repositories
 {
     public class BasketRepository : IBasketRepository
     {
+        private readonly ILogger<BasketRepository> _logger;
         private readonly IDistributedCache _redisCacheService;
         private readonly ISerializeService _serializeService;
 
-        public BasketRepository(IDistributedCache redisCacheService, ISerializeService serializeService)
+        public BasketRepository(IDistributedCache redisCacheService, ISerializeService serializeService, ILogger<BasketRepository> logger)
         {
+            _logger = logger;
             _redisCacheService = redisCacheService;
             _serializeService = serializeService;    
         }
 
         public async Task<Cart?> GetBasketByInvestorIdAsync(string investorId)
         {
+            _logger.LogInformation($"BEGIN: GetBasketByInvestorIdAsync {investorId}");
             var cachedData = await _redisCacheService.GetStringAsync(investorId);
+            _logger.LogInformation($"END: GetBasketByInvestorIdAsync {investorId}");
+
             if (cachedData is null)
             {
                 return null;
@@ -41,8 +46,10 @@ namespace Flex.Basket.Api.Repositories
             {
                 await _redisCacheService.SetStringAsync(cart.InvestorId, serializedCart);
             }
+            
+            var result = await this.GetBasketByInvestorIdAsync(cart.InvestorId);
 
-            return cart;
+            return result;
         }
 
         public async Task<bool> DeleteBasketByInvestorIdAsync(string investorId)
