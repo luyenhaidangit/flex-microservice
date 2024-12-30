@@ -29,6 +29,11 @@ namespace Flex.Basket.Api.Controllers
             var result = await _basketRepository.GetBasketByInvestorIdAsync(entityKey.Id);
             _logger.LogInformation($"END: GetBasketByInvestor {entityKey.Id}");
 
+            if (result is null)
+            {
+                return BadRequest(Result.Failure("Basket not found."));
+            }
+
             return Ok(Result.Success(result));
         }
 
