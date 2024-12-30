@@ -2,7 +2,6 @@
 using Flex.Basket.Api.Repositories.Interfaces;
 using Flex.Contracts.Common.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
-using ILogger = Serilog.ILogger;
 
 namespace Flex.Basket.Api.Repositories
 {
@@ -10,45 +9,46 @@ namespace Flex.Basket.Api.Repositories
     {
         private readonly IDistributedCache _redisCacheService;
         private readonly ISerializeService _serializeService;
-        private readonly ILogger _logger;
 
-        public BasketRepository(IDistributedCache redisCacheService, ISerializeService serializeService, ILogger logger)
+        public BasketRepository(IDistributedCache redisCacheService, ISerializeService serializeService)
         {
             _redisCacheService = redisCacheService;
-            _serializeService = serializeService;
-            _logger = logger;
+            _serializeService = serializeService;    
         }
 
-        public async Task<Cart?> GetBasketByUserName(string userName)
+        public async Task<Cart?> GetBasketByInvestorIdAsync(string investorId)
         {
-            var basket = await _redisCacheService.GetStringAsync(userName);
-            return string.IsNullOrEmpty(basket) ? null : _serializeService.Deserialize<Cart>(basket);
+            var cachedData = await _redisCacheService.GetStringAsync(investorId);
+            if (cachedData is null)
+            {
+                return null;
+            }
+
+            var result = _serializeService.Deserialize<Cart>(cachedData);
+
+            return result;
         }
 
-        public async Task<Cart> UpdateBasket(Cart cart, DistributedCacheEntryOptions options = null)
+        public async Task<Cart> UpdateBasketAsync(Cart cart, DistributedCacheEntryOptions? options = null)
         {
-            if (options != null)
-                await _redisCacheService.SetStringAsync(cart.Username,
-                    _serializeService.Serialize(cart), options);
+            var serializedCart = _serializeService.Serialize(cart);
+
+            if (options is not null)
+            {
+                await _redisCacheService.SetStringAsync(cart.InvestorId, serializedCart, options);
+            }
             else
-                await _redisCacheService.SetStringAsync(cart.Username,
-                    _serializeService.Serialize(cart));
+            {
+                await _redisCacheService.SetStringAsync(cart.InvestorId, serializedCart);
+            }
 
-            return await GetBasketByUserName(cart.Username);
+            return cart;
         }
 
-        public async Task<bool> DeleteBasketFromUserName(string username)
+        public async Task<bool> DeleteBasketByInvestorIdAsync(string investorId)
         {
-            try
-            {
-                await _redisCacheService.RemoveAsync(username);
-                return true;
-            }
-            catch (Exception e)
-            {
-                _logger.Error("Error DeleteBasketFromUserName: " + e.Message);
-                throw;
-            }
+            await _redisCacheService.RemoveAsync(investorId);
+            return true;
         }
     }
 }

@@ -27,17 +27,17 @@ namespace Flex.Basket.Api.Controllers
         public async Task<ActionResult<Cart>> GetBasket([Required] string username)
         {
             _logger.Information($"BEGIN: GetBasketByUserName {username}");
-            var result = await _basketRepository.GetBasketByUserName(username);
+            var result = await _basketRepository.GetBasketByInvestorIdAsync(username);
             _logger.Information($"END: GetBasketByUserName {username}");
 
-            return Ok(result ?? new Cart(username));
+            return Ok(result);
         }
 
         [HttpPost(Name = "UpdateBasket")]
         [ProducesResponseType(typeof(Cart), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<Cart>> UpdateBasket([FromBody] Cart cart)
         {
-            _logger.Information($"BEGIN: UpdateBasket for {cart.Username}");
+            _logger.Information($"BEGIN: UpdateBasket for {cart.InvestorId}");
             var options = new DistributedCacheEntryOptions()
                 //set the absolute expiration time.
                 .SetAbsoluteExpiration(DateTime.UtcNow.AddMinutes(10))
@@ -45,8 +45,8 @@ namespace Flex.Basket.Api.Controllers
                 //Sliding Expiration should always be set lower than the absolute expiration.
                 .SetSlidingExpiration(TimeSpan.FromMinutes(2));
 
-            var result = await _basketRepository.UpdateBasket(cart, options);
-            _logger.Information($"END: UpdateBasket for {cart.Username}");
+            var result = await _basketRepository.UpdateBasketAsync(cart, options);
+            _logger.Information($"END: UpdateBasket for {cart.InvestorId}");
             return Ok(result);
         }
 
@@ -55,7 +55,7 @@ namespace Flex.Basket.Api.Controllers
         public async Task<ActionResult<bool>> DeleteBasket([Required] string username)
         {
             _logger.Information($"BEGIN: DeleteBasket {username}");
-            var result = await _basketRepository.DeleteBasketFromUserName(username);
+            var result = await _basketRepository.DeleteBasketByInvestorIdAsync(username);
             _logger.Information($"END: DeleteBasket {username}");
             return Ok(result);
         }
