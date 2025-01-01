@@ -3,14 +3,20 @@ using Flex.Ordering.Domain.Entities;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Flex.Ordering.Infrastructure.Persistence
 {
     public class OrderContext : DbContext
     {
-        public OrderContext(DbContextOptions<OrderContext> options) : base(options)
-        {
+        private readonly IMediator _mediator;
+        private readonly ILogger<OrderContext> _logger;
 
+        public OrderContext(DbContextOptions<OrderContext> options, ILogger<OrderContext> logger, IMediator mediator) : base(options)
+        {
+            this._logger = logger;
+            this._mediator = mediator;
         }
 
         public DbSet<Order> Orders { get; set; }
