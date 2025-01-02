@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Modules\Flex.MediaR\Flex.MediaR.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
     <ProjectReference Include="..\Flex.Ordering.Application\Flex.Ordering.Application.csproj" />
   </ItemGroup>

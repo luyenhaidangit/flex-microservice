@@ -84,6 +84,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{A44A8B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.System.Api", "src\Services\System\Flex.System.Api\Flex.System.Api.csproj", "{75759139-3C8A-4105-890B-83C545C9996C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.MediaR", "src\Modules\Flex.MediaR\Flex.MediaR.csproj", "{4CDC90B6-DB2E-4721-A206-4EBBDF032990}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -178,6 +180,10 @@ Global
 		{75759139-3C8A-4105-890B-83C545C9996C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75759139-3C8A-4105-890B-83C545C9996C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75759139-3C8A-4105-890B-83C545C9996C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CDC90B6-DB2E-4721-A206-4EBBDF032990}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CDC90B6-DB2E-4721-A206-4EBBDF032990}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CDC90B6-DB2E-4721-A206-4EBBDF032990}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CDC90B6-DB2E-4721-A206-4EBBDF032990}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -218,6 +224,7 @@ Global
 		{C27D713F-D508-4326-9721-047B351D8A9B} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 		{A44A8B2A-09E0-4CCB-98B7-451FE2898BC9} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
 		{75759139-3C8A-4105-890B-83C545C9996C} = {A44A8B2A-09E0-4CCB-98B7-451FE2898BC9}
+		{4CDC90B6-DB2E-4721-A206-4EBBDF032990} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}

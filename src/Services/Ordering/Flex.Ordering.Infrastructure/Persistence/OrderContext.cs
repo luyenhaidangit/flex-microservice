@@ -4,16 +4,19 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using MediatR;
-using Microsoft.Extensions.Logging;
+using Flex.Contracts.Common.Events;
+using Flex.Contracts.Common.Interfaces;
+using Flex.MediaR;
 
 namespace Flex.Ordering.Infrastructure.Persistence
 {
     public class OrderContext : DbContext
     {
         private readonly IMediator _mediator;
-        private readonly ILogger<OrderContext> _logger;
+        private readonly Serilog.ILogger _logger;
+        private List<BaseEvent> _baseEvents;
 
-        public OrderContext(DbContextOptions<OrderContext> options, ILogger<OrderContext> logger, IMediator mediator) : base(options)
+        public OrderContext(DbContextOptions<OrderContext> options, Serilog.ILogger logger, IMediator mediator) : base(options)
         {
             this._logger = logger;
             this._mediator = mediator;
@@ -28,8 +31,10 @@ namespace Flex.Ordering.Infrastructure.Persistence
             base.OnModelCreating(modelBuilder);
         }
 
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
+            this.SetBaseEventsBeforeSaveChanges();
+
             var modified = ChangeTracker.Entries()
                 .Where(e => e.State == EntityState.Modified ||
                             e.State == EntityState.Added ||
@@ -58,7 +63,31 @@ namespace Flex.Ordering.Infrastructure.Persistence
                 }
             }
 
-            return base.SaveChangesAsync(cancellationToken);
+            // Dispatch Domain Events collection. 
+            // Choices:
+            // A) Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
+            // side effects from the domain event handlers which are using the same DbContext with "InstancePerLifetimeScope" or "scoped" lifetime
+            // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
+            // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
+            await _mediator.DispatchDomainEventsAsync(_baseEvents, _logger);
+            // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
+            // performed through the DbContext will be committed
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void SetBaseEventsBeforeSaveChanges()
+        {
+            var domainEntities = ChangeTracker.Entries<IEventEntity>()
+                .Select(x => x.Entity)
+                .Where(x => x.DomainEvents().Any())
+                .ToList();
+
+            _baseEvents = domainEntities
+                .SelectMany(x => x.DomainEvents())
+                .ToList();
+
+            domainEntities.ForEach(x => x.ClearDomainEvents());
         }
     }
 }

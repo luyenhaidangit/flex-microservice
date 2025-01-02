@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Flex.Ordering.Application\Flex.Ordering.Application.csproj" />
     <ProjectReference Include="..\Flex.Ordering.Infrastructure\Flex.Ordering.Infrastructure.csproj" />
   </ItemGroup>
