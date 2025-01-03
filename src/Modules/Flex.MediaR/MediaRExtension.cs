@@ -1,7 +1,7 @@
 ﻿using Flex.Contracts.Common.Events;
 using Flex.Infrastructure.Common;
 using MediatR;
-using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace Flex.MediaR
 {
@@ -15,7 +15,7 @@ namespace Flex.MediaR
             {
                 await mediator.Publish(domainEvent);
                 var data = new SerializeService().Serialize(domainEvent);
-                logger.Information($"\n-----\nA domain event has been published!\n" +
+                logger.LogInformation($"\n-----\nA domain event has been published!\n" +
                                    $"Event: {domainEvent.GetType().Name}\n" +
                                    $"Data: {data})\n-----\n");
             }

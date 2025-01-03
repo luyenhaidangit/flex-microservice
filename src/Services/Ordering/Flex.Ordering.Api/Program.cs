@@ -1,54 +1,37 @@
 using Serilog;
 using Flex.SeriLog;
+using Flex.Ordering.Api.Extensions;
 using Flex.Ordering.Infrastructure.Persistence;
-using Flex.Ordering.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
-var services = builder.Services;
-var host = builder.Host;
 var configuration = builder.Configuration;
-var environment = builder.Environment;
+
+//builder.AddAppConfigurations();
 
 SeriLogger.Configure(builder);
 Log.Information($"Start {builder.Environment.ApplicationName} up");
 
 try
 {
-    builder.Services.AddInfrastructureServices(builder.Configuration);
-
-    builder.Services.AddControllers();
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    //builder.Services.AddConfigurationSettings(configuration);
+    builder.Services.AddInfrastructure(configuration);
 
     var app = builder.Build();
+    app.UseInfrastructure();
 
-    // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    // Initialise and seed database
-    using (var scope = app.Services.CreateScope())
-    {
-        var orderContextSeed = scope.ServiceProvider.GetRequiredService<OrderContextSeed>();
-        await orderContextSeed.InitialiseAsync();
-        await orderContextSeed.SeedAsync();
-    }
-
-    app.UseHttpsRedirection();
-
-    app.UseAuthorization();
-
-    app.MapControllers();
+    //await app.MigrateDatabase<SecuritiesDbContext>(async (context, services) =>
+    //{
+    //    await SecuritiesDbSeed.InitAsync(context, Log.Logger);
+    //});
 
     app.Run();
 }
 
 catch (Exception ex)
 {
+    string type = ex.GetType().Name;
+    if (type.Equals("StopTheHostException", StringComparison.Ordinal)) throw;
+
     Log.Fatal(ex, $"Unhandled exception: {ex.Message}");
 }
 finally
