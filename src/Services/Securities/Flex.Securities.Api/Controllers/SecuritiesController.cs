@@ -6,6 +6,8 @@ using Flex.Shared.DTOs.Securities;
 using Flex.Infrastructure.EF;
 using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
+using Flex.Securities.Api.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Flex.Securities.Api.Controllers
 {
@@ -13,13 +15,15 @@ namespace Flex.Securities.Api.Controllers
     [ApiController]
     public class SecuritiesController : ControllerBase
     {
+        private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ISecuritiesRepository _securitiesRepository;
         private readonly IMapper _mapper;
 
-        public SecuritiesController(ISecuritiesRepository securitiesRepository, IMapper mapper)
+        public SecuritiesController(ISecuritiesRepository securitiesRepository, IMapper mapper, IHubContext<NotificationHub> hubContext)
         {
             _securitiesRepository = securitiesRepository;
             _mapper = mapper;
+            _hubContext = hubContext;
         }
 
         #region Query
@@ -135,6 +139,13 @@ namespace Flex.Securities.Api.Controllers
             // Result
 
             return Ok(Result.Success());
+        }
+
+        [HttpPost("send")]
+        public async Task<IActionResult> SendNotification([FromBody] string message)
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
+            return Ok(new { Status = "Message sent" });
         }
         #endregion
     }

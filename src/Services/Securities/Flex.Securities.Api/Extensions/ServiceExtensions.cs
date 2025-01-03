@@ -49,6 +49,21 @@ namespace Flex.Securities.Api.Extensions
             // Response
             services.ConfigureValidationErrorResponse();
 
+            // Cors
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.WithOrigins("https://localhost:7179")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
+
+            // SignIR
+            services.AddSignalR();
+
             return services;
         }
 

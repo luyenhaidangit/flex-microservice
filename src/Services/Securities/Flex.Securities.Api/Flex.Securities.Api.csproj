@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="dbup" Version="5.0.41" />
     <PackageReference Include="dbup-oracle" Version="6.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
