@@ -44,6 +44,18 @@ namespace Flex.Ordering.Api.Extensions
             // Response
             services.ConfigureValidationErrorResponse();
 
+            // Cors
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.WithOrigins("https://localhost:7179") 
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
+
             return services;
         }
 

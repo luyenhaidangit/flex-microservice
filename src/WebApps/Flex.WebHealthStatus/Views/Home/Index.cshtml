@@ -6,3 +6,30 @@
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+<div id="messages" style="border: 1px solid #ccc; padding: 10px; width: 300px; height: 200px; overflow-y: scroll;">
+    <!-- Tin nhắn sẽ hiển thị ở đây -->
+</div>
+
+<script src="./lib/signalr/dist/browser/signalr.min.js"></script>
+
+<script>
+    // Tạo kết nối tới SignalR Hub
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("https://localhost:3001/notifications") // URL của Hub
+        .withAutomaticReconnect() // Tự động kết nối lại nếu mất kết nối
+        .build();
+
+    // Lắng nghe sự kiện từ server
+    connection.on("ReceiveMessage", (message) => {
+        const messageContainer = document.getElementById("messages");
+        const messageElement = document.createElement("div");
+        messageElement.textContent = message;
+        messageContainer.appendChild(messageElement);
+    });
+
+    // Bắt đầu kết nối
+    connection.start()
+        .then(() => console.log("Connected to SignalR Hub"))
+        .catch(err => console.error("Failed to connect:", err));
+</script>

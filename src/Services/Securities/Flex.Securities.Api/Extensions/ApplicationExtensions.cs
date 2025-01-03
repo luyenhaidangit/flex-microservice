@@ -1,4 +1,5 @@
 ﻿using Flex.Infrastructure.Middlewares;
+using Flex.Securities.Api.Hubs;
 using Serilog;
 
 namespace Flex.Securities.Api.Extensions
@@ -17,6 +18,8 @@ namespace Flex.Securities.Api.Extensions
                 });
             }
 
+            app.MapHub<NotificationHub>("/notifications");
+
             // Logging
             app.UseSerilogRequestLogging();
 
@@ -28,6 +31,8 @@ namespace Flex.Securities.Api.Extensions
             app.UseAuthorization();
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.MapControllers();
         }
