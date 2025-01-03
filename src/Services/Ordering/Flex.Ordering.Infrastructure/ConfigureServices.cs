@@ -1,4 +1,7 @@
-﻿using Flex.Ordering.Infrastructure.Persistence;
+﻿using Flex.Contracts.Domains.Interfaces;
+using Flex.Infrastructure.Common;
+using Flex.Ordering.Application.Common.Interfaces;
+using Flex.Ordering.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +19,7 @@ namespace Flex.Ordering.Infrastructure
             });
 
             services.AddScoped<OrderContextSeed>();
+            services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
 
             return services;
         }
