@@ -9,10 +9,12 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="MassTransit" Version="8.3.4" />
     <PackageReference Include="MediatR" Version="12.4.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.EventBus.Messages\Flex.EventBus.Messages.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Shared\Flex.Shared.csproj" />
     <ProjectReference Include="..\Flex.Ordering.Domain\Flex.Ordering.Domain.csproj" />
   </ItemGroup>

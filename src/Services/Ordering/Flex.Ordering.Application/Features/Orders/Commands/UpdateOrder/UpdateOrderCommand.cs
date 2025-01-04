@@ -3,10 +3,12 @@ using Flex.Ordering.Domain.Entities;
 using Flex.Shared.SeedWork;
 using MediatR;
 
-namespace Flex.Ordering.Application.Features.Orders.Commands.CreateOrder
+namespace Flex.Ordering.Application.Features.Orders.Commands.UpdateOrder
 {
-    public class CreateOrderCommand : IMapFrom<Order>, IRequest<Result>
+    public class UpdateOrderCommand : IMapFrom<Order>, IRequest<Result>
     {
+        public long Id { get; set; }
+
         public long InvestorId { get; set; }
 
         public decimal TotalPrice { get; set; }

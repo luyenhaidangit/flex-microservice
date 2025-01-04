@@ -2,7 +2,7 @@
 
 namespace Flex.Shared.DTOs.Ordering
 {
-    public class CreateOrderDto
+    public class CreateOrderRequest
     {
         [Required]
         public long InvestorId { get; set; } // Mã nhà đầu tư (bắt buộc)
