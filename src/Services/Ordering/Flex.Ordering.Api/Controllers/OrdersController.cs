@@ -20,16 +20,20 @@ namespace Flex.Ordering.Api.Controllers
         }
 
         [HttpGet("get-by-investor")]
-        public async Task<IActionResult> GetOrdersByInvestor([FromQuery] GetOrderByInvestorIdQuery query, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetOrdersByInvestor([FromQuery] long investorId, CancellationToken cancellationToken)
         {
+            var query = new GetOrderByInvestorIdQuery(investorId);
+
             var result = await _mediator.Send(query, cancellationToken);
 
             return Ok(result);
         }
 
         [HttpGet("get-by-id")]
-        public async Task<IActionResult> GetOrdersById([FromQuery] GetOrderByIdQuery query, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetOrdersById([FromQuery] long id, CancellationToken cancellationToken)
         {
+            var query = new GetOrderByIdQuery(id);
+
             var result = await _mediator.Send(query, cancellationToken);
 
             return Ok(result);
