@@ -1,28 +1,22 @@
 using Serilog;
 using Flex.SeriLog;
 using Flex.Ordering.Api.Extensions;
-using Flex.Ordering.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-//builder.AddAppConfigurations();
+builder.AddAppConfigurations();
 
 SeriLogger.Configure(builder);
 Log.Information($"Start {builder.Environment.ApplicationName} up");
 
 try
 {
-    //builder.Services.AddConfigurationSettings(configuration);
+    builder.Services.AddConfigurationSettings(configuration);
     builder.Services.AddInfrastructure(configuration);
 
     var app = builder.Build();
     app.UseInfrastructure();
-
-    //await app.MigrateDatabase<SecuritiesDbContext>(async (context, services) =>
-    //{
-    //    await SecuritiesDbSeed.InitAsync(context, Log.Logger);
-    //});
 
     app.Run();
 }

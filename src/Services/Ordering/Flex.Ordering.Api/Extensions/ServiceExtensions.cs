@@ -7,6 +7,11 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Flex.Shared.SeedWork;
+using Oracle.ManagedDataAccess.Client;
+using Microsoft.EntityFrameworkCore;
+using Flex.Ordering.Infrastructure.Persistence;
+using Flex.Ordering.Application.Common.Interfaces;
+using Flex.Ordering.Infrastructure.Repositories;
 
 namespace Flex.Ordering.Api.Extensions
 {
@@ -36,7 +41,7 @@ namespace Flex.Ordering.Api.Extensions
             services.ConfigureProductDbContext(configuration);
 
             // AutoMapper
-            //services.ConfigureAutoMapper();
+            services.ConfigureAutoMapper();
 
             // Infrastructure
             services.AddInfrastructureServices();
@@ -79,19 +84,19 @@ namespace Flex.Ordering.Api.Extensions
             return services;
         }
 
-        //private static IServiceCollection ConfigureAutoMapper(this IServiceCollection services)
-        //{
-        //    services.AddAutoMapper(AssemblyReference.Assembly);
-
-        //    return services;
-        //}
-
-        private static IServiceCollection ConfigureProductDbContext(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection ConfigureAutoMapper(this IServiceCollection services)
         {
-            //OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version11;
+            services.AddAutoMapper(Flex.Ordering.Application.AssemblyReference.Assembly);
 
-            //services.AddDbContext<SecuritiesDbContext>(options =>
-            //options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
+            return services;
+        }
+
+        private static IServiceCollection ConfigureOrderingDbContext(this IServiceCollection services, IConfiguration configuration)
+        {
+            OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version11;
+
+            services.AddDbContext<OrderingDbContext>(options =>
+            options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
 
             return services;
         }
@@ -99,8 +104,8 @@ namespace Flex.Ordering.Api.Extensions
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
             return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
-                           .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
-                           //.AddScoped<ISecuritiesRepository, SecuritiesRepository>();
+                           .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
+                           .AddScoped<IOrderRepository, OrderRepository>();
         }
 
         private static IServiceCollection ConfigureValidationErrorResponse(this IServiceCollection services)
