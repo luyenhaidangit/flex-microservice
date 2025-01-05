@@ -11,13 +11,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Flex.Ordering.Infrastructure.Persistence
 {
-    public class OrderContext : DbContext
+    public class OrderingDbContext : DbContext
     {
         private readonly IMediator _mediator;
         private readonly ILogger  _logger;
         private List<BaseEvent> _baseEvents;
 
-        public OrderContext(DbContextOptions<OrderContext> options, ILogger logger, IMediator mediator) : base(options)
+        public OrderingDbContext(DbContextOptions<OrderingDbContext> options, ILogger logger, IMediator mediator) : base(options)
         {
             this._logger = logger;
             this._mediator = mediator;

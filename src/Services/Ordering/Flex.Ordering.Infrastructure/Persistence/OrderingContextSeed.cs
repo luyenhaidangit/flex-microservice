@@ -7,9 +7,9 @@ namespace Flex.Ordering.Infrastructure.Persistence
     public class OrderContextSeed
     {
         private readonly ILogger _logger;
-        private readonly OrderDbContext _context;
+        private readonly OrderingDbContext _context;
 
-        public OrderContextSeed(ILogger logger, OrderDbContext context)
+        public OrderContextSeed(ILogger logger, OrderingDbContext context)
         {
             _logger = logger;
             _context = context;

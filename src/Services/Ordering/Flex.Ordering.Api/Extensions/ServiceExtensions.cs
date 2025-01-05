@@ -38,7 +38,7 @@ namespace Flex.Ordering.Api.Extensions
             services.ConfigureSwagger();
 
             // Database
-            services.ConfigureProductDbContext(configuration);
+            services.ConfigureOrderingDbContext(configuration);
 
             // AutoMapper
             services.ConfigureAutoMapper();
