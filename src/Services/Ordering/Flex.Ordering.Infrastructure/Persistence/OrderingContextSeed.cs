@@ -1,5 +1,4 @@
-﻿using Flex.Ordering.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Flex.Ordering.Infrastructure.Persistence

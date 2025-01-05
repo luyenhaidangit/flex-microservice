@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Flex.Ordering.Infrastructure.Persistence;
 using Flex.Ordering.Application.Common.Interfaces;
 using Flex.Ordering.Infrastructure.Repositories;
+using MassTransit;
 
 namespace Flex.Ordering.Api.Extensions
 {
@@ -60,6 +61,8 @@ namespace Flex.Ordering.Api.Extensions
                           .AllowCredentials();
                 });
             });
+
+            services.AddMediatR(cfg =>cfg.RegisterServicesFromAssembly(Flex.Ordering.Application.AssemblyReference.Assembly));
 
             return services;
         }

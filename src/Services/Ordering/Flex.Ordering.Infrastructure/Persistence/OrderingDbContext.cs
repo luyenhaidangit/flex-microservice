@@ -14,10 +14,10 @@ namespace Flex.Ordering.Infrastructure.Persistence
     public class OrderingDbContext : DbContext
     {
         private readonly IMediator _mediator;
-        private readonly ILogger  _logger;
+        private readonly ILogger<OrderingDbContext> _logger;
         private List<BaseEvent> _baseEvents;
 
-        public OrderingDbContext(DbContextOptions<OrderingDbContext> options, ILogger logger, IMediator mediator) : base(options)
+        public OrderingDbContext(DbContextOptions<OrderingDbContext> options, ILogger<OrderingDbContext> logger, IMediator mediator) : base(options)
         {
             this._logger = logger;
             this._mediator = mediator;
