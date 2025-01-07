@@ -389,5 +389,17 @@ FodyWeavers.xsd
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Csharp
 
+# Winform
+*.exe
+*.dll
+*.msi
+*.appx
+*.appxbundle
+publish/
+*.pfx
+*.snk
+*.mdf
+*.ldf
+
 # Libman json
 src/WebApps/Flex.WebHealthStatus/wwwroot/lib/
