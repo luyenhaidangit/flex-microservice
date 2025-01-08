@@ -12,6 +12,7 @@ using Flex.Securities.Api.Persistence;
 using Flex.Securities.Api.Repositories;
 using Flex.Securities.Api.Repositories.Interfaces;
 using Flex.Infrastructure.Swashbuckle;
+using Flex.Shared.Options;
 
 namespace Flex.Securities.Api.Extensions
 {
@@ -19,6 +20,9 @@ namespace Flex.Securities.Api.Extensions
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            // Bind configuration settings
+            var apiConfiguration = configuration.GetSection("ApiConfiguration").Get<ApiConfiguration>() ?? throw new InvalidOperationException("ApiConfiguration is missing or invalid in appsettings.json.");
+
             // Add services to the container.
             services.AddControllers(options =>
             {
@@ -31,11 +35,17 @@ namespace Flex.Securities.Api.Extensions
                 options.JsonSerializerOptions.WriteIndented = true;
             });
 
-            services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
+            services.Configure<RouteOptions>(options =>
+            {
+                options.LowercaseUrls = true;
+                options.AppendTrailingSlash = false;
+            });
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
-            services.ConfigureSwagger();
+
+            // Configure Swagger
+            services.ConfigureSwagger(apiConfiguration);
 
             // Database
             services.ConfigureProductDbContext(configuration);
@@ -73,19 +83,19 @@ namespace Flex.Securities.Api.Extensions
         }
 
         #region Infrastructure
-        private static IServiceCollection ConfigureSwagger(this IServiceCollection services)
-        {
-            services.AddSwaggerGen(c =>
-            {
-                c.DocumentFilter<LowerCaseDocumentFilter>();
+        //private static IServiceCollection ConfigureSwagger(this IServiceCollection services)
+        //{
+        //    services.AddSwaggerGen(c =>
+        //    {
+        //        c.DocumentFilter<LowerCaseDocumentFilter>();
 
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
-            });
+        //        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        //        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        //        c.IncludeXmlComments(xmlPath);
+        //    });
 
-            return services;
-        }
+        //    return services;
+        //}
 
         private static IServiceCollection ConfigureAutoMapper(this IServiceCollection services)
         {
