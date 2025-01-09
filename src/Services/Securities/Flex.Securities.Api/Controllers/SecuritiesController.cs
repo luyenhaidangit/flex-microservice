@@ -147,6 +147,22 @@ namespace Flex.Securities.Api.Controllers
             await _hubContext.Clients.All.SendAsync("ReceiveMessage", message);
             return Ok(new { Status = "Message sent" });
         }
+
+        [HttpPost("send1")]
+        public async Task SendToUserAsync(string userId, string message)
+        {
+            var connectionId = NotificationHub.GetConnectionId(userId);
+            if (connectionId != null)
+            {
+                await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveNotification", message);
+            }
+        }
+
+        [HttpPost("send2")]
+        public async Task BroadcastAsync(string message)
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", message);
+        }
         #endregion
     }
 }

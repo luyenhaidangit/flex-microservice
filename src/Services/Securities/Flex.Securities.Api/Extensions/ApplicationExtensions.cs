@@ -18,7 +18,7 @@ namespace Flex.Securities.Api.Extensions
                 });
             }
 
-            app.MapHub<NotificationHub>("/notifications");
+            app.MapHub<NotificationHub>("/notificationHub");
 
             // Logging
             app.UseSerilogRequestLogging();
