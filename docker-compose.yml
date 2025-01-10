@@ -1,0 +1,16 @@
+version: '3.8'
+
+# services section
+services:
+  securities-api:
+    build:
+      context: .
+      dockerfile: src/Services/Securities/Flex.Securities.Api/Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - flex-network
+#networks section
+networks:
+  flex-network:
+    driver: bridge
