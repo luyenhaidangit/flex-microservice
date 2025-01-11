@@ -5,7 +5,6 @@ using MediatR;
 
 namespace Flex.Ordering.Application.Features.Orders.Commands.UpdateOrder
 {
-    //Comment
     public class UpdateOrderCommand : IMapFrom<Order>, IRequest<Result>
     {
         public long Id { get; set; }
