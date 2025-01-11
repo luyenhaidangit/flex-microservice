@@ -1,34 +1,40 @@
+using Serilog;
+using Flex.SeriLog;
+using Flex.Identity.Api.Extensions;
+using Flex.Identity.Api.Persistence;
 
-namespace Flex.Identity.Api
+var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
+
+builder.AddAppConfigurations();
+
+SeriLogger.Configure(builder);
+Log.Information($"Start {builder.Environment.ApplicationName} up");
+
+try
 {
-    public class Program
+    builder.Services.AddConfigurationSettings(configuration);
+    builder.Services.AddInfrastructure(configuration);
+
+    var app = builder.Build();
+    app.UseInfrastructure();
+
+    await app.MigrateDatabase<IdentityDbContext>(async (context, services) =>
     {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+    });
 
-            // Add services to the container.
+    app.Run();
+}
 
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+catch (Exception ex)
+{
+    string type = ex.GetType().Name;
+    if (type.Equals("StopTheHostException", StringComparison.Ordinal)) throw;
 
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
-
-
-            app.MapControllers();
-
-            app.Run();
-        }
-    }
+    Log.Fatal(ex, $"Unhandled exception: {ex.Message}");
+}
+finally
+{
+    Log.Information($"Shutdown {builder.Environment.ApplicationName} complete");
+    Log.CloseAndFlush();
 }
