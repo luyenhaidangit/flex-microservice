@@ -1,6 +1,6 @@
-﻿namespace Flex.Shared.Options
+﻿namespace Flex.Shared.Configurations
 {
-    public class ApiConfiguration
+    public partial class ApiConfiguration
     {
         public string ApiName { get; set; }
 

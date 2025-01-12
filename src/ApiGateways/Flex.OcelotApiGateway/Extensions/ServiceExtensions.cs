@@ -1,11 +1,18 @@
-﻿using Flex.Shared.Options;
-using System.Text.Json.Serialization;
-using System.Text.Json;
+﻿using Flex.Shared.Constants;
+using Flex.Shared.Configurations;
 
 namespace Flex.OcelotApiGateway.Extensions
 {
     public static class ServiceExtensions
     {
+        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddOptions<ApiConfiguration>().Bind(configuration.GetSection(ConfigurationConstants.ApiConfigurationSection));
+            services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigurationConstants.JwtSettingsSection));
+
+            return services;
+        }
+
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             //// Bind configuration settings
@@ -64,10 +71,5 @@ namespace Flex.OcelotApiGateway.Extensions
 
             return services;
         }
-
-        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
-        {
-            return services;
-        }
-    }
+    }   
 }

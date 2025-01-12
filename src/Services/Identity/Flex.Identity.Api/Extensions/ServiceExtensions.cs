@@ -8,7 +8,7 @@ using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common;
 using Flex.Infrastructure.Common.Repositories;
 using Flex.Infrastructure.Swashbuckle;
-using Flex.Shared.Options;
+using Flex.Shared.Configurations;
 
 namespace Flex.Identity.Api.Extensions
 {
