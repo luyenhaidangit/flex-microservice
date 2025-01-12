@@ -102,10 +102,10 @@ namespace Flex.Identity.Api.Extensions
 
         private static IServiceCollection ConfigureProductDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version11;
+            //OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version11;
 
-            services.AddDbContext<SecuritiesDbContext>(options =>
-            options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
+            //services.AddDbContext<SecuritiesDbContext>(options =>
+            //options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
 
             return services;
         }
@@ -113,8 +113,8 @@ namespace Flex.Identity.Api.Extensions
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
             return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
-                           .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
-                           .AddScoped<ISecuritiesRepository, SecuritiesRepository>();
+                           .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+                           //.AddScoped<ISecuritiesRepository, SecuritiesRepository>();
         }
 
         private static IServiceCollection ConfigureValidationErrorResponse(this IServiceCollection services)
