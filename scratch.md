@@ -59,6 +59,9 @@
 
 Feel free to add more notes or remove anything that becomes outdated.
 
+## Common nuget
+- Flex.Swashbuckle: <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+
 ## Init Securities DB in Oracle
 - CREATE USER luyenhaidangit IDENTIFIED BY haidang106;
 - GRANT DBA TO luyenhaidangit;
