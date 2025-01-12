@@ -7,4 +7,13 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Ocelot" Version="23.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
+    <ProjectReference Include="..\..\Modules\Flex.Swashbuckle\Flex.Swashbuckle.csproj" />
+  </ItemGroup>
+
 </Project>
