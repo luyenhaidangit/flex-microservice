@@ -1,7 +1,10 @@
-﻿namespace Flex.Shared.Configurations
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Flex.Shared.Configurations
 {
     public class JwtSettings
     {
-        public string Key { get; set; }
+        [Required]
+        public string SecretKey { get; set; }
     }
 }
