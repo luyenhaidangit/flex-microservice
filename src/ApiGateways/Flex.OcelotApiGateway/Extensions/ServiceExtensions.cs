@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Flex.Shared.Constants;
 using Flex.Shared.Configurations;
 using Flex.Shared.Extensions;
-using Flex.Swashbuckle;
+using Flex.Infrastructure.Swashbuckle;
 
 namespace Flex.OcelotApiGateway.Extensions
 {
@@ -27,10 +27,7 @@ namespace Flex.OcelotApiGateway.Extensions
             var apiConfiguration = configuration.GetRequiredConfiguration<ApiConfiguration>(ConfigurationConstants.ApiConfigurationSection);
 
             // Add services to the container.
-            services.AddControllers().AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.ApplyJsonSettings();
-            });
+            services.AddControllers();
 
             services.AddEndpointsApiExplorer();
 

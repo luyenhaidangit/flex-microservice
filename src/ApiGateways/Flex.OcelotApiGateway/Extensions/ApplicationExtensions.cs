@@ -1,5 +1,4 @@
-﻿//using Flex.Infrastructure.Middlewares;
-using Microsoft.AspNetCore.Builder;
+﻿using Flex.Infrastructure.Middlewares;
 using Serilog;
 
 namespace Flex.OcelotApiGateway.Extensions
@@ -12,16 +11,16 @@ namespace Flex.OcelotApiGateway.Extensions
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                //app.UseSwaggerUI(c =>
-                //{
-                //    c.DisplayRequestDuration();
-                //});
+                app.UseSwaggerUI(c =>
+                {
+                    c.DisplayRequestDuration();
+                });
             }
 
             // Logging
             app.UseSerilogRequestLogging();
 
-            //app.UseMiddleware<ErrorWrappingMiddleware>();
+            app.UseMiddleware<ErrorWrappingMiddleware>();
 
             app.UseHttpsRedirection();
 
@@ -30,7 +29,7 @@ namespace Flex.OcelotApiGateway.Extensions
 
             app.UseRouting();
 
-            app.UseCors();
+            app.UseCors("CorsPolicy");
 
             app.MapControllers();
         }
