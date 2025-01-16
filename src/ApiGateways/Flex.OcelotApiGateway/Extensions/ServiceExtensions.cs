@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Flex.Shared.Constants;
 using Flex.Shared.Configurations;
+using Flex.Shared.Extensions;
+using Flex.Swashbuckle;
 
 namespace Flex.OcelotApiGateway.Extensions
 {
@@ -21,6 +23,22 @@ namespace Flex.OcelotApiGateway.Extensions
 
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            // Bind configuration settings
+            var apiConfiguration = configuration.GetRequiredConfiguration<ApiConfiguration>(ConfigurationConstants.ApiConfigurationSection);
+
+            // Add services to the container.
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ApplyJsonSettings();
+            });
+
+            services.AddEndpointsApiExplorer();
+
+            services.ConfigureSwagger(apiConfiguration);
+
+            services.ConfigureRouteOptions();
+            services.ConfigureValidationErrorResponse();
+
             // Register services DI container
             services.AddInfrastructureServices();
 
@@ -30,59 +48,8 @@ namespace Flex.OcelotApiGateway.Extensions
             // Add Jwt authentication
             services.AddJwtAuthentication(configuration);
 
-            //// Bind configuration settings
-            //var apiConfiguration = configuration.GetSection("ApiConfiguration").Get<ApiConfiguration>() ?? throw new InvalidOperationException("ApiConfiguration is missing or invalid in appsettings.json.");
-
-            //// Add services to the container.
-            //services.AddControllers(options =>
-            //{
-            //})
-            //.AddJsonOptions(options =>
-            //{
-            //    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-            //    options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-            //    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            //    options.JsonSerializerOptions.WriteIndented = true;
-            //});
-
-            //services.Configure<RouteOptions>(options =>
-            //{
-            //    options.LowercaseUrls = true;
-            //    options.AppendTrailingSlash = false;
-            //});
-
-            //// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            //services.AddEndpointsApiExplorer();
-
-            //// Configure Swagger
-            //services.ConfigureSwagger(apiConfiguration);
-
-            //// Database
-            //services.ConfigureProductDbContext(configuration);
-
-            //// AutoMapper
-            //services.ConfigureAutoMapper();
-
-            //// Infrastructure
-            //services.AddInfrastructureServices();
-
-            //// Response
-            //services.ConfigureValidationErrorResponse();
-
-            //// Cors
-            //services.AddCors(options =>
-            //{
-            //    options.AddDefaultPolicy(policy =>
-            //    {
-            //        policy.WithOrigins("https://localhost:7179")
-            //              .AllowAnyHeader()
-            //              .AllowAnyMethod()
-            //              .AllowCredentials();
-            //    });
-            //});
-
-            //// SignIR
-            //services.AddSignalR();
+            // Configure Cors
+            services.ConfigureCors(configuration);
 
             return services;
         }
@@ -140,6 +107,20 @@ namespace Flex.OcelotApiGateway.Extensions
             });
 
             return services;
+        }
+
+        private static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
+        {
+            var origins = configuration["AllowOrigins"];
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", buider =>
+                {
+                    buider.WithOrigins(origins)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
         }
         #endregion
     }
