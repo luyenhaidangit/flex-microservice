@@ -84,6 +84,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.MediaR", "src\Modules\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Swashbuckle", "src\Modules\Flex.Swashbuckle\Flex.Swashbuckle.csproj", "{156C7AFA-D876-4B35-A9F2-27141F642D51}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.OcelotApiGateway1", "src\ApiGateways\Flex.OcelotApiGateway1\Flex.OcelotApiGateway1.csproj", "{A1200306-18B3-4802-9541-C91243B14886}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -178,6 +180,10 @@ Global
 		{156C7AFA-D876-4B35-A9F2-27141F642D51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{156C7AFA-D876-4B35-A9F2-27141F642D51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{156C7AFA-D876-4B35-A9F2-27141F642D51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1200306-18B3-4802-9541-C91243B14886}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1200306-18B3-4802-9541-C91243B14886}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1200306-18B3-4802-9541-C91243B14886}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1200306-18B3-4802-9541-C91243B14886}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -218,6 +224,7 @@ Global
 		{75759139-3C8A-4105-890B-83C545C9996C} = {A44A8B2A-09E0-4CCB-98B7-451FE2898BC9}
 		{4CDC90B6-DB2E-4721-A206-4EBBDF032990} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 		{156C7AFA-D876-4B35-A9F2-27141F642D51} = {530D590E-4271-451D-A935-ABDA3636EDA9}
+		{A1200306-18B3-4802-9541-C91243B14886} = {5A507416-1EA0-4D0F-BE59-D1D1FD91A3C7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}

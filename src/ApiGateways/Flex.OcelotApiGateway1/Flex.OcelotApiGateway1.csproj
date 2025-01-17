@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="dbup" Version="5.0.41" />
+		<PackageReference Include="dbup-oracle" Version="6.0.1" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Oracle.EntityFrameworkCore" Version="9.23.60" />
+		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.6.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
+		<ProjectReference Include="..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
+	</ItemGroup>
+
+</Project>
