@@ -7,6 +7,6 @@
           "parameterInformation": false
         }
       },
-      "_comment": "Disable IntelliSense for SQL files in Visual Studio"
+      "_comment": "Disable IntelliSense for SQL files in Visual Studio."
     }
   }
