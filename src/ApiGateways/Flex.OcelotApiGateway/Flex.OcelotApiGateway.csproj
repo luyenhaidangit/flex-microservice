@@ -4,21 +4,23 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
-    <PackageReference Include="MMLib.SwaggerForOcelot" Version="8.3.2" />
-    <PackageReference Include="Ocelot" Version="23.4.2" />
-    <PackageReference Include="Ocelot.Cache.CacheManager" Version="23.4.2" />
-    <PackageReference Include="Ocelot.Provider.Polly" Version="23.4.2" />
+	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+	<PackageReference Include="MMLib.SwaggerForOcelot" Version="8.3.2" />
+	<PackageReference Include="Ocelot" Version="23.4.2" />
+	<PackageReference Include="Ocelot.Cache.CacheManager" Version="23.4.2" />
+	<PackageReference Include="Ocelot.Provider.Polly" Version="23.4.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
-    <ProjectReference Include="..\..\Modules\Flex.Swashbuckle\Flex.Swashbuckle.csproj" />
+	<ProjectReference Include="..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
+	<ProjectReference Include="..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

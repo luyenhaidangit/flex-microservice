@@ -1,4 +1,5 @@
 ﻿using Flex.Infrastructure.Middlewares;
+using Flex.OcelotApiGateway.Constants;
 using Serilog;
 
 namespace Flex.OcelotApiGateway.Extensions
@@ -29,7 +30,7 @@ namespace Flex.OcelotApiGateway.Extensions
 
             app.UseRouting();
 
-            app.UseCors("CorsPolicy");
+            app.UseCors(GatewayConstants.CorsPolicy);
 
             app.MapControllers();
         }

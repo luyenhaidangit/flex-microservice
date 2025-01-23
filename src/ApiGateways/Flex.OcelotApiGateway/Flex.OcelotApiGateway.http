@@ -1,6 +1,6 @@
-@Flex.OcelotApiGateway_HostAddress = http://localhost:5102
+@Flex.OcelotApiGateway1_HostAddress = http://localhost:5273
 
-GET {{Flex.OcelotApiGateway_HostAddress}}/weatherforecast/
+GET {{Flex.OcelotApiGateway1_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

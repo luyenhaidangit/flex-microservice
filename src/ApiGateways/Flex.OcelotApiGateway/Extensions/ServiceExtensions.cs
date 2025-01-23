@@ -8,6 +8,7 @@ using Flex.Shared.Constants;
 using Flex.Shared.Configurations;
 using Flex.Shared.Extensions;
 using Flex.Infrastructure.Swashbuckle;
+using Flex.OcelotApiGateway.Constants;
 
 namespace Flex.OcelotApiGateway.Extensions
 {
@@ -51,11 +52,11 @@ namespace Flex.OcelotApiGateway.Extensions
             return services;
         }
 
+
+
         #region Infrastructure
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
-            //services.AddTransient<ITokenService, TokenService>();
-
             return services;
         }
 
@@ -79,7 +80,7 @@ namespace Flex.OcelotApiGateway.Extensions
             {
                 throw new ArgumentNullException($"{nameof(JwtSettings)} is not configured properly");
             }
-                
+
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey));
 
             var tokenValidationParameters = new TokenValidationParameters
@@ -108,14 +109,15 @@ namespace Flex.OcelotApiGateway.Extensions
 
         private static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
         {
-            var origins = configuration["AllowOrigins"];
+            var origins = configuration.GetRequiredConfiguration<string>(ConfigurationConstants.AllowOrigins);
+
             services.AddCors(options =>
             {
-                options.AddPolicy("CorsPolicy", buider =>
+                options.AddPolicy(GatewayConstants.CorsPolicy, buider =>
                 {
                     buider.WithOrigins(origins)
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
                 });
             });
         }
