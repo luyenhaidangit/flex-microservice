@@ -30,7 +30,6 @@ namespace Flex.Infrastructure.Middlewares
             }
             catch (ValidationException ex)
             {
-                 //var errorMsg = ex.Errors.FirstOrDefault().Value.FirstOrDefault();
                 _logger.LogError(ex, "Unhandled exception: {Message}", ex.Message);
                 await HandleExceptionAsync(context, StatusCodes.Status500InternalServerError, ex.Message);
             }
@@ -40,17 +39,9 @@ namespace Flex.Infrastructure.Middlewares
                 await HandleExceptionAsync(context, StatusCodes.Status500InternalServerError, ex.Message);
             }
 
-            if (!context.Response.HasStarted && 
-                (context.Response.StatusCode == StatusCodes.Status401Unauthorized) ||
-                context.Response.StatusCode == StatusCodes.Status403Forbidden)
+            if (!context.Response.HasStarted)
             {
-                context.Response.ContentType = "application/json";
-
-                var response = Result.Failure("Unauthorized");
-
-                var json = JsonSerializer.Serialize(response);
-
-                await context.Response.WriteAsync(json);
+                await HandleCustomResponseAsync(context);
             }
         }
 
@@ -65,6 +56,34 @@ namespace Flex.Infrastructure.Middlewares
             };
             var responseJson = JsonSerializer.Serialize(Result.Failure(message), options);
 
+            await context.Response.WriteAsync(responseJson);
+        }
+
+        private async Task HandleCustomResponseAsync(HttpContext context)
+        {
+            var response = Result.Failure("Internal Server");
+
+            switch (context.Response.StatusCode)
+            {
+                case StatusCodes.Status401Unauthorized:
+                case StatusCodes.Status403Forbidden:
+                    response = Result.Failure("Unauthorized");
+                    break;
+
+                case StatusCodes.Status429TooManyRequests:
+                    response = Result.Failure("Too many requests");
+                    break;
+
+                default:
+                    return;
+            }
+
+            context.Response.ContentType = "application/json";
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            var responseJson = JsonSerializer.Serialize(response, options);
             await context.Response.WriteAsync(responseJson);
         }
     }

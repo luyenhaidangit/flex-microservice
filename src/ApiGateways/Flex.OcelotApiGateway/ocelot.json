@@ -1,6 +1,21 @@
 {
   "GlobalConfiguration": {
-    "BaseUrl": "http://apigw.ocelot"
+    "BaseUrl": "https://localhost:8000",
+    "RequestIdKey": "Oc-Request-ID",
+    "RateLimitOptions": {
+      "EnableRateLimiting": true,
+      "Period": "1m",
+      "Limit": 100,
+      "DisableRateLimitHeaders": false
+    },
+    "LoadBalancerOptions": {
+      "Type": "RoundRobin"
+    },
+    "QoSOptions": {
+      "ExceptionsAllowedBeforeBreaking": 2,
+      "DurationOfBreak": 1000,
+      "TimeoutValue": 5000
+    }
   },
   "Routes": [
     // identity api: http://localhost:6001/api
