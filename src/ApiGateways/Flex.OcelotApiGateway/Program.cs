@@ -1,6 +1,7 @@
 using Serilog;
 using Flex.SeriLog;
 using Flex.OcelotApiGateway.Extensions;
+using Ocelot.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -16,7 +17,7 @@ try
     builder.Services.AddInfrastructure(configuration);
 
     var app = builder.Build();
-    app.UseInfrastructure();
+    await app.UseInfrastructure();
 
     app.Run();
 }
