@@ -32,16 +32,26 @@ namespace Flex.Shared.Extensions
         }
 
         //GetRequiredConfiguration
-        public static T GetRequiredConfiguration<T>(this IConfiguration configuration, string sectionName)
+        public static T GetRequiredSection<T>(this IConfiguration configuration, string sectionName) where T : class, new()
         {
-            var config = configuration.GetValue<T>(sectionName);
-
-            if (EqualityComparer<T>.Default.Equals(config, default))
+            var config = configuration.GetSection(sectionName).Get<T>();
+            if (config == null)
             {
                 throw new InvalidOperationException($"{sectionName} is missing or invalid in appsettings.json.");
             }
-
             return config;
+        }
+
+        public static T GetRequiredValue<T>(this IConfiguration configuration, string key)
+        {
+            var value = configuration.GetValue<T>(key);
+
+            if (EqualityComparer<T>.Default.Equals(value, default))
+            {
+                throw new InvalidOperationException($"Key '{key}' is missing or invalid in appsettings.json.");
+            }
+
+            return value;
         }
 
         //ConfigureValidationErrorResponse

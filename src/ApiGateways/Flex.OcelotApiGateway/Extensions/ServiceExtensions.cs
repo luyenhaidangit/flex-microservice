@@ -25,7 +25,7 @@ namespace Flex.OcelotApiGateway.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Bind configuration settings
-            var apiConfiguration = configuration.GetRequiredConfiguration<ApiConfiguration>(ConfigurationConstants.ApiConfigurationSection);
+            var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigurationConstants.ApiConfigurationSection);
 
             // Add services to the container.
             services.AddControllers();
@@ -51,8 +51,6 @@ namespace Flex.OcelotApiGateway.Extensions
 
             return services;
         }
-
-
 
         #region Infrastructure
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
@@ -109,7 +107,9 @@ namespace Flex.OcelotApiGateway.Extensions
 
         private static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
         {
-            var origins = configuration.GetRequiredConfiguration<string>(ConfigurationConstants.AllowOrigins);
+            //var origins = configuration.GetRequiredConfiguration<string>(ConfigurationConstants.AllowOrigins);
+
+            var origins = configuration.GetRequiredValue<string>(ConfigurationConstants.AllowOrigins);
 
             services.AddCors(options =>
             {

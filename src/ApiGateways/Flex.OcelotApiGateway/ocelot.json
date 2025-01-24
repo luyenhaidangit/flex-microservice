@@ -19,7 +19,6 @@
   },
   "Routes": [
     {
-      "ServiceName": "securities-service",
       "SwaggerKey": "securities-service",
       "DownstreamPathTemplate": "/api/securities/{everything}",
       "UpstreamPathTemplate": "/api/securities/{everything}",
