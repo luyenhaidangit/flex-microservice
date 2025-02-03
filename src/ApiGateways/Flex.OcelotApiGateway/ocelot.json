@@ -30,6 +30,19 @@
           "Port": 5001
         }
       ]
+    },
+    {
+      "SwaggerKey": "system-service",
+      "DownstreamPathTemplate": "/api/system",
+      "UpstreamPathTemplate": "/api/system",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7204
+        }
+      ]
     }
   ],
   "SwaggerEndPoints": [
