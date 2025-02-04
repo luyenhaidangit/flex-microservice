@@ -11,6 +11,8 @@ using Flex.Infrastructure.Swashbuckle;
 using Flex.Shared.Configurations;
 using Flex.Shared.Constants;
 using Flex.Shared.Extensions;
+using Flex.Identity.Api.Persistence;
+using Flex.EntityFrameworkCore.Oracle;
 
 namespace Flex.Identity.Api.Extensions
 {
@@ -18,15 +20,12 @@ namespace Flex.Identity.Api.Extensions
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            // Bind configuration settings
-            var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigurationConstants.ApiConfigurationSection);
-
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
 
             services.AddEndpointsApiExplorer();
 
-            services.ConfigureSwagger(apiConfiguration);
+            services.ConfigureSwagger();
 
             services.ConfigureRouteOptions();
             services.ConfigureValidationErrorResponse();
@@ -35,7 +34,7 @@ namespace Flex.Identity.Api.Extensions
             services.AddInfrastructureServices();
 
             // Database
-            services.ConfigureProductDbContext(configuration);
+            services.ConfigureServiceDbContext<IdentityDbContext>(configuration);
 
             // AutoMapper
             services.ConfigureAutoMapper();
@@ -90,10 +89,10 @@ namespace Flex.Identity.Api.Extensions
 
         private static IServiceCollection ConfigureProductDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            //OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version11;
+            OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version11;
 
-            //services.AddDbContext<SecuritiesDbContext>(options =>
-            //options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<SecuritiesDbContext>(options =>
+            options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
 
             return services;
         }
