@@ -85,6 +85,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Swashbuckle", "src\Mod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.OcelotApiGateway", "src\ApiGateways\Flex.OcelotApiGateway\Flex.OcelotApiGateway.csproj", "{3D027E2D-32ED-4592-9092-825A0946C841}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.EntityFrameworkCore.Oracle", "src\Modules\Flex.EntityFrameworkCore.Oracle\Flex.EntityFrameworkCore.Oracle.csproj", "{CB011BAE-7464-440E-94C3-5F9A1E6DE1CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.EntityFrameworkCore", "src\Modules\Flex.EntityFrameworkCore\Flex.EntityFrameworkCore.csproj", "{BF4F0E34-1850-4953-B128-DC13206B1569}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -179,6 +183,14 @@ Global
 		{3D027E2D-32ED-4592-9092-825A0946C841}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D027E2D-32ED-4592-9092-825A0946C841}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D027E2D-32ED-4592-9092-825A0946C841}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB011BAE-7464-440E-94C3-5F9A1E6DE1CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB011BAE-7464-440E-94C3-5F9A1E6DE1CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB011BAE-7464-440E-94C3-5F9A1E6DE1CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB011BAE-7464-440E-94C3-5F9A1E6DE1CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF4F0E34-1850-4953-B128-DC13206B1569}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF4F0E34-1850-4953-B128-DC13206B1569}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF4F0E34-1850-4953-B128-DC13206B1569}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF4F0E34-1850-4953-B128-DC13206B1569}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -219,6 +231,8 @@ Global
 		{4CDC90B6-DB2E-4721-A206-4EBBDF032990} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 		{156C7AFA-D876-4B35-A9F2-27141F642D51} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 		{3D027E2D-32ED-4592-9092-825A0946C841} = {5A507416-1EA0-4D0F-BE59-D1D1FD91A3C7}
+		{CB011BAE-7464-440E-94C3-5F9A1E6DE1CD} = {530D590E-4271-451D-A935-ABDA3636EDA9}
+		{BF4F0E34-1850-4953-B128-DC13206B1569} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}
