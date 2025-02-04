@@ -19,9 +19,7 @@ try
     var app = builder.Build();
     app.UseInfrastructure();
 
-    await app.MigrateDatabase<IdentityDbContext>(async (context, services) =>
-    {
-    });
+    await IdentityDbSeed.InitAsync(app.Services);
 
     app.Run();
 }
