@@ -1,15 +1,4 @@
-﻿using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Flex.Shared.SeedWork;
-using Flex.Contracts.Domains.Interfaces;
-using Flex.Infrastructure.Common;
-using Flex.Infrastructure.Common.Repositories;
-using Flex.Infrastructure.Swashbuckle;
-using Flex.Shared.Configurations;
-using Flex.Shared.Constants;
+﻿using Flex.Infrastructure.Swashbuckle;
 using Flex.Shared.Extensions;
 using Flex.Identity.Api.Persistence;
 using Flex.EntityFrameworkCore.Oracle;
@@ -18,6 +7,11 @@ namespace Flex.Identity.Api.Extensions
 {
     public static class ServiceExtensions
     {
+        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            return services;
+        }
+
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Add services to the container.
@@ -37,71 +31,15 @@ namespace Flex.Identity.Api.Extensions
             services.ConfigureServiceDbContext<IdentityDbContext>(configuration);
 
             // AutoMapper
-            services.ConfigureAutoMapper();
-
-            // Infrastructure
-            services.AddInfrastructureServices();
-
-            // Cors
-            services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(policy =>
-                {
-                    policy.WithOrigins("https://localhost:7179")
-                          .AllowAnyHeader()
-                          .AllowAnyMethod()
-                          .AllowCredentials();
-                });
-            });
-
-            // SignIR
-            services.AddSignalR();
-
-            return services;
-        }
-
-        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
-        {
-            return services;
-        }
-
-        #region Infrastructure
-        //private static IServiceCollection ConfigureSwagger(this IServiceCollection services)
-        //{
-        //    services.AddSwaggerGen(c =>
-        //    {
-        //        c.DocumentFilter<LowerCaseDocumentFilter>();
-
-        //        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        //        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        //        c.IncludeXmlComments(xmlPath);
-        //    });
-
-        //    return services;
-        //}
-
-        private static IServiceCollection ConfigureAutoMapper(this IServiceCollection services)
-        {
             services.AddAutoMapper(AssemblyReference.Assembly);
 
             return services;
         }
 
-        private static IServiceCollection ConfigureProductDbContext(this IServiceCollection services, IConfiguration configuration)
-        {
-            OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version11;
-
-            services.AddDbContext<SecuritiesDbContext>(options =>
-            options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
-
-            return services;
-        }
-
+        #region Infrastructure
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
-            return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
-                           .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
-                           //.AddScoped<ISecuritiesRepository, SecuritiesRepository>();
+            return services;
         }
         #endregion
     }

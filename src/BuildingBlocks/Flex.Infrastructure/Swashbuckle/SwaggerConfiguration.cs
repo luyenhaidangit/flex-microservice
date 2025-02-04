@@ -7,6 +7,18 @@ namespace Flex.Infrastructure.Swashbuckle
 {
     public static class SwaggerConfiguration
     {
+        public static void ConfigureSwagger(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.DocumentFilter<LowerCaseDocumentFilter>();
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
+        }
+
         public static void ConfigureSwagger(this IServiceCollection services, ApiConfiguration configuration)
         {                
             services.AddSwaggerGen(c =>
@@ -56,18 +68,6 @@ namespace Flex.Infrastructure.Swashbuckle
                         new List<string> { $"{configuration.ApiName}.read", $"{configuration.ApiName}.write" }
                     }
                 });
-            });
-        }
-
-        public static void ConfigureSwagger(this IServiceCollection services)
-        {
-            services.AddSwaggerGen(c =>
-            {
-                c.DocumentFilter<LowerCaseDocumentFilter>();
-
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
             });
         }
     }
