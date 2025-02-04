@@ -28,7 +28,7 @@ namespace Flex.OcelotApiGateway.Extensions
             var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigurationConstants.ApiConfigurationSection);
 
             // Add services to the container.
-            services.AddControllers();
+            services.AddControllers().ApplyJsonSettings();
 
             services.AddEndpointsApiExplorer();
 

@@ -22,7 +22,7 @@ namespace Flex.Identity.Api.Extensions
             var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigurationConstants.ApiConfigurationSection);
 
             // Add services to the container.
-            services.AddControllers();
+            services.AddControllers().ApplyJsonSettings();
 
             services.AddEndpointsApiExplorer();
 
@@ -33,24 +33,6 @@ namespace Flex.Identity.Api.Extensions
 
             // Register services DI container
             services.AddInfrastructureServices();
-
-            // Add services to the container.
-            services.AddControllers(options =>
-            {
-            })
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-                options.JsonSerializerOptions.WriteIndented = true;
-            });
-
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            services.AddEndpointsApiExplorer();
-
-            // Configure Swagger
-            services.ConfigureSwagger(apiConfiguration);
 
             // Database
             services.ConfigureProductDbContext(configuration);

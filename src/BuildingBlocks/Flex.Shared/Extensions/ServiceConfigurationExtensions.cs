@@ -22,15 +22,6 @@ namespace Flex.Shared.Extensions
             return services;
         }
 
-        //JsonSerializerOptions
-        public static void ApplyJsonSettings(this JsonSerializerOptions options)
-        {
-            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-            options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            options.WriteIndented = true;
-        }
-
         //GetRequiredConfiguration
         public static T GetRequiredSection<T>(this IConfiguration configuration, string sectionName) where T : class, new()
         {
@@ -52,6 +43,17 @@ namespace Flex.Shared.Extensions
             }
 
             return value;
+        }
+
+        public static IMvcBuilder ApplyJsonSettings(this IMvcBuilder builder)
+        {
+            return builder.AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;  // .NET 5+
+                options.JsonSerializerOptions.WriteIndented = true;
+            });
         }
 
         //ConfigureValidationErrorResponse
