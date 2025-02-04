@@ -19,42 +19,19 @@
   },
   "Routes": [
     {
-      "SwaggerKey": "securities-service",
-      "DownstreamPathTemplate": "/api/securities/{everything}",
-      "UpstreamPathTemplate": "/api/securities/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5001
-        }
-      ]
-    },
-    {
-      "SwaggerKey": "system-service",
-      "DownstreamPathTemplate": "/api/system",
-      "UpstreamPathTemplate": "/api/system",
+      "Key": "identity-service",
+      "DownstreamPathTemplate": "/api/identity/{everything}",
+      "UpstreamPathTemplate": "/api/identity/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7204
+          "Port": 7001
         }
       ]
     }
   ],
   "SwaggerEndPoints": [
-    {
-      "Key": "securities-service",
-      "Config": [
-        {
-          "Name": "Securities Api",
-          "Version": "v1",
-          "Url": "http://localhost:5001/swagger/v1/swagger.json"
-        }
-      ]
-    }
   ]
 }

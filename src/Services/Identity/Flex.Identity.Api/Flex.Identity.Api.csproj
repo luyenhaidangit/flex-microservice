@@ -18,10 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Shared\Flex.Shared.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.EntityFrameworkCore.Oracle\Flex.EntityFrameworkCore.Oracle.csproj" />

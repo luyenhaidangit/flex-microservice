@@ -18,19 +18,6 @@
     }
   },
   "Routes": [
-    {
-      "SwaggerKey": "securities-service",
-      "DownstreamPathTemplate": "/api/securities/{everything}",
-      "UpstreamPathTemplate": "/api/securities/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 5001
-        }
-      ]
-    }
   ],
   "SwaggerEndPoints": [
     {
