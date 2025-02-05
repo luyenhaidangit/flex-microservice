@@ -1,10 +1,10 @@
 ﻿using Duende.IdentityServer.EntityFramework.DbContexts;
 using Duende.IdentityServer.EntityFramework.Mappers;
-using Flex.Identity.Api.Configurations;
+using Flex.IdentityServer.Api.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Flex.Identity.Api.Persistence
+namespace Flex.IdentityServer.Api.Persistence
 {
     public static class IdentityDbSeed
     {

@@ -1,7 +1,7 @@
 using Serilog;
 using Flex.SeriLog;
-using Flex.Identity.Api.Extensions;
-using Flex.Identity.Api.Persistence;
+using Flex.IdentityServer.Api.Extensions;
+using Flex.IdentityServer.Api.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;

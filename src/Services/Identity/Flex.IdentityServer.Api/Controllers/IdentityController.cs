@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Flex.Identity.Api.Controllers
+namespace Flex.IdentityServer.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

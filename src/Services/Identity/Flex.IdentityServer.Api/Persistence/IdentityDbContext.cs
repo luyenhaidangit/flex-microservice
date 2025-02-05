@@ -1,8 +1,8 @@
-﻿using Flex.Identity.Api.Entities;
+﻿using Flex.IdentityServer.Api.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace Flex.Identity.Api.Persistence
+namespace Flex.IdentityServer.Api.Persistence
 {
     public class IdentityDbContext : IdentityDbContext<User, Role, long>
     {

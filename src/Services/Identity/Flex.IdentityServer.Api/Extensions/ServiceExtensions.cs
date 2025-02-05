@@ -1,14 +1,14 @@
 ﻿using Flex.Infrastructure.Swashbuckle;
 using Flex.Shared.Extensions;
-using Flex.Identity.Api.Persistence;
+using Flex.IdentityServer.Api.Persistence;
 using Flex.EntityFrameworkCore.Oracle;
-using Flex.Identity.Api.Configurations;
+using Flex.IdentityServer.Api.Configurations;
 using Duende.IdentityServer.EntityFramework.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Oracle.ManagedDataAccess.Client;
 using Microsoft.EntityFrameworkCore.Migrations.Internal;
 
-namespace Flex.Identity.Api.Extensions
+namespace Flex.IdentityServer.Api.Extensions
 {
     public static class ServiceExtensions
     {

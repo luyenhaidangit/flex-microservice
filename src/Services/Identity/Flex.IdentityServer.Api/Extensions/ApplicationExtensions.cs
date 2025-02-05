@@ -3,7 +3,7 @@ using Flex.Infrastructure.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
-namespace Flex.Identity.Api.Extensions
+namespace Flex.IdentityServer.Api.Extensions
 {
     public static class ApplicationExtensions
     {

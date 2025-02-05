@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace Flex.Identity.Api.Entities
+namespace Flex.IdentityServer.Api.Entities
 {
     public class Role : IdentityRole<long>
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Flex.Identity.Api.Extensions
+namespace Flex.IdentityServer.Api.Extensions
 {
     public static class HostExtensions
     {

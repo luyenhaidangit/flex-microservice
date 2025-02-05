@@ -1,6 +1,6 @@
 ﻿using Duende.IdentityServer.Models;
 
-namespace Flex.Identity.Api.Configurations
+namespace Flex.IdentityServer.Api.Configurations
 {
     public static class ApiResources
     {

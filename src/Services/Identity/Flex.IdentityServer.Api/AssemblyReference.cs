@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Flex.Identity.Api
+namespace Flex.IdentityServer.Api
 {
     public static class AssemblyReference
     {
