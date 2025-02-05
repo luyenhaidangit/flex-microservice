@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Flex.AspNetIdentity.Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/identity")]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]

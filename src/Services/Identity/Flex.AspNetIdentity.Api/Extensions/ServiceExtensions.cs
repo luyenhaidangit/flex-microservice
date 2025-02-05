@@ -12,16 +12,11 @@ namespace Flex.AspNetIdentity.Api.Extensions
     {
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions<ApiConfiguration>().Bind(configuration.GetSection(ConfigurationConstants.ApiConfigurationSection)).ValidateDataAnnotations().ValidateOnStart();
-
             return services;
         }
 
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            // Bind configuration settings
-            var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigurationConstants.ApiConfigurationSection);
-
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
 
