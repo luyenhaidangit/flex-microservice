@@ -87,7 +87,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.EntityFrameworkCore.Or
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.EntityFrameworkCore", "src\Modules\Flex.EntityFrameworkCore\Flex.EntityFrameworkCore.csproj", "{BF4F0E34-1850-4953-B128-DC13206B1569}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Identity.Api", "src\Services\Identity\Flex.IdentityServer.Api\Flex.Identity.Api.csproj", "{F2F5DA78-6912-4049-BE02-E4CF32220ED2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.IdentityServer.Api", "src\Services\Identity\Flex.IdentityServer.Api\Flex.IdentityServer.Api.csproj", "{F2F5DA78-6912-4049-BE02-E4CF32220ED2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.AspNetIdentity.Api", "src\Services\Identity\Flex.AspNetIdentity.Api\Flex.AspNetIdentity.Api.csproj", "{8CA8900B-32C1-43C9-93A8-394904020F8B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -191,6 +193,10 @@ Global
 		{F2F5DA78-6912-4049-BE02-E4CF32220ED2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2F5DA78-6912-4049-BE02-E4CF32220ED2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2F5DA78-6912-4049-BE02-E4CF32220ED2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CA8900B-32C1-43C9-93A8-394904020F8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CA8900B-32C1-43C9-93A8-394904020F8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CA8900B-32C1-43C9-93A8-394904020F8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CA8900B-32C1-43C9-93A8-394904020F8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -233,6 +239,7 @@ Global
 		{CB011BAE-7464-440E-94C3-5F9A1E6DE1CD} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 		{BF4F0E34-1850-4953-B128-DC13206B1569} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 		{F2F5DA78-6912-4049-BE02-E4CF32220ED2} = {918223BF-EA2C-4D0E-A3A1-A65E876ED04E}
+		{8CA8900B-32C1-43C9-93A8-394904020F8B} = {918223BF-EA2C-4D0E-A3A1-A65E876ED04E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}
