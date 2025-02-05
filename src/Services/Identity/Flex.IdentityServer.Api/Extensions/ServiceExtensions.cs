@@ -17,16 +17,6 @@ namespace Flex.IdentityServer.Api.Extensions
             return services;
         }
 
-        public static IServiceCollection ConfigureServiceDbContext<TContext>(this IServiceCollection services, IConfiguration configuration) where TContext : DbContext
-        {
-            OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version11;
-
-            services.AddDbContext<TContext>(options =>
-                options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
-
-            return services;
-        }
-
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Add services to the container.
