@@ -4,5 +4,15 @@ namespace Flex.AspNetIdentity.Api.Entities
 {
     public class Role : IdentityRole<long>
     {
+        public Role()
+        {
+        }
+
+        public Role(string roleName)
+        {
+            Name = roleName;
+            NormalizedName = roleName.ToUpper();
+            ConcurrencyStamp = Guid.NewGuid().ToString();
+        }
     }
 }

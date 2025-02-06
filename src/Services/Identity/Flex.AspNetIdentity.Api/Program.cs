@@ -21,7 +21,7 @@ try
 
     await app.MigrateDatabase<IdentityDbContext>(async (context, services) =>
     {
-        await IdentityDbSeed.InitAsync(context, Log.Logger);
+        await IdentityDbSeed.InitAsync(services, Log.Logger);
     });
 
     app.Run();
