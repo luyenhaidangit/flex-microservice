@@ -1,10 +1,10 @@
-﻿using Flex.Shared.Constants;
-using Flex.Shared.Configurations;
-using Flex.Shared.Extensions;
+﻿using Flex.Shared.Extensions;
 using Flex.EntityFrameworkCore.Oracle;
 using Flex.AspNetIdentity.Api.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Flex.AspNetIdentity.Api.Entities;
+using Flex.Security;
+using Flex.Shared.Constants;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -12,6 +12,8 @@ namespace Flex.AspNetIdentity.Api.Extensions
     {
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigurationConstants.JwtSettingsSection)).ValidateDataAnnotations().ValidateOnStart();
+
             return services;
         }
 
@@ -35,6 +37,10 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             // Identity
             services.ConfigureAspNetIdentity();
+            services.AddJwtTokenSecurity();
+
+            // AutoMapper
+            services.AddAutoMapper(AssemblyReference.Assembly);
 
             return services;
         }
