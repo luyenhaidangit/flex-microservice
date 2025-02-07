@@ -1,5 +1,5 @@
-﻿using Flex.Infrastructure.Constants;
-using Flex.Infrastructure.SeedWork;
+﻿using Flex.Shared.Constants;
+using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;

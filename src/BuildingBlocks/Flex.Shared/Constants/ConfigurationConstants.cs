@@ -1,4 +1,4 @@
-﻿namespace Flex.Infrastructure.Constants
+﻿namespace Flex.Shared.Constants
 {
     public class ConfigurationConstants
     {
