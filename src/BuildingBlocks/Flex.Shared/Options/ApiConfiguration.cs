@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Flex.Shared.Configurations
+namespace Flex.Shared.Options
 {
     public partial class ApiConfiguration
     {

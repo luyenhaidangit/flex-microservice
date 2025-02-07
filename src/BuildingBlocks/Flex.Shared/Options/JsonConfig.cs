@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
 
-namespace Flex.Shared.Configurations
+namespace Flex.Shared.Options
 {
     public static class JsonConfig
     {

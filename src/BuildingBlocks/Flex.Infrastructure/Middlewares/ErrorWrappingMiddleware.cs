@@ -61,17 +61,22 @@ namespace Flex.Infrastructure.Middlewares
 
         private async Task HandleCustomResponseAsync(HttpContext context)
         {
-            var response = Result.Failure("Internal Server");
+            var response = Result.Failure(message: "Internal Server");
 
             switch (context.Response.StatusCode)
             {
                 case StatusCodes.Status401Unauthorized:
                 case StatusCodes.Status403Forbidden:
-                    response = Result.Failure("Unauthorized");
+                    response = Result.Failure(message: "Unauthorized");
                     break;
-
+                case StatusCodes.Status404NotFound:
+                    response = Result.Failure(message: "Api Not Found");
+                    break;
+                case StatusCodes.Status415UnsupportedMediaType:
+                    response = Result.Failure(message: "Unsupported Media Type");
+                    break;
                 case StatusCodes.Status429TooManyRequests:
-                    response = Result.Failure("Too many requests");
+                    response = Result.Failure(message: "Too many requests");
                     break;
 
                 default:

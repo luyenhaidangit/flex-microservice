@@ -1,4 +1,4 @@
-﻿using Flex.Shared.Extensions;
+﻿using Flex.Infrastructure.Extensions;
 using Flex.EntityFrameworkCore.Oracle;
 using Flex.AspNetIdentity.Api.Persistence;
 using Microsoft.AspNetCore.Identity;

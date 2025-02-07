@@ -1,7 +1,7 @@
 ﻿using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using Flex.Shared.Configurations;
+using Flex.Shared.Options;
 
 namespace Flex.Swashbuckle
 {

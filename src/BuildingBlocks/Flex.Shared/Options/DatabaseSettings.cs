@@ -1,4 +1,4 @@
-﻿namespace Flex.Shared.Configurations
+﻿namespace Flex.Shared.Options
 {
     public class DatabaseSettings
     {

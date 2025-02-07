@@ -5,7 +5,7 @@ using Ocelot.Cache.CacheManager;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Flex.Shared.Constants;
-using Flex.Shared.Configurations;
+using Flex.Shared.Options;
 using Flex.Shared.Extensions;
 using Flex.Infrastructure.Swashbuckle;
 using Flex.OcelotApiGateway.Constants;

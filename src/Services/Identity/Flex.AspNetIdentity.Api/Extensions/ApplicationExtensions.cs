@@ -1,5 +1,5 @@
 ﻿using Serilog;
-using Flex.Infrastructure.Middlewares;
+using Flex.Infrastructure.Extensions;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -16,7 +16,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // Logging
             app.UseSerilogRequestLogging();
 
-            app.UseMiddleware<ErrorWrappingMiddleware>();
+            app.UseApplicationMiddleware();
 
             app.UseHttpsRedirection();
 
