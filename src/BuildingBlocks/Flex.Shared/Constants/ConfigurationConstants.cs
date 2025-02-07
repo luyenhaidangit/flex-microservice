@@ -1,4 +1,4 @@
-﻿namespace Flex.Shared.Constants
+﻿namespace Flex.Infrastructure.Constants
 {
     public class ConfigurationConstants
     {
@@ -8,5 +8,7 @@
         public const string JwtSettingsSection = "JwtSettings";
 
         public const string AllowOrigins = "AllowOrigins";
+
+        public const string AllowedIPs = "AllowedIPs";  
     }
 }
