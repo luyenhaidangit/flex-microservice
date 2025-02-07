@@ -9,6 +9,6 @@
 
         public const string AllowOrigins = "AllowOrigins";
 
-        public const string AllowedIPs = "AllowedIPs";  
+        public const string IpWhitelist = "IpWhitelist";  
     }
 }
