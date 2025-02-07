@@ -20,8 +20,8 @@
   "Routes": [
     {
       "Key": "identity-service",
-      "DownstreamPathTemplate": "/api/identity/{everything}",
-      "UpstreamPathTemplate": "/api/identity/{everything}",
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "UpstreamPathTemplate": "/api/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [

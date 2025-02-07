@@ -12,7 +12,7 @@ using ClaimTypesApp = Flex.Security.ClaimTypes;
 namespace Flex.AspNetIdentity.Api.Controllers
 {
     [ApiController]
-    [Route("api/identity")]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
@@ -33,6 +33,8 @@ namespace Flex.AspNetIdentity.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
         {
+            _logger.LogInformation("Attempting to register user: {Email}", request.Email);
+
             // Validate
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
@@ -56,12 +58,15 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 return BadRequest(Result.Failure(message: "User registration failed.", errors: result.Errors));
             }
 
+            _logger.LogInformation("User {Email} registered successfully.", request.Email);
             return Ok(Result.Success("User registered successfully"));
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginByUserNameRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginByUserNameRequest request)
         {
+            _logger.LogInformation("User {Username} attempting to login.", request.UserName);
+
             // Validate
             var user = await _userManager.FindByNameAsync(request.UserName);
 
@@ -88,6 +93,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
             var result = new LoginResult(token);
 
+            _logger.LogInformation("User {Username} logged in successfully.", request.UserName);
             return Ok(Result.Success(message: "Login success!",data: result));
         }
     }
