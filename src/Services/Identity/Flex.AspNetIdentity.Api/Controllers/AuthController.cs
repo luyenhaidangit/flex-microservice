@@ -3,6 +3,7 @@ using Flex.AspNetIdentity.Api.Entities;
 using Flex.Security;
 using Flex.Shared.DTOs.Identity;
 using Flex.Shared.SeedWork;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
@@ -63,6 +65,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginByUserNameRequest request)
         {
             _logger.LogInformation("User {Username} attempting to login.", request.UserName);

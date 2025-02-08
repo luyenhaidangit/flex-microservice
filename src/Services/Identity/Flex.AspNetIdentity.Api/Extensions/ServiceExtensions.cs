@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.Security;
 using Flex.Shared.Constants;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {

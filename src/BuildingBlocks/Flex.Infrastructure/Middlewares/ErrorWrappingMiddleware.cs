@@ -84,6 +84,9 @@ namespace Flex.Infrastructure.Middlewares
                 case StatusCodes.Status429TooManyRequests:
                     response = Result.Failure(message: "Too many requests");
                     break;
+                case StatusCodes.Status502BadGateway:
+                    response = Result.Failure(message: "Service is unavailable or down. Please try again later.");
+                    break;
 
                 default:
                     return;
