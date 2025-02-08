@@ -39,13 +39,13 @@ namespace Flex.AspNetIdentity.Api.Controllers
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
             {
-                return BadRequest(Result.Failure("User already exists with this email."));
+                return BadRequest(Result.Failure(message: "User already exists with this email."));
             }
 
             var existingUsername = await _userManager.FindByNameAsync(request.Email);
             if (existingUsername != null)
             {
-                return BadRequest(Result.Failure("User already exists with this username."));
+                return BadRequest(Result.Failure(message: "User already exists with this username."));
             }
 
             // Process
@@ -59,7 +59,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             }
 
             _logger.LogInformation("User {Email} registered successfully.", request.Email);
-            return Ok(Result.Success("User registered successfully"));
+            return Ok(Result.Success(message: "User registered successfully"));
         }
 
         [HttpPost("login")]
@@ -72,12 +72,12 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
             if (user is null)
             {
-                return BadRequest(Result.Failure("User not exists with this username."));
+                return BadRequest(Result.Failure(message: "User not exists with this username."));
             }
 
             if (!await _userManager.CheckPasswordAsync(user, request.Password))
             {
-                return BadRequest(Result.Failure("Invalid username or password."));
+                return BadRequest(Result.Failure(message: "Invalid username or password."));
             }
 
             // Process
