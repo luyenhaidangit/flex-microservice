@@ -96,5 +96,31 @@ namespace Flex.AspNetIdentity.Api.Controllers
             _logger.LogInformation("User {Username} logged in successfully.", request.UserName);
             return Ok(Result.Success(message: "Login success!",data: result));
         }
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetCurrentUserInfo()
+        {
+            var userName = User.FindFirstValue(ClaimTypesApp.UserName);
+
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized(Result.Failure(message: "Unauthorized"));
+            }
+
+            var user = await _userManager.FindByNameAsync(userName);
+
+            if (user is null)
+            {
+                return BadRequest(Result.Failure(message: "User not found"));
+            }
+
+            var userInfo = new UserInfoResult
+            {
+                UserName = user.UserName,
+                Email = user.Email
+            };
+
+            return Ok(Result.Success(message: "Login success!", data: userInfo));
+        }
     }
 }

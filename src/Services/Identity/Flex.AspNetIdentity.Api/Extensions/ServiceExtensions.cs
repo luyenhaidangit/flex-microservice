@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.Security;
 using Flex.Shared.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -12,13 +13,16 @@ namespace Flex.AspNetIdentity.Api.Extensions
     {
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigurationConstants.JwtSettingsSection)).ValidateDataAnnotations().ValidateOnStart();
+            services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigurationConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
 
             return services;
         }
 
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            // Bind JwtSettings settings
+            var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigurationConstants.JwtSettings);
+
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
 
@@ -38,6 +42,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // Identity
             services.ConfigureAspNetIdentity();
             services.AddJwtTokenSecurity();
+            services.AddAuthenticationJwtToken(jwtSettings);
 
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);
