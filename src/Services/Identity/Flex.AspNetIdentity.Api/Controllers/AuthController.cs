@@ -99,7 +99,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         [HttpGet("me")]
-        [Authorize]
         public async Task<IActionResult> GetCurrentUserInfo()
         {
             var userName = User.FindFirstValue(ClaimTypesApp.UserName);
@@ -122,7 +121,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 Email = user.Email
             };
 
-            return Ok(Result.Success(message: "Login success!", data: userInfo));
+            return Ok(Result.Success(message: "Get info user success!", data: userInfo));
         }
     }
 }
