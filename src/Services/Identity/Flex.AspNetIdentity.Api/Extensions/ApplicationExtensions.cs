@@ -23,8 +23,8 @@ namespace Flex.AspNetIdentity.Api.Extensions
             app.UseAuthentication();
             app.UseAuthorization();
 
-            //app.UseApplicationMiddleware();
-            app.UseMiddleware<ErrorWrappingMiddleware>();
+            app.UseApplicationMiddleware();
+            //app.UseMiddleware<ErrorWrappingMiddleware>();
 
             app.MapControllers();
         }

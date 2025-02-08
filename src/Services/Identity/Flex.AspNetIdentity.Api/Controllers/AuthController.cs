@@ -3,7 +3,6 @@ using Flex.AspNetIdentity.Api.Entities;
 using Flex.Security;
 using Flex.Shared.DTOs.Identity;
 using Flex.Shared.SeedWork;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
