@@ -19,6 +19,12 @@ namespace Flex.Infrastructure.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
+            if (this.IsMissingContentType(context))
+            {
+                await HandleExceptionAsync(context, StatusCodes.Status415UnsupportedMediaType, "Unsupported Media Type: Content-Type header is missing.");
+                return;
+            }
+
             try
             {
                 await _next.Invoke(context);
@@ -54,7 +60,7 @@ namespace Flex.Infrastructure.Middlewares
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
-            var responseJson = JsonSerializer.Serialize(Result.Failure(message), options);
+            var responseJson = JsonSerializer.Serialize(Result.Failure(message: message), options);
 
             await context.Response.WriteAsync(responseJson);
         }
@@ -90,6 +96,18 @@ namespace Flex.Infrastructure.Middlewares
             };
             var responseJson = JsonSerializer.Serialize(response, options);
             await context.Response.WriteAsync(responseJson);
+        }
+
+        private bool IsMissingContentType(HttpContext context)
+        {
+            if (context.Request.Method == HttpMethods.Post ||
+                context.Request.Method == HttpMethods.Put ||
+                context.Request.Method == HttpMethods.Patch)
+            {
+                return !context.Request.Headers.ContainsKey("Content-Type") ||
+                       string.IsNullOrEmpty(context.Request.ContentType);
+            }
+            return false;
         }
     }
 }
