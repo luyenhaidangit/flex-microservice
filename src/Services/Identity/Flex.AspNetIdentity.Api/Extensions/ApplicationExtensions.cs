@@ -17,15 +17,14 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // Logging
             app.UseSerilogRequestLogging();
 
-            //app.UseApplicationMiddleware();
-            app.UseMiddleware<ErrorWrappingMiddleware>();
-
             app.UseHttpsRedirection();
+            app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseRouting();
+            //app.UseApplicationMiddleware();
+            app.UseMiddleware<ErrorWrappingMiddleware>();
 
             app.MapControllers();
         }

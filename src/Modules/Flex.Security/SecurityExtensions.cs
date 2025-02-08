@@ -16,7 +16,11 @@ namespace Flex.Security
 
         public static IServiceCollection AddAuthenticationJwtToken(this IServiceCollection services, JwtSettings jwtSettings)
         {
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            services.AddAuthentication(options =>
+                    {
+                        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    })
                     .AddJwtBearer(options =>
                     {
                         options.TokenValidationParameters = new TokenValidationParameters
@@ -26,7 +30,7 @@ namespace Flex.Security
                             ValidateLifetime = true,
                             ValidateIssuerSigningKey = true,
                             ValidIssuer = jwtSettings.Issuer,
-                            ValidAudience = jwtSettings.Issuer,
+                            ValidAudience = jwtSettings.Audience,
                             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
                         };
                     });
