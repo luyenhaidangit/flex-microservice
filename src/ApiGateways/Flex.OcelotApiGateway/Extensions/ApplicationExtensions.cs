@@ -1,4 +1,5 @@
-﻿using Flex.Infrastructure.Middlewares;
+﻿using Flex.Infrastructure.Extensions;
+using Flex.Infrastructure.Middlewares;
 using Flex.OcelotApiGateway.Constants;
 using Ocelot.Middleware;
 using Serilog;
@@ -22,14 +23,14 @@ namespace Flex.OcelotApiGateway.Extensions
             // Logging
             app.UseSerilogRequestLogging();
 
-            app.UseMiddleware<ErrorWrappingMiddleware>();
-
             app.UseHttpsRedirection();
+
+            app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseRouting();
+            app.UseMiddleware<ErrorWrappingMiddleware>();
 
             app.UseCors(GatewayConstants.CorsPolicy);
 

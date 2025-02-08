@@ -9,6 +9,7 @@ using Flex.Shared.Options;
 using Flex.Shared.Extensions;
 using Flex.Infrastructure.Swashbuckle;
 using Flex.OcelotApiGateway.Constants;
+using Flex.Security;
 
 namespace Flex.OcelotApiGateway.Extensions
 {
@@ -17,7 +18,7 @@ namespace Flex.OcelotApiGateway.Extensions
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddOptions<ApiConfiguration>().Bind(configuration.GetSection(ConfigurationConstants.ApiConfiguration)).ValidateDataAnnotations().ValidateOnStart();
-            services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigurationConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
+            services.AddOptions<Flex.Security.JwtSettings>().Bind(configuration.GetSection(ConfigurationConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
 
             return services;
         }
@@ -26,6 +27,7 @@ namespace Flex.OcelotApiGateway.Extensions
         {
             // Bind configuration settings
             var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigurationConstants.ApiConfiguration);
+            var jwtSettings      = configuration.GetRequiredSection<Flex.Security.JwtSettings>(ConfigurationConstants.JwtSettings);
 
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
@@ -44,7 +46,7 @@ namespace Flex.OcelotApiGateway.Extensions
             services.ConfigureOcelot(configuration);
 
             // Add Jwt authentication
-            services.AddJwtAuthentication(configuration);
+            services.AddAuthenticationJwtToken(jwtSettings);
 
             // Configure Cors
             services.ConfigureCors(configuration);
@@ -70,40 +72,40 @@ namespace Flex.OcelotApiGateway.Extensions
             });
         }
 
-        private static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
-        {
-            var settings = configuration.GetSection(ConfigurationConstants.JwtSettings).Get<JwtSettings>();
+        //private static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
+        //{
+        //    var settings = configuration.GetSection(ConfigurationConstants.JwtSettings).Get<JwtSettings>();
 
-            if (settings == null || string.IsNullOrEmpty(settings.SecretKey))
-            {
-                throw new ArgumentNullException($"{nameof(JwtSettings)} is not configured properly");
-            }
+        //    if (settings == null || string.IsNullOrEmpty(settings.SecretKey))
+        //    {
+        //        throw new ArgumentNullException($"{nameof(JwtSettings)} is not configured properly");
+        //    }
 
-            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey));
+        //    var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey));
 
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = signingKey,
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ValidateLifetime = false,
-                ClockSkew = TimeSpan.Zero,
-                RequireExpirationTime = false
-            };
-            services.AddAuthentication(o =>
-            {
-                o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x =>
-            {
-                x.SaveToken = true;
-                x.RequireHttpsMetadata = false;
-                x.TokenValidationParameters = tokenValidationParameters;
-            });
+        //    var tokenValidationParameters = new TokenValidationParameters
+        //    {
+        //        ValidateIssuerSigningKey = true,
+        //        IssuerSigningKey = signingKey,
+        //        ValidateIssuer = false,
+        //        ValidateAudience = false,
+        //        ValidateLifetime = false,
+        //        ClockSkew = TimeSpan.Zero,
+        //        RequireExpirationTime = false
+        //    };
+        //    services.AddAuthentication(o =>
+        //    {
+        //        o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        //        o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        //    }).AddJwtBearer(x =>
+        //    {
+        //        x.SaveToken = true;
+        //        x.RequireHttpsMetadata = false;
+        //        x.TokenValidationParameters = tokenValidationParameters;
+        //    });
 
-            return services;
-        }
+        //    return services;
+        //}
 
         private static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
         {
