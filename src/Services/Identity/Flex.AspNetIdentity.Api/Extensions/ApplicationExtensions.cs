@@ -1,6 +1,5 @@
 ﻿using Serilog;
 using Flex.Infrastructure.Extensions;
-using Flex.Infrastructure.Middlewares;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -20,11 +19,10 @@ namespace Flex.AspNetIdentity.Api.Extensions
             app.UseHttpsRedirection();
             app.UseRouting();
 
+            app.UseApplicationMiddleware();
+
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseApplicationMiddleware();
-            //app.UseMiddleware<ErrorWrappingMiddleware>();
 
             app.MapControllers();
         }

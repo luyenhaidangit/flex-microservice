@@ -72,6 +72,8 @@ namespace Flex.Infrastructure.Middlewares
             switch (context.Response.StatusCode)
             {
                 case StatusCodes.Status401Unauthorized:
+                    response = Result.Failure(message: "Unauthorized Access. Please provide a valid token.");
+                    break;
                 case StatusCodes.Status403Forbidden:
                     response = Result.Failure(message: "Unauthorized");
                     break;

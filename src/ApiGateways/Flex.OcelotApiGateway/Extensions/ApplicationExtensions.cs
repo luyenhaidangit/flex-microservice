@@ -27,10 +27,10 @@ namespace Flex.OcelotApiGateway.Extensions
 
             app.UseRouting();
 
+            app.UseMiddleware<ErrorWrappingMiddleware>();
+
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseMiddleware<ErrorWrappingMiddleware>();
 
             app.UseCors(GatewayConstants.CorsPolicy);
 
