@@ -24,12 +24,7 @@
       "UpstreamPathTemplate": "/api/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7001
-        }
-      ]
+      "DownstreamHostAndPorts": [{"Host": "localhost","Port": 7001}]
     }
   ],
   "SwaggerEndPoints": [
