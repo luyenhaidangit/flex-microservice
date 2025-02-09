@@ -1,4 +1,32 @@
 {
+  "Routes": [
+    {
+      "Key": "aspnet-identity-service",
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "UpstreamPathTemplate": "/api/aspnet-identity/auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7001
+        }
+      ]
+    },
+    {
+      "Key": "identity-server-service",
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "UpstreamPathTemplate": "/api/identity-server/auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7002
+        }
+      ]
+    }
+  ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:7000",
     "RequestIdKey": "Oc-Request-ID",
@@ -16,17 +44,5 @@
       "DurationOfBreak": 1000,
       "TimeoutValue": 5000
     }
-  },
-  "Routes": [
-    {
-      "Key": "identity-service",
-      "DownstreamPathTemplate": "/api/auth/{everything}",
-      "UpstreamPathTemplate": "/api/auth/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [{"Host": "localhost","Port": 7001}]
-    }
-  ],
-  "SwaggerEndPoints": [
-  ]
+  }
 }

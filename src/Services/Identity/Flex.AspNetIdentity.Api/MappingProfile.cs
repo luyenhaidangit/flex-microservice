@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.Shared.DTOs.Identity;
-using Flex.Shared.DTOs.Securities;
 
 namespace Flex.AspNetIdentity.Api
 {
