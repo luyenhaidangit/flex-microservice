@@ -74,3 +74,12 @@ Feel free to add more notes or remove anything that becomes outdated.
 ## Init Identity DB in Oracle
 - CREATE USER luyenhaidangit IDENTIFIED BY haidang106;
 - GRANT DBA TO luyenhaidangit;
+
+## Migrate database identity server
+Add-Migration InitIdentityDb -Context IdentityDbContext -Project Flex.IdentityServer.Api -StartupProject Flex.IdentityServer.Api
+Add-Migration InitConfigDb -Context ConfigurationDbContext -Project Flex.IdentityServer.Api -StartupProject Flex.IdentityServer.Api
+Add-Migration InitPersistedGrantDb -Context PersistedGrantDbContext -Project Flex.IdentityServer.Api -StartupProject Flex.IdentityServer.Api
+
+Update-Database -Context IdentityDbContext -Project Flex.IdentityServer.Api -StartupProject Flex.IdentityServer.Api
+Update-Database -Context ConfigurationDbContext -Project Flex.IdentityServer.Api -StartupProject Flex.IdentityServer.Api
+Update-Database -Context PersistedGrantDbContext -Project Flex.IdentityServer.Api -StartupProject Flex.IdentityServer.Api
