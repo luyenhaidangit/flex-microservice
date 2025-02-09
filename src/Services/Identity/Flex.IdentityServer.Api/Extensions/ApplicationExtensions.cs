@@ -1,6 +1,4 @@
-﻿using Duende.IdentityServer.EntityFramework.DbContexts;
-using Flex.Infrastructure.Middlewares;
-using Microsoft.EntityFrameworkCore;
+﻿using Flex.Infrastructure.Extensions;
 using Serilog;
 
 namespace Flex.IdentityServer.Api.Extensions
@@ -22,19 +20,9 @@ namespace Flex.IdentityServer.Api.Extensions
             // Logging
             app.UseSerilogRequestLogging();
 
-            app.UseMiddleware<ErrorWrappingMiddleware>();
+            app.UseApplicationMiddleware();
 
             app.UseIdentityServer();
-
-            using (var scope = app.Services.CreateScope())
-            {
-                var configContext = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-                await configContext.Database.MigrateAsync();
-
-                var persistedGrantContext = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
-                await persistedGrantContext.Database.MigrateAsync();
-            }
-
 
             app.UseHttpsRedirection();
 

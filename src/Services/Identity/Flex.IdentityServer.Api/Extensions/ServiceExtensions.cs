@@ -2,11 +2,9 @@
 using Flex.Shared.Extensions;
 using Flex.IdentityServer.Api.Persistence;
 using Flex.EntityFrameworkCore.Oracle;
-using Flex.IdentityServer.Api.Configurations;
-using Duende.IdentityServer.EntityFramework.DbContexts;
 using Microsoft.EntityFrameworkCore;
-using Oracle.ManagedDataAccess.Client;
-using Microsoft.EntityFrameworkCore.Migrations.Internal;
+using Flex.IdentityServer.Api.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace Flex.IdentityServer.Api.Extensions
 {
@@ -33,6 +31,7 @@ namespace Flex.IdentityServer.Api.Extensions
             services.AddInfrastructureServices();
 
             // Identity Server
+            services.ConfigureAspNetIdentity();
             services.ConfigureIdentityServer(configuration);
 
             // Database
@@ -50,6 +49,19 @@ namespace Flex.IdentityServer.Api.Extensions
             return services;
         }
 
+        private static IServiceCollection ConfigureAspNetIdentity(this IServiceCollection services)
+        {
+            services.AddIdentity<User, Role>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+            })
+            .AddEntityFrameworkStores<IdentityDbContext>()
+            .AddDefaultTokenProviders();
+
+            return services;
+        }
+
         private static IServiceCollection ConfigureIdentityServer(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddIdentityServer(options =>
@@ -59,6 +71,7 @@ namespace Flex.IdentityServer.Api.Extensions
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
             })
+            .AddAspNetIdentity<User>()
             .AddConfigurationStore(options =>
             {
                 options.ConfigureDbContext = dbContextBuilder =>
@@ -86,7 +99,8 @@ namespace Flex.IdentityServer.Api.Extensions
                 // Delete expired tokens 1 hours
                 options.EnableTokenCleanup = true;
                 options.TokenCleanupInterval = 3600;
-            });
+            })
+            .AddDeveloperSigningCredential();
 
             return services;
         }

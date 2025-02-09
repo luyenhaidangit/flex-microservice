@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Duende.IdentityServer" Version="7.1.0" />
+    <PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="7.1.0" />
     <PackageReference Include="Duende.IdentityServer.EntityFramework" Version="7.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
