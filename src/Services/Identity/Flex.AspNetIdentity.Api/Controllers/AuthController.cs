@@ -20,15 +20,15 @@ namespace Flex.AspNetIdentity.Api.Controllers
         private readonly ILogger<AuthController> _logger;
         private readonly IMapper _mapper;
         private readonly UserManager<User> _userManager;
-        private readonly IJwtTokenService _jwtTokenService;
+        private readonly IJwtTokenBlacklistService _jwtBacklistTokenService;
         private readonly JwtSettings _jwtSettings;
 
-        public AuthController(ILogger<AuthController> logger, IMapper mapper, UserManager<User> userManager, IJwtTokenService jwtTokenService, IOptions<JwtSettings> jwtSettings)
+        public AuthController(ILogger<AuthController> logger, IMapper mapper, UserManager<User> userManager, IJwtTokenBlacklistService jwtBacklistTokenService, IOptions<JwtSettings> jwtSettings)
         {
             _logger = logger;
             _mapper = mapper;
             _userManager = userManager;
-            _jwtTokenService = jwtTokenService;
+            _jwtBacklistTokenService = jwtBacklistTokenService;
             _jwtSettings = jwtSettings.Value;
         }
 
@@ -93,7 +93,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 new Claim(ClaimTypesApp.Email, user.Email ?? string.Empty),
             };
 
-            var token = _jwtTokenService.GenerateToken(_jwtSettings, claims);
+            var token = _jwtBacklistTokenService.GenerateToken(_jwtSettings, claims);
 
             var result = new LoginResult(token);
 
@@ -102,8 +102,29 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         [HttpPost("logout")]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
+            var jti = User.FindFirstValue(ClaimTypesApp.Jti);
+            var expClaim = User.FindFirstValue(ClaimTypesApp.Exp);
+
+            if (string.IsNullOrEmpty(jti) || string.IsNullOrEmpty(expClaim) || !long.TryParse(expClaim, out var expUnix))
+            {
+                return BadRequest(Result.Failure("Invalid token."));
+            }
+
+            var exp = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
+            var now = DateTime.UtcNow;
+
+            if (exp <= now)
+            {
+                return Ok(Result.Success("Token already expired, no need to blacklist."));
+            }
+
+            var ttl = exp - now;
+
+            await _jwtBacklistTokenService.RevokeTokenAsync(jti, ttl);
+            _logger.LogInformation("User {UserName} logged out, token revoked.", User.FindFirstValue(ClaimTypesApp.Sub));
+
             return Ok(Result.Success(message: "Logout success!"));
         }
 
