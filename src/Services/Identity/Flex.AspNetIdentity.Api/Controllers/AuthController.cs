@@ -88,7 +88,8 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypesApp.UserName, user.UserName ?? string.Empty),
+                new Claim(ClaimTypesApp.Jti,  Guid.NewGuid().ToString()),
+                new Claim(ClaimTypesApp.Sub, user.UserName ?? string.Empty),
                 new Claim(ClaimTypesApp.Email, user.Email ?? string.Empty),
             };
 
@@ -100,10 +101,16 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(message: "Login success!",data: result));
         }
 
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            return Ok(Result.Success(message: "Logout success!"));
+        }
+
         [HttpGet("me")]
         public async Task<IActionResult> GetCurrentUserInfo()
         {
-            var userName = User.FindFirstValue(ClaimTypesApp.UserName);
+            var userName = User.FindFirstValue(ClaimTypesApp.Sub);
 
             if (string.IsNullOrEmpty(userName))
             {

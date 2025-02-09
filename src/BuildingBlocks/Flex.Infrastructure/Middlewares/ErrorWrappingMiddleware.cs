@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Flex.Infrastructure.Exceptions;
 using Flex.Shared.SeedWork;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Flex.Infrastructure.Middlewares
 {
@@ -28,6 +29,16 @@ namespace Flex.Infrastructure.Middlewares
             try
             {
                 await _next.Invoke(context);
+            }
+            catch (SecurityTokenValidationException ex)
+            {
+                _logger.LogError(ex, "Unauthorized access exception: {Message}", ex.Message);
+                await HandleExceptionAsync(context, StatusCodes.Status401Unauthorized, ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogError(ex, "Unauthorized access exception: {Message}", ex.Message);
+                await HandleExceptionAsync(context, StatusCodes.Status403Forbidden, ex.Message);
             }
             catch (BadRequestException ex)
             {
