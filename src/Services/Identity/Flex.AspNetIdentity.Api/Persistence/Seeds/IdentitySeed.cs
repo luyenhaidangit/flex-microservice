@@ -14,16 +14,16 @@ namespace Flex.AspNetIdentity.Api.Persistence.Seeds
             try
             {
                 // 1. Default Roles
-                //var roles = new List<string> { "Admin" };
+                var roles = new List<string> { "Admin" };
 
-                //foreach (var role in roles)
-                //{
-                //    if (!await roleManager.RoleExistsAsync(role))
-                //    {
-                //        await roleManager.CreateAsync(new Role(role));
-                //        logger.Information("Seeded role {RoleName}", role);
-                //    }
-                //}
+                foreach (var role in roles)
+                {
+                    if (!await roleManager.RoleExistsAsync(role))
+                    {
+                        await roleManager.CreateAsync(new Role(role));
+                        logger.Information("Seeded role {RoleName}", role);
+                    }
+                }
 
                 // 2. Default Admin User
                 var adminEmail = "luyenhaidangit@gmail.com";
@@ -44,12 +44,20 @@ namespace Flex.AspNetIdentity.Api.Persistence.Seeds
 
                     if (result.Succeeded)
                     {
-                        //await userManager.AddToRoleAsync(adminUser, "Admin");
+                        await userManager.AddToRoleAsync(adminUser, "Admin");
                         logger.Information("Seeded Admin User: {AdminEmail}", adminEmail);
                     }
                     else
                     {
                         logger.Error("Failed to seed Admin User. Errors: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
+                    }
+                }
+                else
+                {
+                    if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+                    {
+                        await userManager.AddToRoleAsync(adminUser, "Admin");
+                        logger.Information("Assigned Admin role to user: {AdminEmail}", adminEmail);
                     }
                 }
             }

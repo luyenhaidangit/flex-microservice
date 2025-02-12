@@ -9,12 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using ClaimTypesApp = Flex.Security.ClaimTypes;
+using ClaimTypesAsp = System.Security.Claims.ClaimTypes;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
@@ -85,6 +86,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
             // Process
             var userClaims = await _userManager.GetClaimsAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
 
             var claims = new List<Claim>
             {
@@ -93,12 +95,14 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 new Claim(ClaimTypesApp.Email, user.Email ?? string.Empty),
             };
 
+            claims.AddRange(userRoles.Select(role => new Claim(ClaimTypesAsp.Role, role)));
+
             var token = _jwtBacklistTokenService.GenerateToken(_jwtSettings, claims);
 
             var result = new LoginResult(token);
 
             _logger.LogInformation("User {Username} logged in successfully.", request.UserName);
-            return Ok(Result.Success(message: "Login success!",data: result));
+            return Ok(Result.Success(message: "Login success!", data: result));
         }
 
         [HttpPost("logout")]

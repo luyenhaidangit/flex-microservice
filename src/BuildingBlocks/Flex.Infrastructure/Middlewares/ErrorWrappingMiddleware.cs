@@ -86,7 +86,7 @@ namespace Flex.Infrastructure.Middlewares
                     response = Result.Failure(message: "Unauthorized Access. Please provide a valid token.");
                     break;
                 case StatusCodes.Status403Forbidden:
-                    response = Result.Failure(message: "Unauthorized");
+                    response = Result.Failure(message: "Forbidden: You do not have permission to access this resource.");
                     break;
                 case StatusCodes.Status404NotFound:
                     response = Result.Failure(message: "Api Not Found");

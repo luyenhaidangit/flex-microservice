@@ -8,7 +8,7 @@ namespace Flex.IdentityServer.Api.Persistence
         public static async Task InitAsync(IServiceProvider services, ILogger logger)
         {
             var scope = services.CreateScope();
-            await IdentitySeed.InitAsync(scope.ServiceProvider, logger);
+            //await IdentitySeed.InitAsync(scope.ServiceProvider, logger);
         }
     }
 
