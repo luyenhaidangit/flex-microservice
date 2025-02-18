@@ -8,10 +8,11 @@ namespace Flex.IdentityServer.Api.Configurations
         {
             return new List<ApiResource>
             {
-                new ApiResource("orders", "Orders Service")
+                new ApiResource("resource_api", "My Protected API")
                 {
-                    Scopes = { "orders.read", "orders.write" }
-                },
+                    Scopes = { "api.read", "api.write" },
+                    UserClaims = { "role" }
+                }
             };
         }
     }

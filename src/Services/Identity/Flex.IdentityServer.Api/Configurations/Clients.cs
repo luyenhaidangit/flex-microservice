@@ -8,25 +8,14 @@ namespace Flex.IdentityServer.Api.Configurations
         {
             return new List<Client>
             {
+                // Client dùng Client Credentials Flow (server-to-server)
                 new Client
                 {
-                    ClientId = "client_m2m",
+                    ClientId = "server_client",
+                    ClientSecrets = { new Secret("server_secret".Sha256()) },
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    ClientSecrets = { new Secret("supersecret".Sha256()) },
-                    AllowedScopes = { "orders.read", "orders.write" }
+                    AllowedScopes = { "api.read", "api.write" }
                 },
-
-                new Client
-                {
-                    ClientId = "web_app",
-                    ClientName = "Example Web App",
-                    ClientSecrets = { new Secret("websecret".Sha256()) },
-                    AllowedGrantTypes = GrantTypes.Code,
-                    RedirectUris = { "https://localhost:5002/signin-oidc" },
-                    PostLogoutRedirectUris = { "https://localhost:5002/signout-callback-oidc" },
-                    AllowedScopes = { "openid", "profile", "orders.read" },
-                    RequireConsent = false
-                }
             };
         }
     }
