@@ -19,16 +19,16 @@ namespace Flex.IdentityServer.Api.Persistence.Seeds
             try
             {
                 // 1. Default Roles
-                //var roles = new List<string> { "Admin" };
+                var roles = new List<string> { "Admin" };
 
-                //foreach (var role in roles)
-                //{
-                //    if (!await roleManager.RoleExistsAsync(role))
-                //    {
-                //        await roleManager.CreateAsync(new Role(role));
-                //        logger.Information("Seeded role {RoleName}", role);
-                //    }
-                //}
+                foreach (var role in roles)
+                {
+                    if (!await roleManager.RoleExistsAsync(role))
+                    {
+                        await roleManager.CreateAsync(new Role(role));
+                        logger.Information("Seeded role {RoleName}", role);
+                    }
+                }
 
                 // 2. Default Admin User
                 var adminEmail = "luyenhaidangit@gmail.com";
