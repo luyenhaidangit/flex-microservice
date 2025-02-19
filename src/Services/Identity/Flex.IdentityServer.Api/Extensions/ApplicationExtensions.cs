@@ -20,7 +20,7 @@ namespace Flex.IdentityServer.Api.Extensions
             // Logging
             app.UseSerilogRequestLogging();
 
-            app.UseApplicationMiddleware();
+            //app.UseApplicationMiddleware();
 
             app.UseIdentityServer();
 

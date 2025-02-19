@@ -8,8 +8,7 @@ namespace Flex.IdentityServer.Api.Configurations
         {
             return new List<ApiScope>
             {
-                new ApiScope("orders.read", "Read access to Orders API"),
-                new ApiScope("orders.write", "Write access to Orders API"),
+                new ApiScope("my_api.full_access", "Full access to My API")
             };
         }
     }

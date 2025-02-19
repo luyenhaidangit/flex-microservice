@@ -14,7 +14,8 @@ namespace Flex.IdentityServer.Api.Configurations
                     ClientId = "server_client",
                     ClientSecrets = { new Secret("server_secret".Sha256()) },
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
-                    AllowedScopes = { "api.read", "api.write" }
+                    AllowedScopes = { "api.read", "api.write" },
+                    AccessTokenLifetime = 3600
                 },
             };
         }

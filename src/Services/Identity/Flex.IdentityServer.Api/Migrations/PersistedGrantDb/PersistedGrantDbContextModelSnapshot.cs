@@ -86,7 +86,7 @@ namespace Flex.IdentityServer.Api.Migrations.PersistedGrantDb
 
                     b.Property<string>("Data")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(2000)");
+                        .HasColumnType("CLOB");
 
                     b.Property<bool>("DataProtected")
                         .HasColumnType("BOOLEAN");
