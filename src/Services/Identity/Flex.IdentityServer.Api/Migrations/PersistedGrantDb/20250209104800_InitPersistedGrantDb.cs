@@ -41,7 +41,7 @@ namespace Flex.IdentityServer.Api.Migrations.PersistedGrantDb
                     Algorithm = table.Column<string>(type: "NVARCHAR2(100)", maxLength: 100, nullable: false),
                     IsX509Certificate = table.Column<bool>(type: "BOOLEAN", nullable: false),
                     DataProtected = table.Column<bool>(type: "BOOLEAN", nullable: false),
-                    Data = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false)
+                    Data = table.Column<string>(type: "CLOB", nullable: false)
                 },
                 constraints: table =>
                 {
