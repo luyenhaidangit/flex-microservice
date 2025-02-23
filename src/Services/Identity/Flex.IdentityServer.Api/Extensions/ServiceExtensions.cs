@@ -5,6 +5,7 @@ using Flex.EntityFrameworkCore.Oracle;
 using Microsoft.EntityFrameworkCore;
 using Flex.IdentityServer.Api.Entities;
 using Microsoft.AspNetCore.Identity;
+using Flex.Security;
 
 namespace Flex.IdentityServer.Api.Extensions
 {
@@ -32,6 +33,7 @@ namespace Flex.IdentityServer.Api.Extensions
 
             // Identity Server
             services.ConfigureAspNetIdentity();
+            services.AddJwtTokenSecurity(configuration);
             services.ConfigureIdentityServer(configuration);
 
             // Database

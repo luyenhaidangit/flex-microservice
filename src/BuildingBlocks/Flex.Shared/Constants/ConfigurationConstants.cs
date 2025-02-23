@@ -10,5 +10,12 @@
         public const string AllowOrigins = "AllowOrigins";
 
         public const string IpWhitelist = "IpWhitelist";  
+
+        public class IdentityServer
+        {
+            public const string Authority = "Authority";
+
+            public const string TokenEndpoint = "TokenEndpoint";
+        }
     }
 }
