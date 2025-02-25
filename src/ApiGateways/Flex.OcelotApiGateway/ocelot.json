@@ -25,6 +25,19 @@
           "Port": 7002
         }
       ]
+    },
+    {
+      "Key": "investor-service",
+      "DownstreamPathTemplate": "/api/investor/{everything}",
+      "UpstreamPathTemplate": "/api/investor/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7003
+        }
+      ]
     }
   ],
   "GlobalConfiguration": {

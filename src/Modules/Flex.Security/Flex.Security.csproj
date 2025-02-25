@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Flex.Shared\Flex.Shared.csproj" />
     <ProjectReference Include="..\Flex.Redis\Flex.Redis.csproj" />
   </ItemGroup>
 

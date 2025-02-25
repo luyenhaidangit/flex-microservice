@@ -1,4 +1,4 @@
-﻿using Flex.Infrastructure.Middlewares;
+﻿using Flex.Infrastructure.Extensions;
 using Serilog;
 
 namespace Flex.Investor.Api.Extensions
@@ -10,17 +10,13 @@ namespace Flex.Investor.Api.Extensions
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.DisplayRequestDuration();
-                });
+                app.MapOpenApi();
             }
 
             // Logging
             app.UseSerilogRequestLogging();
 
-            app.UseMiddleware<ErrorWrappingMiddleware>();
+            app.UseApplicationMiddleware();
 
             app.UseHttpsRedirection();
 

@@ -1,9 +1,6 @@
-﻿using System.Text;
-using Ocelot.DependencyInjection;
+﻿using Ocelot.DependencyInjection;
 using Ocelot.Provider.Polly;
 using Ocelot.Cache.CacheManager;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Flex.Shared.Constants;
 using Flex.Shared.Options;
 using Flex.Shared.Extensions;
@@ -27,7 +24,6 @@ namespace Flex.OcelotApiGateway.Extensions
         {
             // Bind configuration settings
             var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigurationConstants.ApiConfiguration);
-            var jwtSettings      = configuration.GetRequiredSection<Flex.Security.JwtSettings>(ConfigurationConstants.JwtSettings);
 
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
@@ -46,7 +42,7 @@ namespace Flex.OcelotApiGateway.Extensions
             services.ConfigureOcelot(configuration);
 
             // Add Jwt authentication
-            services.AddAuthenticationJwtToken(jwtSettings);
+            services.AddAuthenticationJwtToken(configuration);
 
             // Configure Cors
             services.ConfigureCors(configuration);
@@ -109,8 +105,6 @@ namespace Flex.OcelotApiGateway.Extensions
 
         private static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
         {
-            //var origins = configuration.GetRequiredConfiguration<string>(ConfigurationConstants.AllowOrigins);
-
             var origins = configuration.GetRequiredValue<string>(ConfigurationConstants.AllowOrigins);
 
             services.AddCors(options =>

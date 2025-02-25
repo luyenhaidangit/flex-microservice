@@ -5,7 +5,7 @@ namespace Flex.IdentityServer.Api.Extensions
 {
     public static class ApplicationExtensions
     {
-        public static async void UseInfrastructure(this WebApplication app)
+        public static void UseInfrastructure(this WebApplication app)
         {
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

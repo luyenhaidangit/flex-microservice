@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Text;
+using Flex.Shared.Extensions;
+using Flex.Shared.Constants;
 
 namespace Flex.Security
 {
@@ -27,10 +29,17 @@ namespace Flex.Security
             return services;
         }
 
-        public static IServiceCollection AddAuthenticationJwtToken(this IServiceCollection services, JwtSettings jwtSettings, bool isCheckBlacklist = true)
+        public static IServiceCollection AddAuthenticationJwtToken(this IServiceCollection services, IConfiguration configuration, bool isCheckBlacklist = true)
         {
-            if(isCheckBlacklist)
+            var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigurationConstants.JwtSettings);
+
+            if (isCheckBlacklist)
             {
+                services.AddSingleton<IConnectionMultiplexer>(sp =>
+                ConnectionMultiplexer.Connect(configuration.GetConnectionString(RedisConstants.RedisConnectionKey)));
+
+                services.AddSingleton<IJwtTokenBlacklistService, JwtTokenBlacklistService>();
+
                 services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

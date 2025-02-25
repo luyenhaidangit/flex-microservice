@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\**" />
+    <Content Remove="Controllers\**" />
+    <EmbeddedResource Remove="Controllers\**" />
+    <None Remove="Controllers\**" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="2.3.0" />
 	<PackageReference Include="MMLib.SwaggerForOcelot" Version="8.3.2" />
 	<PackageReference Include="Ocelot" Version="23.4.2" />
@@ -20,10 +27,6 @@
 	<ProjectReference Include="..\..\Modules\Flex.Security\Flex.Security.csproj" />
 	<ProjectReference Include="..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
 	<ProjectReference Include="..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>
