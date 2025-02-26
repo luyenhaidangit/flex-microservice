@@ -31,9 +31,17 @@ namespace Flex.Investor.Api.Migrations
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("Address")
+                        .HasColumnType("VARCHAR2(500)")
+                        .HasColumnName("ADDRESS");
+
                     b.Property<DateTimeOffset>("CreatedDate")
                         .HasColumnType("TIMESTAMP(7) WITH TIME ZONE")
                         .HasColumnName("CREATEDDATE");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("DATE")
+                        .HasColumnName("DATE_OF_BIRTH");
 
                     b.Property<string>("Email")
                         .HasColumnType("VARCHAR2(250)")
@@ -44,9 +52,17 @@ namespace Flex.Investor.Api.Migrations
                         .HasColumnType("VARCHAR2(250)")
                         .HasColumnName("FULLNAME");
 
+                    b.Property<string>("InvestmentPortfolio")
+                        .HasColumnType("VARCHAR2(1000)")
+                        .HasColumnName("INVESTMENT_PORTFOLIO");
+
                     b.Property<DateTimeOffset?>("LastModifiedDate")
                         .HasColumnType("TIMESTAMP(7) WITH TIME ZONE")
                         .HasColumnName("LASTMODIFIEDDATE");
+
+                    b.Property<string>("Nationality")
+                        .HasColumnType("VARCHAR2(100)")
+                        .HasColumnName("NATIONALITY");
 
                     b.Property<string>("No")
                         .IsRequired()

@@ -21,5 +21,17 @@ namespace Flex.Investor.Api.Entities
         [Required]
         [Column("PHONE", TypeName = "VARCHAR2(250)")]
         public string Phone { get; set; }
+
+        [Column("ADDRESS", TypeName = "VARCHAR2(500)")]
+        public string? Address { get; set; }
+
+        [Column("DATE_OF_BIRTH", TypeName = "DATE")]
+        public DateTime? DateOfBirth { get; set; }
+
+        [Column("NATIONALITY", TypeName = "VARCHAR2(100)")]
+        public string? Nationality { get; set; }
+
+        [Column("INVESTMENT_PORTFOLIO", TypeName = "VARCHAR2(1000)")]
+        public string? InvestmentPortfolio { get; set; }
     }
 }

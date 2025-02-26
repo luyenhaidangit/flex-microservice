@@ -21,6 +21,10 @@ namespace Flex.Investor.Api.Migrations
                     FULLNAME = table.Column<string>(type: "VARCHAR2(250)", nullable: false),
                     EMAIL = table.Column<string>(type: "VARCHAR2(250)", nullable: true),
                     PHONE = table.Column<string>(type: "VARCHAR2(250)", nullable: false),
+                    ADDRESS = table.Column<string>(type: "VARCHAR2(500)", nullable: true),
+                    DATE_OF_BIRTH = table.Column<DateTime>(type: "DATE", nullable: true),
+                    NATIONALITY = table.Column<string>(type: "VARCHAR2(100)", nullable: true),
+                    INVESTMENT_PORTFOLIO = table.Column<string>(type: "VARCHAR2(1000)", nullable: true),
                     CREATEDDATE = table.Column<DateTimeOffset>(type: "TIMESTAMP(7) WITH TIME ZONE", nullable: false),
                     LASTMODIFIEDDATE = table.Column<DateTimeOffset>(type: "TIMESTAMP(7) WITH TIME ZONE", nullable: true)
                 },
