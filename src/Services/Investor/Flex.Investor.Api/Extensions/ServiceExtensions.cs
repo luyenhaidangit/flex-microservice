@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Oracle.ManagedDataAccess.Client;
-using Flex.Shared.SeedWork;
 using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common.Repositories;
 using Flex.Infrastructure.Common;
@@ -11,8 +10,6 @@ using Flex.Investor.Api.Services.Interfaces;
 using Flex.Investor.Api.Services;
 using Flex.Infrastructure.Swashbuckle;
 using Flex.Shared.Extensions;
-using System.Reflection;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Flex.Investor.Api.Extensions
 {

@@ -1,4 +1,6 @@
-﻿namespace Flex.Shared.SeedWork
+﻿using System.Text.Json.Serialization;
+
+namespace Flex.Shared.SeedWork
 {
     public class PagedResult<T>
     {
@@ -11,7 +13,11 @@
         public int FirstRowOnPage => TotalItems > 0 ? (PageIndex - 1) * PageSize + 1 : 0;
         public int LastRowOnPage => (int)Math.Min(PageIndex * PageSize, TotalItems);
         public IEnumerable<T> Items { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? OrderBy { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? SortBy { get; set; }
 
         public static PagedResult<T> Create(int pageIndex, int pageSize, int total, IEnumerable<T> items, string order = default, string sort = default)

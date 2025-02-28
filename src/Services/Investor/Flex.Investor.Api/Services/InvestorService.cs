@@ -23,10 +23,11 @@ namespace Flex.Investor.Api.Services
         public async Task<PagedResult<InvestorDto>> GetPagingInvestorsAsync(GetInvestorsPagingRequest request)
         {
             var query = _investorRepository.FindAll()
-                .WhereIf(!string.IsNullOrEmpty(request.Name), b => b.FullName.Contains(request.Name));
+                            .WhereIf(!string.IsNullOrEmpty(request.No), b => b.No.ToLower().Contains(request.No.ToLower()))
+                            .WhereIf(!string.IsNullOrEmpty(request.Name), b => b.FullName.ToLower().Contains(request.Name.ToLower()));
 
             var resultPaged = await query.ToPagedResultAsync(request);
-            return resultPaged.MapPagedResult<Flex.Investor.Api.Entities.Investor, InvestorDto>(_mapper);
+            return resultPaged.MapPagedResult<Entities.Investor, InvestorDto>(_mapper);
         }
 
         public async Task<InvestorDto> GetInvestorByIdAsync(long id)

@@ -24,8 +24,6 @@ try
 
     app.UseInfrastructure();
 
-    await app.SeedsDataAsync();
-
     app.Run();
 }
 
