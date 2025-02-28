@@ -16,7 +16,7 @@ namespace Flex.Investor.Api.Extensions
             // Logging
             app.UseSerilogRequestLogging();
 
-            //app.UseApplicationMiddleware();
+            app.UseApplicationMiddleware();
 
             app.UseHttpsRedirection();
 

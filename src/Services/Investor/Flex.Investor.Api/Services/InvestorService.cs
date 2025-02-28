@@ -5,6 +5,7 @@ using Flex.Investor.Api.Services.Interfaces;
 using Flex.Shared.DTOs.Investor;
 using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
+using Flex.Infrastructure.Exceptions;
 
 namespace Flex.Investor.Api.Services
 {
@@ -33,7 +34,15 @@ namespace Flex.Investor.Api.Services
         public async Task<InvestorDto> GetInvestorByIdAsync(long id)
         {
             var investor = await _investorRepository.FindByCondition(x => x.Id == id).FirstOrDefaultAsync();
-            return investor is null ? null : _mapper.Map<InvestorDto>(investor);
+
+            if (investor is null)
+            {
+                throw new BadRequestException("Investor not found.");
+            }
+
+            var result = _mapper.Map<InvestorDto>(investor);
+
+            return result;
         }
         #endregion
 

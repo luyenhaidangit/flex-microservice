@@ -17,17 +17,19 @@ namespace Flex.Investor.Api.Controllers
             group.MapGet("/get-investors-paging", async ([AsParameters] GetInvestorsPagingRequest request, IInvestorService investorService) =>
             {
                 var result = await investorService.GetPagingInvestorsAsync(request);
+
                 return Results.Ok(Result.Success(result));
             });
 
             /// <summary>
-            /// Get investor details by ID.
+            /// Thông tin chi tiết nhà đầu tư theo Id.
             /// </summary>
-            //group.MapGet("/get-investor-by-id", async (long id, IInvestorService investorService) =>
-            //{
-            //    var result = await investorService.GetInvestorByIdAsync(id);
-            //    return result is null ? Results.BadRequest(Result.Failure("Investor not found.")) : Results.Ok(Result.Success(result));
-            //});
+            group.MapGet("/get-investor-by-id", async ([AsParameters] EntityKey<long> entityKey, IInvestorService investorService) =>
+            {
+                var result = await investorService.GetInvestorByIdAsync(entityKey.Id);
+
+                return Results.Ok(Result.Success(result));
+            });
             #endregion
 
             #region Command
