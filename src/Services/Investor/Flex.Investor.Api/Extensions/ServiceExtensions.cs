@@ -60,6 +60,7 @@ namespace Flex.Investor.Api.Extensions
             return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
                            .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
                            .AddScoped<IInvestorRepository, InvestorRepository>()
+                           .AddScoped<ISubAccountRepository, SubAccountRepository>()
                            .AddScoped<IInvestorService, InvestorService>();
         }
         #endregion

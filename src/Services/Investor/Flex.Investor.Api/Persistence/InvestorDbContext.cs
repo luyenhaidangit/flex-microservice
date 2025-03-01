@@ -11,6 +11,7 @@ namespace Flex.Investor.Api.Persistence
 
         #region DbSet
         public DbSet<Entities.Investor> Investors { get; set; }
+        public DbSet<Entities.SubAccount> SubAccounts { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

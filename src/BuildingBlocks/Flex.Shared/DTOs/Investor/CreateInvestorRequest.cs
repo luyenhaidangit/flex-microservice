@@ -1,4 +1,5 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace Flex.Shared.DTOs.Investor
 {
