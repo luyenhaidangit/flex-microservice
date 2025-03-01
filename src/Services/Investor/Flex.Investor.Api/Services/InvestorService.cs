@@ -49,13 +49,27 @@ namespace Flex.Investor.Api.Services
         #region Command
         public async Task<Result> CreateInvestorAsync(CreateInvestorRequest request)
         {
+            // Validate
+            var isNoExist = await _investorRepository.FindByCondition(x => x.No == request.No).AnyAsync();
+            if (isNoExist)
+            {
+                return Result.Failure(message: "Investor No is already in use.");
+            }
+
             var isEmailExist = await _investorRepository.FindByCondition(x => x.Email == request.Email).AnyAsync();
             if (isEmailExist)
             {
-                return Result.Failure("Email is already in use.");
+                return Result.Failure(message: "Email is already in use.");
             }
 
-            var investor = _mapper.Map<Flex.Investor.Api.Entities.Investor>(request);
+            var isPhoneExist = await _investorRepository.FindByCondition(x => x.Phone == request.Phone).AnyAsync();
+            if (isPhoneExist)
+            {
+                return Result.Failure(message: "Phone number is already in use.");
+            }
+
+            // Process
+            var investor = _mapper.Map<Entities.Investor>(request);
             await _investorRepository.CreateAsync(investor);
 
             return Result.Success();
@@ -63,12 +77,32 @@ namespace Flex.Investor.Api.Services
 
         public async Task<Result> UpdateInvestorAsync(UpdateInvestorRequest request)
         {
-            var investor = await _investorRepository.FindByCondition(x => x.Id == request.Id).FirstOrDefaultAsync();
+            // Validate
+            var investor = await _investorRepository.FindByCondition(x => x.No == request.No).FirstOrDefaultAsync();
             if (investor is null)
             {
-                return Result.Failure("Investor not found.");
+                return Result.Failure(message: "Investor not found.");
             }
 
+            if (request.Email.Trim().ToLower() != investor.Email.Trim().ToLower())
+            {
+                var isNoExist = await _investorRepository.FindByCondition(x => x.No == request.No).AnyAsync();
+                if (isNoExist)
+                {
+                    return Result.Failure(message: "Email No is already in use.");
+                }
+            }
+
+            if (request.Phone.Trim().ToLower() != investor.Phone.Trim().ToLower())
+            {
+                var isEmailExist = await _investorRepository.FindByCondition(x => x.Email == request.Email).AnyAsync();
+                if (isEmailExist)
+                {
+                    return Result.Failure(message: "Phone is already in use.");
+                }
+            }
+            
+            // Process
             _mapper.Map(request, investor);
             await _investorRepository.UpdateAsync(investor);
 
@@ -77,12 +111,14 @@ namespace Flex.Investor.Api.Services
 
         public async Task<Result> DeleteInvestorAsync(long id)
         {
+            // Validate
             var investor = await _investorRepository.FindByCondition(x => x.Id == id).FirstOrDefaultAsync();
             if (investor is null)
             {
-                return Result.Failure("Investor not found.");
+                return Result.Failure(message: "Investor not found.");
             }
 
+            // Process
             await _investorRepository.DeleteAsync(investor);
             return Result.Success();
         }

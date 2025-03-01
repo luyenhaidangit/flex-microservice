@@ -5,11 +5,12 @@ namespace Flex.Shared.DTOs.Investor
     public class UpdateInvestorRequest
     {
         [Required]
-        public long Id { get; set; }
+        [StringLength(150)]
+        public string No { get; set; }
 
         [Required]
         [StringLength(100, MinimumLength = 2)]
-        public string Name { get; set; }
+        public string FullName { get; set; }
 
         [Required]
         [EmailAddress]
@@ -17,10 +18,6 @@ namespace Flex.Shared.DTOs.Investor
 
         [Required]
         [Phone]
-        public string PhoneNumber { get; set; }
-
-        [Required]
-        [StringLength(200)]
-        public string Address { get; set; }
+        public string Phone { get; set; }
     }
 }

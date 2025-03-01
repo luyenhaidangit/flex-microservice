@@ -1,6 +1,7 @@
 ﻿using Flex.Investor.Api.Services.Interfaces;
 using Flex.Shared.DTOs.Investor;
 using Flex.Shared.SeedWork;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Flex.Investor.Api.Controllers
 {
@@ -34,34 +35,50 @@ namespace Flex.Investor.Api.Controllers
 
             #region Command
             /// <summary>
-            /// Create a new investor.
+            /// Tạo mới nhà đầu tư.
             /// </summary>
-            //group.MapPost("/create-investor", async (CreateInvestorRequest request, IInvestorService investorService) =>
-            //{
-            //    // Validate if email already exists
-            //    var result = await investorService.CreateInvestorAsync(request);
-            //    return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
-            //});
+            group.MapPost("/create-investor", async ([FromBody] CreateInvestorRequest request, IInvestorService investorService) =>
+            {
+                var result = await investorService.CreateInvestorAsync(request);
+
+                if(!result.IsSuccess)
+                {
+                    return Results.BadRequest(result);
+                }
+
+                return Results.Ok(result);
+            });
 
             /// <summary>
-            /// Update investor details.
+            /// Cập nhật nhà đầu tư.
             /// </summary>
-            //group.MapPut("/update-investor", async (UpdateInvestorRequest request, IInvestorService investorService) =>
-            //{
-            //    // Validate if investor exists before updating
-            //    var result = await investorService.UpdateInvestorAsync(request);
-            //    return result.IsSuccess ? Results.Ok(result) : Results.Conflict(result);
-            //});
+            group.MapPost("/update-investor", async ([FromBody] UpdateInvestorRequest request, IInvestorService investorService) =>
+            {
+                var result = await investorService.UpdateInvestorAsync(request);
+
+                if (!result.IsSuccess)
+                {
+                    return Results.BadRequest(result);
+                }
+
+                return Results.Ok(result);
+            });
 
             /// <summary>
-            /// Delete an investor.
+            /// Xóa nhà đầu tư.
             /// </summary>
-            //group.MapDelete("/delete-investor", async (long id, IInvestorService investorService) =>
-            //{
-            //    // Validate if investor exists before deletion
-            //    var result = await investorService.DeleteInvestorAsync(id);
-            //    return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
-            //});
+            group.MapPost("/delete-investor", async ([FromBody] EntityKey<long> entityKey, IInvestorService investorService) =>
+            {
+                // Validate if investor exists before deletion
+                var result = await investorService.DeleteInvestorAsync(entityKey.Id);
+
+                if (!result.IsSuccess)
+                {
+                    return Results.BadRequest(result);
+                }
+
+                return Results.Ok(result);
+            });
             #endregion
         }
     }
