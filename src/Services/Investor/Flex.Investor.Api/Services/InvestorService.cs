@@ -167,7 +167,30 @@ namespace Flex.Investor.Api.Services
 
         public async Task<Result> CreateSubAccountAsync(CreateSubAccountRequest request)
         {
-            var subAccount = _mapper.Map<Entities.SubAccount>(request);
+            // Validate investor existence
+            var investorExists = await _investorRepository.FindByCondition(x => x.Id == request.InvestorId).AnyAsync();
+            if (!investorExists)
+            {
+                return Result.Failure(message: "Investor not found.");
+            }
+
+            // Generate unique AccountNo
+            var lastAccount = await _subAccountRepository.FindAll()
+                .OrderByDescending(x => x.Id)
+                .FirstOrDefaultAsync();
+
+            var nextId = lastAccount != null ? lastAccount.Id + 1 : 1;
+            var accountNo = $"{request.AccountType.ToUpper()}-{nextId}";
+
+            var subAccount = new Entities.SubAccount
+            {
+                InvestorId = request.InvestorId,
+                AccountNo = accountNo,
+                AccountType = request.AccountType.ToUpper(),
+                Balance = 0,
+                Status = "ACTIVE"
+            };
+
             await _subAccountRepository.CreateAsync(subAccount);
             return Result.Success();
         }
@@ -177,15 +200,31 @@ namespace Flex.Investor.Api.Services
             var subAccount = await _subAccountRepository.FindByCondition(x => x.Id == request.Id).FirstOrDefaultAsync();
             if (subAccount is null) return Result.Failure("SubAccount not found.");
 
+            // Ensure the account type is valid before updating
+            var validAccountTypes = new List<string> { "CASH", "MARGIN", "DERIVATIVES", "BONDS" };
+            if (!validAccountTypes.Contains(request.AccountType.ToUpper()))
+            {
+                return Result.Failure($"Invalid account type: {request.AccountType}. Allowed types: {string.Join(", ", validAccountTypes)}.");
+            }
+
+            // Ensure no duplicate account type exists for the same investor
+            var existingAccount = await _subAccountRepository.FindByCondition(x => x.InvestorId == subAccount.InvestorId && x.AccountType == request.AccountType && x.Id != request.Id).AnyAsync();
+            if (existingAccount)
+            {
+                return Result.Failure($"An account of type '{request.AccountType}' already exists for this investor.");
+            }
+
             _mapper.Map(request, subAccount);
             await _subAccountRepository.UpdateAsync(subAccount);
             return Result.Success();
         }
-
         public async Task<Result> DeleteSubAccountAsync(long subAccountId)
         {
             var subAccount = await _subAccountRepository.FindByCondition(x => x.Id == subAccountId).FirstOrDefaultAsync();
-            if (subAccount is null) return Result.Failure("SubAccount not found.");
+            if (subAccount is null)
+            {
+                return Result.Failure("SubAccount not found.");
+            }
 
             await _subAccountRepository.DeleteAsync(subAccount);
             return Result.Success();

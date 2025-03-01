@@ -9,6 +9,7 @@ namespace Flex.Shared.DTOs.Investor
 
         [Required]
         [StringLength(50)]
+        [RegularExpression("^(CASH|MARGIN|DERIVATIVES|BONDS)$", ErrorMessage = "Invalid account type. Allowed values: CASH, MARGIN, DERIVATIVES, BONDS.")]
         public string AccountType { get; set; } = string.Empty; // Loại tài khoản: CASH, MARGIN, DERIVATIVES, BONDS
     }
 }

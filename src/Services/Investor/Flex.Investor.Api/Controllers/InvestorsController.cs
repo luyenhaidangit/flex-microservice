@@ -31,6 +31,15 @@ namespace Flex.Investor.Api.Controllers
 
                 return Results.Ok(Result.Success(result));
             });
+
+            /// <summary>
+            /// Lấy danh sách tiểu khoản nhà đầu tư.
+            /// </summary>
+            group.MapGet("/get-subaccounts-by-investor-id", async ([AsParameters] EntityKey<long> entityKey, IInvestorService investorService) =>
+            {
+                var result = await investorService.GetSubAccountsByInvestorIdAsync(entityKey.Id);
+                return Results.Ok(Result.Success(result));
+            });
             #endregion
 
             #region Command
@@ -78,6 +87,33 @@ namespace Flex.Investor.Api.Controllers
                 }
 
                 return Results.Ok(result);
+            });
+
+            /// <summary>
+            /// Thêm mới tiểu khoản.
+            /// </summary>
+            group.MapPost("/create-subaccount", async ([FromBody] CreateSubAccountRequest request, IInvestorService investorService) =>
+            {
+                var result = await investorService.CreateSubAccountAsync(request);
+                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+            });
+
+            /// <summary>
+            /// Cập nhật tiểu khoản.
+            /// </summary>
+            group.MapPost("/update-subaccount", async ([FromBody] UpdateSubAccountRequest request, IInvestorService investorService) =>
+            {
+                var result = await investorService.UpdateSubAccountAsync(request);
+                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+            });
+
+            /// <summary>
+            /// Xóa tiểu khoản.
+            /// </summary>
+            group.MapPost("/delete-subaccount", async ([FromBody] EntityKey<long> entityKey, IInvestorService investorService) =>
+            {
+                var result = await investorService.DeleteSubAccountAsync(entityKey.Id);
+                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
             });
             #endregion
         }
