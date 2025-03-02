@@ -10,6 +10,7 @@ using Flex.Investor.Api.Services.Interfaces;
 using Flex.Investor.Api.Services;
 using Flex.Infrastructure.Swashbuckle;
 using Flex.Shared.Extensions;
+using Flex.EntityFrameworkCore.Oracle;
 
 namespace Flex.Investor.Api.Extensions
 {
@@ -36,7 +37,7 @@ namespace Flex.Investor.Api.Extensions
             services.AddInfrastructureServices();
 
             // Database
-            services.ConfigureInvestorDbContext(configuration);
+            services.ConfigureServiceDbContext<InvestorDbContext>(configuration);
 
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);
@@ -45,16 +46,6 @@ namespace Flex.Investor.Api.Extensions
         }
 
         #region Infrastructure
-        private static IServiceCollection ConfigureInvestorDbContext(this IServiceCollection services, IConfiguration configuration)
-        {
-            OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version11;
-
-            services.AddDbContext<InvestorDbContext>(options =>
-            options.UseOracle(configuration.GetConnectionString("DefaultConnection")));
-
-            return services;
-        }
-
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
             return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))

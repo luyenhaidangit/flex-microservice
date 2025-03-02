@@ -10,8 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Oracle.EntityFrameworkCore" Version="9.23.60" />
-	  <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.6.1" />
 	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
 		  <PrivateAssets>all</PrivateAssets>
@@ -21,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Modules\Flex.EntityFrameworkCore.Oracle\Flex.EntityFrameworkCore.Oracle.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
   </ItemGroup>
 

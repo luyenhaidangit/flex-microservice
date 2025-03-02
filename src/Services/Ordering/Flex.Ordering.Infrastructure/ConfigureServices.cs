@@ -5,23 +5,26 @@ using Flex.Ordering.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
+using Flex.EntityFrameworkCore.Oracle;
+using Flex.Infrastructure.Common.Repositories;
+using Flex.Ordering.Infrastructure.Repositories;
 namespace Flex.Ordering.Infrastructure
 {
     public static class ConfigureServices
     {
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection ConfigureServiceDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<OrderingDbContext>(options =>
-            {
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnectionString"),
-                    builder => builder.MigrationsAssembly(typeof(OrderingDbContext).Assembly.FullName));
-            });
-
-            services.AddScoped<OrderContextSeed>();
-            services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+            // Database
+            services.ConfigureServiceDbContext<OrderingDbContext>(configuration);
 
             return services;
+        }
+
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+        {
+            return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
+                           .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
+                           .AddScoped<IOrderRepository, OrderRepository>();
         }
     }
 }

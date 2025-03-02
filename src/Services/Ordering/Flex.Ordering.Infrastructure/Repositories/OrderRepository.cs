@@ -11,15 +11,5 @@ namespace Flex.Ordering.Infrastructure.Repositories
         public OrderRepository(OrderingDbContext dbContext, IUnitOfWork<OrderingDbContext> unitOfWork) : base(dbContext, unitOfWork)
         {
         }
-
-        public Task<Order> GetOrderByIdAsync(long id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Order> GetOrderByInvestorIdAsync(long investorId)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

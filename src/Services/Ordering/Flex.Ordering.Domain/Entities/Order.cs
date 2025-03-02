@@ -8,26 +8,26 @@ namespace Flex.Ordering.Domain.Entities
     public class Order : EntityAuditBase<long>
     {
         [Required]
-        [Column("INVESTORID", TypeName = "NUMBER")]
+        [Column("INVESTOR_ID")]
         public long InvestorId { get; set; }
 
         [Required]
-        [Column("TOTALPRICE", TypeName = "NUMBER(18, 2)")]
-        public decimal TotalPrice { get; set; }
+        [Column("SUB_ACCOUNT_ID")]
+        public long SubAccountId { get; set; }
 
         [Required]
-        [Column("FULLNAME", TypeName = "VARCHAR2(250)")]
-        public string? FullName { get; set; }
+        [Column("ORDER_TYPE", TypeName = "VARCHAR2(50)")]
+        public string OrderType { get; set; } // BUY, SELL, LIMIT, MARKET
 
         [Required]
-        [Column("EMAIL", TypeName = "VARCHAR2(250)")]
-        public string? Email { get; set; }
+        [Column("QUANTITY", TypeName = "NUMBER(19,4)")]
+        public decimal Quantity { get; set; }
+
+        [Column("PRICE", TypeName = "NUMBER(19,4)")]
+        public decimal? Price { get; set; }
 
         [Required]
-        [Column("ADDRESS", TypeName = "VARCHAR2(500)")]
-        public string? Address { get; set; }
-
-        [Column("INVOICEADDRESS", TypeName = "VARCHAR2(500)")]
-        public string? InvoiceAddress { get; set; }
+        [Column("STATUS", TypeName = "VARCHAR2(20)")]
+        public string Status { get; set; } = "PENDING"; // PENDING, EXECUTED, CANCELED
     }
 }
