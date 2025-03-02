@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Oracle.ManagedDataAccess.Client;
-using Flex.Contracts.Domains.Interfaces;
+﻿using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common.Repositories;
 using Flex.Infrastructure.Common;
 using Flex.Investor.Api.Persistence;
