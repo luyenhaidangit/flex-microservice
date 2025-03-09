@@ -1,0 +1,6 @@
+@Flex.BankIntegration.Api_HostAddress = http://localhost:5116
+
+GET {{Flex.BankIntegration.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

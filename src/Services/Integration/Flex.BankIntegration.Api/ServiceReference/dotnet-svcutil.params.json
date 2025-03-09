@@ -1,0 +1,12 @@
+{
+  "providerId": "Microsoft.Tools.ServiceModel.Svcutil",
+  "version": "2.1.0",
+  "options": {
+    "inputs": [
+      "http://localhost:52514/HOSTService/HOSTService.svc?wsdl"
+    ],
+    "outputFile": "Reference.cs",
+    "targetFramework": "net9.0",
+    "typeReuseMode": "All"
+  }
+}
