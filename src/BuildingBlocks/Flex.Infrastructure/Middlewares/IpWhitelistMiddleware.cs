@@ -14,7 +14,7 @@ namespace Flex.Infrastructure.Middlewares
         public IpWhitelistMiddleware(RequestDelegate next, IConfiguration configuration)
         {
             _next = next;
-            _allowedIps = configuration.GetSection(ConfigurationConstants.IpWhitelist).Get<List<string>>() ?? new List<string>();
+            _allowedIps = configuration.GetSection(ConfigKeyConstants.IpWhitelist).Get<List<string>>() ?? new List<string>();
         }
 
         public async Task Invoke(HttpContext context)

@@ -12,7 +12,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
     {
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigurationConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
+            services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
 
             return services;
         }
@@ -20,7 +20,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Bind JwtSettings settings
-            var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigurationConstants.JwtSettings);
+            var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigKeyConstants.JwtSettings);
 
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();

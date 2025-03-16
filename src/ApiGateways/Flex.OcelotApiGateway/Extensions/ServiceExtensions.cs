@@ -14,8 +14,8 @@ namespace Flex.OcelotApiGateway.Extensions
     {
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions<ApiConfiguration>().Bind(configuration.GetSection(ConfigurationConstants.ApiConfiguration)).ValidateDataAnnotations().ValidateOnStart();
-            services.AddOptions<Flex.Security.JwtSettings>().Bind(configuration.GetSection(ConfigurationConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
+            services.AddOptions<ApiConfiguration>().Bind(configuration.GetSection(ConfigKeyConstants.ApiConfiguration)).ValidateDataAnnotations().ValidateOnStart();
+            services.AddOptions<Flex.Security.JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
 
             return services;
         }
@@ -23,7 +23,7 @@ namespace Flex.OcelotApiGateway.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Bind configuration settings
-            var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigurationConstants.ApiConfiguration);
+            var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigKeyConstants.ApiConfiguration);
 
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
@@ -105,7 +105,7 @@ namespace Flex.OcelotApiGateway.Extensions
 
         private static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
         {
-            var origins = configuration.GetRequiredValue<string>(ConfigurationConstants.AllowOrigins);
+            var origins = configuration.GetRequiredValue<string>(ConfigKeyConstants.AllowOrigins);
 
             services.AddCors(options =>
             {

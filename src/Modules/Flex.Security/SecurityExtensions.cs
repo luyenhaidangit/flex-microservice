@@ -31,7 +31,7 @@ namespace Flex.Security
 
         public static IServiceCollection AddAuthenticationJwtToken(this IServiceCollection services, IConfiguration configuration, bool isCheckBlacklist = true)
         {
-            var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigurationConstants.JwtSettings);
+            var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigKeyConstants.JwtSettings);
 
             if (isCheckBlacklist)
             {

@@ -57,6 +57,23 @@ namespace Flex.System.Api.Controllers
             var configDto = _mapper.Map<ConfigDto>(config);
             return Ok(Result.Success(configDto));
         }
+
+        /// <summary>
+        /// Lấy danh sách cấu hình theo danh sách các Key.
+        /// Ví dụ: GET api/config/get-configs-by-keys?keys=KEY1&keys=KEY2
+        /// </summary>
+        [HttpGet("get-configs-by-keys")]
+        public async Task<IActionResult> GetConfigsByKeysAsync([FromQuery] List<string> keys)
+        {
+            if (keys == null || keys.Count == 0)
+            {
+                return BadRequest(Result.Failure(message: "No keys provided."));
+            }
+
+            var configs = await _configRepository.FindByCondition(c => keys.Contains(c.Key)).ToListAsync();
+            var configDtos = _mapper.Map<List<ConfigDto>>(configs);
+            return Ok(Result.Success(configDtos));
+        }
         #endregion
 
         #region Command
