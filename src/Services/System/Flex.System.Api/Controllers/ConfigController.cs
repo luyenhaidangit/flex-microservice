@@ -54,8 +54,10 @@ namespace Flex.System.Api.Controllers
             {
                 return NotFound(Result.Failure(message: "Config not found."));
             }
-            var configDto = _mapper.Map<ConfigDto>(config);
-            return Ok(Result.Success(configDto));
+
+            var result = config.Value;
+
+            return Ok(Result.Success(result));
         }
 
         /// <summary>

@@ -38,6 +38,19 @@
           "Port": 7003
         }
       ]
+    },
+    {
+      "Key": "system-service",
+      "DownstreamPathTemplate": "/api/config/{everything}",
+      "UpstreamPathTemplate": "/api/config/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ]
     }
   ],
   "GlobalConfiguration": {
