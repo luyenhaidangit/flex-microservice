@@ -21,7 +21,10 @@ namespace Flex.Infrastructure.Middlewares
         {
             var remoteIp = context.Connection.RemoteIpAddress?.ToString();
 
-            if (!_allowedIps.Contains(remoteIp))
+            // Nếu không cấu hình IpWhitelist, không thực hiện chặn.
+            // Nếu cấu hình chỉ cho phép máy có địa chỉ IP hợp lệ gọi.
+            // IpWhitelist dạng ["1","2","3"]
+            if ((_allowedIps != null && _allowedIps.Any()) && !_allowedIps.Contains(remoteIp))
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 context.Response.ContentType = "application/json";

@@ -40,7 +40,7 @@ namespace Flex.AspNetIdentity.Api.Persistence.Seeds
                         EmailConfirmed = true
                     };
 
-                    var result = await userManager.CreateAsync(adminUser, "Admin@123");
+                    var result = await userManager.CreateAsync(adminUser, "Haidang106@");
 
                     if (result.Succeeded)
                     {

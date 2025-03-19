@@ -15,7 +15,7 @@ namespace Flex.OcelotApiGateway.Extensions
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddOptions<ApiConfiguration>().Bind(configuration.GetSection(ConfigKeyConstants.ApiConfiguration)).ValidateDataAnnotations().ValidateOnStart();
-            services.AddOptions<Flex.Security.JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
+            services.AddOptions<Security.JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
 
             return services;
         }
@@ -67,41 +67,6 @@ namespace Flex.OcelotApiGateway.Extensions
                 x.GenerateDocsForGatewayItSelf = false;
             });
         }
-
-        //private static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
-        //{
-        //    var settings = configuration.GetSection(ConfigurationConstants.JwtSettings).Get<JwtSettings>();
-
-        //    if (settings == null || string.IsNullOrEmpty(settings.SecretKey))
-        //    {
-        //        throw new ArgumentNullException($"{nameof(JwtSettings)} is not configured properly");
-        //    }
-
-        //    var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.SecretKey));
-
-        //    var tokenValidationParameters = new TokenValidationParameters
-        //    {
-        //        ValidateIssuerSigningKey = true,
-        //        IssuerSigningKey = signingKey,
-        //        ValidateIssuer = false,
-        //        ValidateAudience = false,
-        //        ValidateLifetime = false,
-        //        ClockSkew = TimeSpan.Zero,
-        //        RequireExpirationTime = false
-        //    };
-        //    services.AddAuthentication(o =>
-        //    {
-        //        o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        //        o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        //    }).AddJwtBearer(x =>
-        //    {
-        //        x.SaveToken = true;
-        //        x.RequireHttpsMetadata = false;
-        //        x.TokenValidationParameters = tokenValidationParameters;
-        //    });
-
-        //    return services;
-        //}
 
         private static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
         {

@@ -91,7 +91,7 @@ namespace Flex.Infrastructure.Extensions
         #region Application
         public static void UseApplicationMiddleware(this WebApplication app)
         {
-            //app.UseMiddleware<IpWhitelistMiddleware>();
+            app.UseMiddleware<IpWhitelistMiddleware>();
             app.UseMiddleware<ErrorWrappingMiddleware>();
         }
         #endregion

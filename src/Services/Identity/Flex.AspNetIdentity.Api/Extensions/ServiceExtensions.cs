@@ -40,7 +40,6 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             // Identity
             services.ConfigureAspNetIdentity();
-            services.AddJwtTokenSecurity(configuration);
             services.AddAuthenticationJwtToken(configuration);
 
             // AutoMapper
