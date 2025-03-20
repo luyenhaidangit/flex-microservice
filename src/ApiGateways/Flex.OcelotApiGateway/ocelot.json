@@ -40,9 +40,22 @@
       ]
     },
     {
-      "Key": "system-service",
+      "Key": "config-system-service",
       "DownstreamPathTemplate": "/api/config/{everything}",
       "UpstreamPathTemplate": "/api/config/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ]
+    },
+    {
+      "Key": "department-system-service",
+      "DownstreamPathTemplate": "/api/department/{everything}",
+      "UpstreamPathTemplate": "/api/department/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ],
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
