@@ -46,7 +46,9 @@ namespace Flex.System.Api.Extensions
         {
             return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
                            .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
-                           .AddScoped<IConfigRepository, ConfigRepository>();
+                           .AddScoped<IConfigRepository, ConfigRepository>()
+                           .AddScoped<IDepartmentRepository, DepartmentRepository>()
+                           .AddScoped<IDepartmentRequestRepository, DepartmentRequestRepository>();
         }
         #endregion
     }

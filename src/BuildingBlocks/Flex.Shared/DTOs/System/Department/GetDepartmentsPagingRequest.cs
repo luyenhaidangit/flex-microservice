@@ -4,12 +4,13 @@ namespace Flex.Shared.DTOs.System.Department
 {
     public class GetDepartmentsPagingRequest : PagingRequest
     {
-        public string? Key { get; set; }
+        public string? Name { get; set; }
+        public string? Status { get; set; }
 
         protected override Dictionary<string, string> OrderByMappings => new()
         {
-            { "KEY", "KEY" },
-            { "DATE", "LASTMODIFIEDDATE" }
+            { "NAME", "NAME" },
+            { "STATUS", "STATUS" },
         };
     }
 }

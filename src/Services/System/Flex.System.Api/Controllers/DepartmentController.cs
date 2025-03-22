@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Flex.Infrastructure.EF;
+using Flex.Shared.DTOs.Securities;
 using Flex.Shared.DTOs.System.Department;
 using Flex.Shared.SeedWork;
 using Flex.System.Api.Entities;
@@ -14,11 +15,13 @@ namespace Flex.System.Api.Controllers
     public class DepartmentController : ControllerBase
     {
         private readonly IDepartmentRepository _departmentRepository;
+        private readonly IDepartmentRequestRepository _departmentRequestRepository;
         private readonly IMapper _mapper;
 
-        public DepartmentController(IDepartmentRepository departmentRepository, IMapper mapper)
+        public DepartmentController(IDepartmentRepository departmentRepository, IDepartmentRequestRepository departmentRequestRepository, IMapper mapper)
         {
             _departmentRepository = departmentRepository;
+            _departmentRequestRepository = departmentRequestRepository;
             _mapper = mapper;
         }
 
@@ -29,13 +32,29 @@ namespace Flex.System.Api.Controllers
         [HttpGet("get-department-paging")]
         public async Task<IActionResult> GetPagingSecuritiesAsync([FromQuery] GetDepartmentsPagingRequest request)
         {
-            var query = _departmentRepository.FindAll().WhereIf(!string.IsNullOrEmpty(request.Key), b => b.Key.ToUpper().Contains(request.Key.ToUpper()));
+            var query = _departmentRepository.FindAll()
+                .WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.ToUpper().Contains(request.Name.ToUpper()))
+                .WhereIf(!string.IsNullOrEmpty(request.Status), b => b.Status.ToUpper().Contains(request.Status.ToUpper()));
 
             var resultPaged = await query.ToPagedResultAsync(request);
 
             var resultDtoPaged = resultPaged.MapPagedResult<Department, DepartmentDto>(_mapper);
 
             return Ok(Result.Success(resultDtoPaged));
+        }
+
+        [HttpPost("create-department")]
+        public async Task<IActionResult> CreateSecuritieAsync([FromBody] CreateDepartmentRequest request)
+        {
+            var createDepartmentRequest = _mapper.Map<DepartmentRequest>(request);
+            createDepartmentRequest.ActionType = "CREATE";
+            createDepartmentRequest.RequestStatus = "PENDDING";
+
+            await _departmentRequestRepository.CreateAsync(createDepartmentRequest);
+
+            // Result
+
+            return Ok(Result.Success());
         }
 
         /// <summary>

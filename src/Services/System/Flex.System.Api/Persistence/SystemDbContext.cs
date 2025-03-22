@@ -11,6 +11,8 @@ namespace Flex.System.Api.Persistence
 
         #region DbSet
         public DbSet<Entities.Config> Configs { get; set; }
+        public DbSet<Entities.Department> Departments { get; set; }
+        public DbSet<Entities.DepartmentRequest> DepartmentRequests { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
