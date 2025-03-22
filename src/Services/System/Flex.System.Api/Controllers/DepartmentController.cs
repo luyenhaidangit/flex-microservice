@@ -2,7 +2,9 @@
 using Flex.Infrastructure.EF;
 using Flex.Shared.DTOs.Securities;
 using Flex.Shared.DTOs.System.Department;
+using Flex.Shared.Enums.General;
 using Flex.Shared.SeedWork;
+using Flex.Shared.SeedWork.General;
 using Flex.System.Api.Entities;
 using Flex.System.Api.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +32,7 @@ namespace Flex.System.Api.Controllers
         /// Phân trang Danh sách phòng ban.
         /// </summary>
         [HttpGet("get-department-paging")]
-        public async Task<IActionResult> GetPagingSecuritiesAsync([FromQuery] GetDepartmentsPagingRequest request)
+        public async Task<IActionResult> GetPagingDepartmentsAsync([FromQuery] GetDepartmentsPagingRequest request)
         {
             var query = _departmentRepository.FindAll()
                 .WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.ToUpper().Contains(request.Name.ToUpper()))
@@ -48,7 +50,7 @@ namespace Flex.System.Api.Controllers
         {
             var createDepartmentRequest = _mapper.Map<DepartmentRequest>(request);
             createDepartmentRequest.ActionType = "CREATE";
-            createDepartmentRequest.RequestStatus = "PENDDING";
+            createDepartmentRequest.RequestStatus = "PENDING";
 
             await _departmentRequestRepository.CreateAsync(createDepartmentRequest);
 
@@ -72,6 +74,85 @@ namespace Flex.System.Api.Controllers
             var result = _mapper.Map<DepartmentDto>(department);
 
             return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// Duyệt Tổ chức phát hành.
+        /// </summary>
+        [HttpPost("approve-department")]
+        public async Task<IActionResult> ApproveOrRejectRequestAsync([FromBody] ApproveOrRejectRequest<long> request)
+        {
+            if (request.ActionType == "CREATE")
+            {
+                // Validate
+                var isExistRequests = await _departmentRequestRepository.FindByCondition(x => x.Id == request.Id).AnyAsync();
+
+                if (!isExistRequests)
+                {
+                    return BadRequest(Result.Failure(message: "Department request not found."));
+                }
+
+                var departmentRequest = await _departmentRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
+                if (departmentRequest.ActionType != "CREATE" || departmentRequest.RequestStatus != "PENDING")
+                {
+                    return BadRequest(Result.Failure(message: "Issuer request is not pending create."));
+                }
+
+                // Begin: Transaction
+                var transaction = _departmentRepository.BeginTransactionAsync();
+
+                // Create issuers
+                var department = _mapper.Map<Department>(departmentRequest);
+                department.ProcessStatus = "CA";
+                _departmentRepository.Create(department);
+
+                await _departmentRepository.EndTransactionAsync();
+                // End: Transaction
+            }
+            else if (request.ActionType == "EDIT")
+            {
+                //// Validate
+                //var isExistRequests = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).AnyAsync();
+
+                //if (!isExistRequests)
+                //{
+                //    return BadRequest(Result.Failure(message: "Issuer request not found."));
+                //}
+
+                //// Begin: Transaction
+                //var transaction = _issuerRepository.BeginTransactionAsync();
+
+                //var issuerRequest = await _issuerRequestRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
+
+                //// Update issuers
+                //var issuer = _mapper.Map<CatalogIssuer>(issuerRequest);
+                //issuer.ProcessStatus = EProcessStatus.Complete;
+                //_issuerRepository.Update(issuer);
+
+                //// Delete add request
+                //_issuerRequestRepository.Delete(issuerRequest);
+
+                //await _issuerRepository.EndTransactionAsync();
+                //// End: Transaction
+            }
+            else if (request.ActionType == "DELETE")
+            {
+                //// Validate
+                //var isExistEntity = await _issuerRepository.FindByCondition(x => x.Id == request.Id).AnyAsync();
+                //if (!isExistEntity)
+                //{
+                //    return BadRequest(Result.Failure(message: "Issuer not found."));
+                //}
+
+                //// Process
+                //var issuer = await _issuerRepository.FindByCondition(x => x.Id == request.Id).FirstAsync();
+                //await _issuerRepository.DeleteAsync(issuer);
+                //// End: Transaction
+            }
+
+            // Result
+
+            return Ok(Result.Success());
         }
         #endregion
     }
