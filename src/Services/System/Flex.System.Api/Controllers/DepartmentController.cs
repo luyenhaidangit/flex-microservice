@@ -31,14 +31,42 @@ namespace Flex.System.Api.Controllers
         /// </summary>
         [HttpGet("get-department-paging")]
         public async Task<IActionResult> GetPagingDepartmentsAsync([FromQuery] GetDepartmentsPagingRequest request)
-        {
-            var query = _departmentRepository.FindAll()
+        {   // Lấy danh sách request và main
+            // Lọc theo điều kiện và phân trang
+            string defaultCreateStatus = "P";
+
+            var departmentsQuery = _departmentRepository.FindAll()
+                .Select(d => new DepartmentDto
+                {
+                    Id = d.Id,
+                    Name = d.Name,
+                    Address = d.Address,
+                    Description = d.Description,
+                    Status = d.Status,
+                    CreatedDate = d.CreatedDate
+                });
+
+            var departmentRequestsQuery = _departmentRequestRepository.FindAll()
+                .Where(r => r.ActionType == "CREATE" && r.RequestStatus != "PENDING")
+                .Select(r => new DepartmentDto
+                {
+                    Id = null,
+                    Name = r.Name,
+                    Address = r.Address,
+                    Description = r.Description,
+                    Status = defaultCreateStatus,
+                    CreatedDate = r.CreatedDate
+                });
+
+            var combinedQuery = departmentsQuery.Concat(departmentRequestsQuery);
+
+            var query = combinedQuery
                 .WhereIf(!string.IsNullOrEmpty(request.Name), b => b.Name.ToUpper().Contains(request.Name.ToUpper()))
                 .WhereIf(!string.IsNullOrEmpty(request.Status), b => b.Status.ToUpper().Contains(request.Status.ToUpper()));
 
             var resultPaged = await query.ToPagedResultAsync(request);
 
-            var resultDtoPaged = resultPaged.MapPagedResult<Department, DepartmentDto>(_mapper);
+            var resultDtoPaged = resultPaged.MapPagedResult<DepartmentDto, DepartmentDto>(_mapper);
 
             return Ok(Result.Success(resultDtoPaged));
         }
