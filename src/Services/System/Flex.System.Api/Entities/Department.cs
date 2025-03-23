@@ -22,7 +22,7 @@ namespace Flex.System.Api.Entities
         public string Status { get; set; } // Trạng thái (A: Active, E: Expired,...)
 
         [Required]
-        [Column("PROCESS_STATUS ", TypeName = "VARCHAR2(1000)")]
+        [Column("PROCESS_STATUS", TypeName = "VARCHAR2(1000)")]
         public string ProcessStatus { get; set; } // Trạng thái (A: Active, E: Expired,...)
     }
 }

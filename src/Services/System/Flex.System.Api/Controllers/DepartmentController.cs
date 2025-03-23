@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using Flex.Infrastructure.EF;
-using Flex.Shared.DTOs.Securities;
 using Flex.Shared.DTOs.System.Department;
-using Flex.Shared.Enums.General;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.General;
 using Flex.System.Api.Entities;
