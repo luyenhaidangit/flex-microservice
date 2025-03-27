@@ -403,3 +403,49 @@ publish/
 
 # Libman json
 src/WebApps/Flex.WebHealthStatus/wwwroot/lib/
+
+# Thư mục chứa Terraform state và cache
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+*.terraform.lock.hcl
+
+# File log và plan
+*.log
+*.plan
+*.tfplan
+terraform.tfplan
+
+# File biến môi trường nhạy cảm
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+*.auto.tfvars.json
+
+# File override không cần thiết
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# File backup và local config
+*.backup
+.terraformrc
+terraform.rc
+
+# File IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+
+# File CLI AWS
+.aws/
+*.pem
+*.ppk
+
+# File đặc biệt cho từng OS
+.DS_Store           # macOS
+Thumbs.db           # Windows
