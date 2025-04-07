@@ -6,6 +6,7 @@ using Flex.Shared.DTOs.System;
 using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
 using Flex.Infrastructure.EF;
+using Flex.Shared.Constants;
 
 namespace Flex.System.Api.Controllers
 {
@@ -75,6 +76,24 @@ namespace Flex.System.Api.Controllers
             var configs = await _configRepository.FindByCondition(c => keys.Contains(c.Key)).ToListAsync();
             var configDtos = _mapper.Map<List<ConfigDto>>(configs);
             return Ok(Result.Success(configDtos));
+        }
+
+        /// <summary>
+        /// Lấy danh sách cấu hình theo danh sách các Key.
+        /// Ví dụ: GET api/config/get-configs-by-keys?keys=KEY1&keys=KEY2
+        /// </summary>
+        [HttpGet("get-auth-mode")]
+        public async Task<IActionResult> GetAuthModeAsync()
+        {
+            var config = await _configRepository.FindByCondition(c => c.Key == ConfigKeyConstants.AuthMode).FirstOrDefaultAsync();
+            if (config == null)
+            {
+                return NotFound(Result.Failure(message: "Config not found."));
+            }
+
+            var result = config.Value;
+
+            return Ok(Result.Success(message: result));
         }
         #endregion
 
