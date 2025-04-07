@@ -7,6 +7,9 @@ using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
 using Flex.Infrastructure.EF;
 using Flex.Shared.Constants;
+using Microsoft.Extensions.Caching.Distributed;
+using Flex.Shared.DTOs.System.Config;
+using Flex.System.Api.Validators;
 
 namespace Flex.System.Api.Controllers
 {
@@ -15,12 +18,14 @@ namespace Flex.System.Api.Controllers
     public class ConfigController : ControllerBase
     {
         private readonly IConfigRepository _configRepository;
+        private readonly IDistributedCache _cache;
         private readonly IMapper _mapper;
 
-        public ConfigController(IConfigRepository configRepository, IMapper mapper)
+        public ConfigController(IConfigRepository configRepository, IMapper mapper, IDistributedCache cache)
         {
             _configRepository = configRepository;
             _mapper = mapper;
+            _cache = cache;
         }
 
         #region Query
@@ -77,24 +82,6 @@ namespace Flex.System.Api.Controllers
             var configDtos = _mapper.Map<List<ConfigDto>>(configs);
             return Ok(Result.Success(configDtos));
         }
-
-        /// <summary>
-        /// Lấy danh sách cấu hình theo danh sách các Key.
-        /// Ví dụ: GET api/config/get-configs-by-keys?keys=KEY1&keys=KEY2
-        /// </summary>
-        [HttpGet("get-auth-mode")]
-        public async Task<IActionResult> GetAuthModeAsync()
-        {
-            var config = await _configRepository.FindByCondition(c => c.Key == ConfigKeyConstants.AuthMode).FirstOrDefaultAsync();
-            if (config == null)
-            {
-                return NotFound(Result.Failure(message: "Config not found."));
-            }
-
-            var result = config.Value;
-
-            return Ok(Result.Success(message: result));
-        }
         #endregion
 
         #region Command
@@ -147,6 +134,67 @@ namespace Flex.System.Api.Controllers
 
             await _configRepository.DeleteAsync(config);
             return Ok(Result.Success());
+        }
+        #endregion
+
+        #region AuthMode
+        [HttpGet("get-auth-mode")]
+        public async Task<IActionResult> GetAuthModeAsync()
+        {
+            string? result = await _cache.GetStringAsync(CacheRedisKeyConstant.ConfigAuthMode);
+
+            if (string.IsNullOrEmpty(result))
+            {
+                var config = await _configRepository.FindByCondition(c => c.Key == ConfigKeyConstants.AuthMode).FirstOrDefaultAsync();
+                if (config == null)
+                {
+                    return NotFound(Result.Failure(message: "Config not found."));
+                }
+
+                result = config.Value;
+
+                // Set cache value
+                await _cache.SetStringAsync(CacheRedisKeyConstant.ConfigAuthMode, result);
+            }
+
+            return Ok(Result.Success(message: result));
+        }
+
+        [HttpPost("set-auth-mode")]
+        public async Task<IActionResult> SetAuthModeAsync([FromBody] SetAuthModeRequest request)
+        {
+            // Validator
+            ConfigValidator.ValidateAuthMode(request.AuthMode);
+
+            // Tìm config hiện tại
+            var config = await _configRepository
+                .FindByCondition(c => c.Key == ConfigKeyConstants.AuthMode)
+                .FirstOrDefaultAsync();
+
+            if (config == null)
+            {
+                // Nếu chưa có thì tạo mới
+                config = new Config
+                {
+                    Key = ConfigKeyConstants.AuthMode,
+                    Value = request.AuthMode.Trim(),
+                    Description = "Phương thức xác thực của hệ thống (NONE, LDAP, DB, ...)"
+                };
+                await _configRepository.CreateAsync(config);
+            }
+            else
+            {
+                // Cập nhật giá trị cũ
+                config.Value = request.AuthMode.Trim();
+                _configRepository.Update(config);
+            }
+
+            await _configRepository.SaveChangesAsync();
+
+            // Cập nhật lại cache Redis
+            await _cache.SetStringAsync(CacheRedisKeyConstant.ConfigAuthMode, config.Value);
+
+            return Ok(Result.Success(message: "AuthMode updated successfully."));
         }
         #endregion
     }

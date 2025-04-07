@@ -7,6 +7,7 @@ using Flex.System.Api.Repositories;
 using Flex.Infrastructure.Swashbuckle;
 using Flex.Shared.Extensions;
 using Flex.EntityFrameworkCore.Oracle;
+using Flex.Redis;
 
 namespace Flex.System.Api.Extensions
 {
@@ -34,6 +35,7 @@ namespace Flex.System.Api.Extensions
 
             // Database
             services.ConfigureServiceDbContext<SystemDbContext>(configuration);
+            services.ConfigureStackExchangeRedisCache(configuration);
 
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);
