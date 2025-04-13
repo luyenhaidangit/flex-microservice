@@ -8,6 +8,7 @@ using Flex.Infrastructure.EF;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Linq;
+using Flex.Shared.Constants.Common;
 
 namespace Flex.System.Api.Controllers
 {
@@ -36,8 +37,9 @@ namespace Flex.System.Api.Controllers
         [HttpGet("get-branches-paging")]
         public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetBranchesPagingRequest request)
         {
-            // branches
+            // 1. Lấy toàn bộ danh sách chi nhánh sau khi lọc
             var branchesQuery = _branchRepository.FindAll();
+
             if (!string.IsNullOrEmpty(request.Keyword))
             {
                 branchesQuery = branchesQuery.Where(x => x.Name.Contains(request.Keyword) || x.Code.Contains(request.Keyword));
@@ -49,67 +51,82 @@ namespace Flex.System.Api.Controllers
 
             var branches = await branchesQuery.ToListAsync();
             var branchDict = branches.ToDictionary(x => x.Id);
+            var branchIds = branchDict.Keys.ToList();
 
-            // Request
-            var requestQuery = _branchRequestRepository.FindByCondition(x => x.Status == "Pending");
+            // 2. Lấy các yêu cầu đang chờ phê duyệt (Pending)
+            var requestQuery = _branchRequestRepository.FindByCondition(x => x.Status == StatusConstant.Pending);
+
             if (!string.IsNullOrEmpty(request.Keyword))
             {
                 requestQuery = requestQuery.Where(x => x.ProposedData.Contains(request.Keyword));
             }
+
             var pendingRequests = await requestQuery.ToListAsync();
 
-            // Result
-            var resultList = new List<BranchPagingDto>();
+            // 3. Join giữa chi nhánh và yêu cầu pending (nếu có)
+            var resultList = branches
+                .GroupJoin(
+                    pendingRequests.Where(r => r.BranchId != null),
+                    branch => branch.Id,
+                    request => request.BranchId!.Value,
+                    (branch, requests) =>
+                    {
+                        var pending = requests.FirstOrDefault();
+                        return new BranchPagingDto
+                        {
+                            Id = branch.Id,
+                            Code = branch.Code,
+                            Name = branch.Name,
+                            Address = branch.Address,
+                            Region = branch.Region,
+                            Status = branch.Status,
+                            HasPendingRequest = pending != null,
+                            PendingRequestType = pending?.RequestType,
+                            RequestedBy = pending?.RequestedBy,
+                            RequestedDate = pending?.CreatedDate
+                        };
+                    })
+                .ToList();
 
-            resultList.AddRange(branches.Select(branch =>
-            {
-                var pending = pendingRequests.FirstOrDefault(r => r.BranchId == branch.Id);
-                return new BranchPagingDto
-                {
-                    Id = branch.Id,
-                    Code = branch.Code,
-                    Name = branch.Name,
-                    Address = branch.Address,
-                    Region = branch.Region,
-                    Status = branch.Status,
-                    HasPendingRequest = pending != null,
-                    PendingRequestType = pending?.RequestType,
-                    RequestedBy = pending?.RequestedBy,
-                    RequestedDate = pending?.CreatedDate
-                };
-            }));
-
-            resultList.AddRange(pendingRequests
+            // 4. Thêm các yêu cầu tạo mới (không có BranchId)
+            var createRequests = pendingRequests
                 .Where(r => r.BranchId == null || !branchDict.ContainsKey(r.BranchId.Value))
                 .Select(r => new BranchPagingDto
                 {
                     Id = 0,
-                    Code = "--",
+                    Code = "---",
                     Name = "(Đề xuất tạo mới)",
-                    Address = "--",
-                    Region = "--",
-                    Status = "Pending",
+                    Address = "---",
+                    Region = "---",
+                    Status = StatusConstant.Pending,
                     HasPendingRequest = true,
                     PendingRequestType = r.RequestType,
                     RequestedBy = r.RequestedBy,
                     RequestedDate = r.CreatedDate
-                }));
+                });
 
-            var sortedResult = resultList.OrderBy(x => x.Status != "Pending")
-                                          .ThenByDescending(x => x.RequestedDate ?? DateTime.MinValue)
-                                          .ToList();
+            resultList.AddRange(createRequests);
+
+            // 5. Sắp xếp và phân trang
+            var sortedResult = resultList
+                .OrderBy(x => x.Status != StatusConstant.Pending)
+                .ThenByDescending(x => x.RequestedDate ?? DateTime.MinValue)
+                .ToList();
+
+            int pageIndex = request.PageIndex ?? 1;
+            int pageSize = request.PageSize ?? sortedResult.Count;
 
             var pagedResult = sortedResult
-                .Skip(((request.PageIndex ?? 1) - 1) * (request.PageSize ?? 10))
-                .Take(request.PageSize ?? 10)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
             var response = new PagedResult<BranchPagingDto>
             {
                 Items = pagedResult,
-                TotalItems = resultList.Count,
-                PageIndex = (request.PageIndex ?? 1),
-                PageSize = (request.PageSize ?? resultList.Count)
+                TotalItems = sortedResult.Count,
+                PageIndex = pageIndex,
+                PageSize = pageSize
             };
 
             return Ok(Result.Success(response));
