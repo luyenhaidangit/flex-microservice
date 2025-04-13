@@ -15,7 +15,7 @@ namespace Flex.System.Api.Entities
         public string RequestType { get; set; } // Create, Update, Close
 
         [Column("PROPOSED_DATA", TypeName = "CLOB")]
-        public string ProposedDataJson { get; set; }
+        public string ProposedData { get; set; }
 
         [Column("REASON", TypeName = "NVARCHAR2(1000)")]
         public string? Reason { get; set; }
@@ -32,5 +32,7 @@ namespace Flex.System.Api.Entities
 
         [Column("APPROVAL_COMMENT", TypeName = "NVARCHAR2(1000)")]
         public string? ApprovalComment { get; set; }
+        [Column("REQUESTED_BY")]
+        public string? RequestedBy { get; set; }
     }
 }
