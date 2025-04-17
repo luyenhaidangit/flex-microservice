@@ -64,6 +64,19 @@
           "Port": 7004
         }
       ]
+    },
+    {
+      "Key": "branch-system-service",
+      "DownstreamPathTemplate": "/api/branch/{everything}",
+      "UpstreamPathTemplate": "/api/branch/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ]
     }
   ],
   "GlobalConfiguration": {

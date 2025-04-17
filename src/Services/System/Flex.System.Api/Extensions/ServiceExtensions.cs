@@ -50,7 +50,10 @@ namespace Flex.System.Api.Extensions
                            .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>))
                            .AddScoped<IConfigRepository, ConfigRepository>()
                            .AddScoped<IDepartmentRepository, DepartmentRepository>()
-                           .AddScoped<IDepartmentRequestRepository, DepartmentRequestRepository>();
+                           .AddScoped<IDepartmentRequestRepository, DepartmentRequestRepository>()
+                           .AddScoped<IBranchRequestRepository, BranchRequestRepository>()
+                           .AddScoped<IBranchRepository, BranchRepository>()
+                           .AddScoped<IBranchHistoryRepository, BranchHistoryRepository>();
         }
         #endregion
     }

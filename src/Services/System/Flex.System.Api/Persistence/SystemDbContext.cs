@@ -13,6 +13,9 @@ namespace Flex.System.Api.Persistence
         public DbSet<Entities.Config> Configs { get; set; }
         public DbSet<Entities.Department> Departments { get; set; }
         public DbSet<Entities.DepartmentRequest> DepartmentRequests { get; set; }
+        public DbSet<Entities.Branch> Branches { get; set; }
+        public DbSet<Entities.BranchRequest> BranchRequests { get; set; }
+        public DbSet<Entities.BranchHistory> BranchHistories { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
