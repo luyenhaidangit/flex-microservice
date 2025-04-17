@@ -9,5 +9,6 @@ namespace Flex.Shared.DTOs.System.Branch
         public string? Status { get; set; }
         public DateTime? EstablishedDate { get; set; }
         public string? ManagerName { get; set; }
+        public string? RequestedBy { get; set; }
     }
 }

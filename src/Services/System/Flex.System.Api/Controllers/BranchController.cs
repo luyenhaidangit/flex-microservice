@@ -34,10 +34,10 @@ namespace Flex.System.Api.Controllers
         }
 
         #region Query
+
         [HttpGet("get-branches-paging")]
         public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetBranchesPagingRequest request)
         {
-            // 1. Lấy toàn bộ danh sách chi nhánh sau khi lọc
             var branchesQuery = _branchRepository.FindAll();
 
             if (!string.IsNullOrEmpty(request.Keyword))
@@ -51,9 +51,7 @@ namespace Flex.System.Api.Controllers
 
             var branches = await branchesQuery.ToListAsync();
             var branchDict = branches.ToDictionary(x => x.Id);
-            var branchIds = branchDict.Keys.ToList();
 
-            // 2. Lấy các yêu cầu đang chờ phê duyệt (Pending)
             var requestQuery = _branchRequestRepository.FindByCondition(x => x.Status == StatusConstant.Pending);
 
             if (!string.IsNullOrEmpty(request.Keyword))
@@ -63,7 +61,6 @@ namespace Flex.System.Api.Controllers
 
             var pendingRequests = await requestQuery.ToListAsync();
 
-            // 3. Join giữa chi nhánh và yêu cầu pending (nếu có)
             var resultList = branches
                 .GroupJoin(
                     pendingRequests.Where(r => r.BranchId != null),
@@ -88,7 +85,6 @@ namespace Flex.System.Api.Controllers
                     })
                 .ToList();
 
-            // 4. Thêm các yêu cầu tạo mới (không có BranchId)
             var createRequests = pendingRequests
                 .Where(r => r.BranchId == null || !branchDict.ContainsKey(r.BranchId.Value))
                 .Select(r => new BranchPagingDto
@@ -107,7 +103,6 @@ namespace Flex.System.Api.Controllers
 
             resultList.AddRange(createRequests);
 
-            // 5. Sắp xếp và phân trang
             var sortedResult = resultList
                 .OrderBy(x => x.Status != StatusConstant.Pending)
                 .ThenByDescending(x => x.RequestedDate ?? DateTimeOffset.MinValue)
@@ -132,91 +127,94 @@ namespace Flex.System.Api.Controllers
             return Ok(Result.Success(response));
         }
 
-        //[HttpGet("get-branch-by-id")]
-        //public async Task<IActionResult> GetByIdAsync([FromQuery] long id)
-        //{
-        //    var branch = await _branchRepository.FindByCondition(x => x.Id == id).FirstOrDefaultAsync();
-        //    if (branch == null)
-        //        return NotFound(Result.Failure(message: "Branch not found."));
+        [HttpGet("get-branch-by-id")]
+        public async Task<IActionResult> GetByIdAsync([FromQuery] long id)
+        {
+            var branch = await _branchRepository.FindByCondition(x => x.Id == id).FirstOrDefaultAsync();
+            if (branch == null)
+                return NotFound(Result.Failure(message: "Branch not found."));
 
-        //    var dto = _mapper.Map<BranchDto>(branch);
-        //    return Ok(Result.Success(dto));
-        //}
+            var dto = _mapper.Map<BranchDto>(branch);
+            return Ok(Result.Success(dto));
+        }
 
-        //[HttpGet("get-branch-history")]
-        //public async Task<IActionResult> GetHistoryAsync([FromQuery] long branchId)
-        //{
-        //    var histories = await _branchHistoryRepository.FindByCondition(x => x.BranchId == branchId)
-        //        .OrderByDescending(x => x.ChangeDate)
-        //        .ToListAsync();
+        [HttpGet("get-branch-history")]
+        public async Task<IActionResult> GetHistoryAsync([FromQuery] long branchId)
+        {
+            var histories = await _branchHistoryRepository.FindByCondition(x => x.BranchId == branchId)
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
 
-        //    var result = _mapper.Map<List<BranchHistoryDto>>(histories);
-        //    return Ok(Result.Success(result));
-        //}
+            var result = _mapper.Map<List<BranchHistoryDto>>(histories);
+            return Ok(Result.Success(result));
+        }
 
-        //#endregion
+        #endregion
 
-        //#region Command
+        #region Command
 
-        //[HttpPost("create-branch")]
-        //public async Task<IActionResult> CreateAsync([FromBody] CreateBranchRequest request)
-        //{
-        //    var entity = _mapper.Map<Branch>(request);
-        //    entity.Status = "Pending";
-        //    await _branchRepository.CreateAsync(entity);
+        [HttpPost("create-branch")]
+        public async Task<IActionResult> CreateAsync([FromBody] CreateBranchRequest request)
+        {
+            var entity = _mapper.Map<Branch>(request);
+            entity.Status = StatusConstant.Pending;
+            await _branchRepository.CreateAsync(entity);
 
-        //    var requestEntity = new BranchRequest
-        //    {
-        //        BranchId = entity.Id,
-        //        RequestType = "Create",
-        //        ProposedData = System.Text.Json.JsonSerializer.Serialize(request),
-        //        Status = "Pending",
-        //        CreatedDate = DateTime.UtcNow
-        //    };
-        //    await _branchRequestRepository.CreateAsync(requestEntity);
+            var requestEntity = new BranchRequest
+            {
+                BranchId = entity.Id,
+                RequestType = RequestTypeConstant.Create,
+                ProposedData = JsonSerializer.Serialize(request),
+                Status = StatusConstant.Pending,
+                CreatedDate = DateTimeOffset.UtcNow,
+                RequestedBy = request.RequestedBy
+            };
+            await _branchRequestRepository.CreateAsync(requestEntity);
 
-        //    return Ok(Result.Success());
-        //}
+            return Ok(Result.Success());
+        }
 
-        //[HttpPost("update-branch")]
-        //public async Task<IActionResult> UpdateAsync([FromBody] UpdateBranchRequest request)
-        //{
-        //    var entity = await _branchRepository.FindByCondition(x => x.Id == request.Id).FirstOrDefaultAsync();
-        //    if (entity == null)
-        //        return NotFound(Result.Failure(message: "Branch not found."));
+        [HttpPost("update-branch")]
+        public async Task<IActionResult> UpdateAsync([FromBody] UpdateBranchRequest request)
+        {
+            var entity = await _branchRepository.FindByCondition(x => x.Id == request.Id).FirstOrDefaultAsync();
+            if (entity == null)
+                return NotFound(Result.Failure(message: "Branch not found."));
 
-        //    var updateRequest = new BranchRequest
-        //    {
-        //        BranchId = request.Id,
-        //        RequestType = "Update",
-        //        ProposedData = System.Text.Json.JsonSerializer.Serialize(request),
-        //        Status = "Pending",
-        //        CreatedDate = DateTime.UtcNow
-        //    };
-        //    await _branchRequestRepository.CreateAsync(updateRequest);
+            var updateRequest = new BranchRequest
+            {
+                BranchId = request.Id,
+                RequestType = RequestTypeConstant.Update,
+                ProposedData = JsonSerializer.Serialize(request),
+                Status = StatusConstant.Pending,
+                CreatedDate = DateTimeOffset.UtcNow,
+                RequestedBy = request.RequestedBy
+            };
+            await _branchRequestRepository.CreateAsync(updateRequest);
 
-        //    return Ok(Result.Success());
-        //}
+            return Ok(Result.Success());
+        }
 
-        //[HttpPost("close-branch")]
-        //public async Task<IActionResult> CloseAsync([FromBody] long id)
-        //{
-        //    var entity = await _branchRepository.FindByCondition(x => x.Id == id).FirstOrDefaultAsync();
-        //    if (entity == null)
-        //        return NotFound(Result.Failure(message: "Branch not found."));
+        [HttpPost("close-branch")]
+        public async Task<IActionResult> CloseAsync([FromBody] long id)
+        {
+            var entity = await _branchRepository.FindByCondition(x => x.Id == id).FirstOrDefaultAsync();
+            if (entity == null)
+                return NotFound(Result.Failure(message: "Branch not found."));
 
-        //    var closeRequest = new BranchRequest
-        //    {
-        //        BranchId = id,
-        //        RequestType = "Close",
-        //        ProposedData = "{}",
-        //        Status = "Pending",
-        //        CreatedDate = DateTime.UtcNow
-        //    };
-        //    await _branchRequestRepository.CreateAsync(closeRequest);
+            var closeRequest = new BranchRequest
+            {
+                BranchId = id,
+                RequestType = RequestTypeConstant.Close,
+                ProposedData = "{}",
+                Status = StatusConstant.Pending,
+                CreatedDate = DateTimeOffset.UtcNow,
+                RequestedBy = User?.Identity?.Name ?? "system"
+            };
+            await _branchRequestRepository.CreateAsync(closeRequest);
 
-        //    return Ok(Result.Success());
-        //}
+            return Ok(Result.Success());
+        }
 
         #endregion
     }
