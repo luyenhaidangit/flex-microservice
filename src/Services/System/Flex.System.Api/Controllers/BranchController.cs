@@ -110,7 +110,7 @@ namespace Flex.System.Api.Controllers
             // 5. Sắp xếp và phân trang
             var sortedResult = resultList
                 .OrderBy(x => x.Status != StatusConstant.Pending)
-                .ThenByDescending(x => x.RequestedDate ?? DateTime.MinValue)
+                .ThenByDescending(x => x.RequestedDate ?? DateTimeOffset.MinValue)
                 .ToList();
 
             int pageIndex = request.PageIndex ?? 1;
