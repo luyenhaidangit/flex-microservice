@@ -18,8 +18,11 @@
             <mxPoint y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="RxWgTGdh_guqD1X2mz72-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="RxWgTGdh_guqD1X2mz72-2" target="RxWgTGdh_guqD1X2mz72-5">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="RxWgTGdh_guqD1X2mz72-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="366" y="660" as="sourcePoint" />
+            <mxPoint x="366" y="760" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="RxWgTGdh_guqD1X2mz72-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="RxWgTGdh_guqD1X2mz72-2" target="RxWgTGdh_guqD1X2mz72-12">
           <mxGeometry relative="1" as="geometry" />
@@ -31,6 +34,14 @@
         </mxCell>
         <mxCell id="RxWgTGdh_guqD1X2mz72-2" value="ApiGateway" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="320" y="600" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RxWgTGdh_guqD1X2mz72-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="RxWgTGdh_guqD1X2mz72-5" target="RxWgTGdh_guqD1X2mz72-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RxWgTGdh_guqD1X2mz72-18" value="jwt token" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="RxWgTGdh_guqD1X2mz72-16">
+          <mxGeometry x="0.2" y="-1" relative="1" as="geometry">
+            <mxPoint x="26" y="2" as="offset" />
+          </mxGeometry>
         </mxCell>
         <mxCell id="RxWgTGdh_guqD1X2mz72-5" value="AuthService" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="320" y="760" width="120" height="60" as="geometry" />
@@ -48,6 +59,9 @@
         </mxCell>
         <mxCell id="RxWgTGdh_guqD1X2mz72-12" value="OtherService" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="100" y="760" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RxWgTGdh_guqD1X2mz72-17" value="login" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="321" y="688" width="50" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
