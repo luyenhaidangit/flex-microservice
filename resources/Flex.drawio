@@ -10,11 +10,6 @@
             <mxPoint x="362" y="600" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="RxWgTGdh_guqD1X2mz72-20" value="login" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="RxWgTGdh_guqD1X2mz72-3">
-          <mxGeometry x="-0.24" relative="1" as="geometry">
-            <mxPoint x="-19" as="offset" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="RxWgTGdh_guqD1X2mz72-1" value="Client" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="320" y="440" width="120" height="60" as="geometry" />
         </mxCell>
@@ -78,6 +73,14 @@
         </mxCell>
         <mxCell id="RxWgTGdh_guqD1X2mz72-17" value="login" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="321" y="688" width="50" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="RxWgTGdh_guqD1X2mz72-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="RxWgTGdh_guqD1X2mz72-22">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="540" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RxWgTGdh_guqD1X2mz72-22" value="login" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="110" y="500" width="80" height="80" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
