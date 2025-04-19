@@ -82,6 +82,16 @@
         <mxCell id="RxWgTGdh_guqD1X2mz72-22" value="login" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="110" y="500" width="80" height="80" as="geometry" />
         </mxCell>
+        <mxCell id="RxWgTGdh_guqD1X2mz72-25" value="Oracle" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="640" y="860" width="60" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="RxWgTGdh_guqD1X2mz72-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0;entryDx=0;entryDy=52.5;entryPerimeter=0;" edge="1" parent="1" source="RxWgTGdh_guqD1X2mz72-5" target="RxWgTGdh_guqD1X2mz72-25">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="913" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
