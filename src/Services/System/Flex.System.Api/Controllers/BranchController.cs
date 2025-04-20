@@ -10,6 +10,13 @@ using Flex.Shared.Constants.Common;
 
 namespace Flex.System.Api.Controllers
 {
+    /// <summary>
+    /// Quản lý vòng đời Chi nhánh: 
+    ///     • Truy vấn (paging / detail / history)
+    ///     • Gửi yêu cầu (tạo / cập nhật / xóa)
+    ///     • Phê duyệt – Từ chối – Huỷ
+    ///     • Lưu vết (BranchHistory)
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class BranchController : ControllerBase
@@ -249,9 +256,47 @@ namespace Flex.System.Api.Controllers
             branchRequest.ApprovedDate = DateTime.UtcNow;
             branchRequest.ApprovalComment = request.Comment;
             await _branchRequestRepository.UpdateAsync(branchRequest);
+
+            // Audit: thêm dòng lịch sử vào bảng lịch sử yêu cầu nếu cần
+
             await transaction.CommitAsync();
 
             return Ok(Result.Success());
+        }
+
+        [HttpPost("reject-branch-request")]
+        public async Task<IActionResult> RejectBranchRequestAsync([FromBody] RejectBranchRequest request)
+        {
+            var branchRequest = await _branchRequestRepository.GetByIdAsync(request.RequestId);
+            if (branchRequest == null)
+                return NotFound(Result.Failure("Yêu cầu không tồn tại."));
+
+            if (branchRequest.Status != StatusConstant.Pending)
+                return BadRequest(Result.Failure("Yêu cầu không hợp lệ hoặc đã được xử lý."));
+
+            branchRequest.Status = StatusConstant.Rejected;
+            branchRequest.ApprovedBy = 1; // TODO: context
+            branchRequest.ApprovedDate = DateTime.UtcNow;
+            branchRequest.ApprovalComment = request.Comment;
+            await _branchRequestRepository.UpdateAsync(branchRequest);
+
+            return Ok(Result.Success("Từ chối yêu cầu thành công."));
+        }
+
+        [HttpPost("cancel-branch-request")]
+        public async Task<IActionResult> CancelBranchRequestAsync([FromBody] long requestId)
+        {
+            var branchRequest = await _branchRequestRepository.GetByIdAsync(requestId);
+            if (branchRequest == null)
+                return NotFound(Result.Failure("Yêu cầu không tồn tại."));
+
+            if (branchRequest.Status != StatusConstant.Pending)
+                return BadRequest(Result.Failure("Chỉ có thể hủy yêu cầu đang chờ duyệt."));
+
+            branchRequest.Status = StatusConstant.Canceled;
+            await _branchRequestRepository.UpdateAsync(branchRequest);
+
+            return Ok(Result.Success("Hủy yêu cầu thành công."));
         }
 
         private async Task<Result> HandleCreateAsync(BranchRequest request)
