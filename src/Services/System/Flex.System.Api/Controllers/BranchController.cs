@@ -4,10 +4,8 @@ using Flex.System.Api.Entities;
 using Flex.System.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.System.Branch;
 using Flex.Shared.SeedWork;
-using Flex.Infrastructure.EF;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using System.Linq;
 using Flex.Shared.Constants.Common;
 
 namespace Flex.System.Api.Controllers
@@ -152,6 +150,82 @@ namespace Flex.System.Api.Controllers
         #endregion
 
         #region Command
+
+        [HttpPost("create-branch-request")]
+        public async Task<IActionResult> CreateBranchRequestAsync([FromBody] CreateBranchRequest request)
+        {
+            // 1. Check trùng mã trong các request tạo mới (Pending)
+            var hasPending = await _branchRequestRepository
+                .FindByCondition(x =>
+                    x.Status == StatusConstant.Pending &&
+                    x.RequestType == RequestTypeConstant.Create &&
+                    x.ProposedData.Contains($"\"Code\":\"{request.Code}\""))
+                .AnyAsync();
+
+            if (hasPending)
+            {
+                return BadRequest(Result.Failure(message: "Đã có yêu cầu tạo chi nhánh với mã này đang chờ phê duyệt."));
+            }
+
+            // 2 .Kiểm tra mã chi nhánh đã tồn tại chưa
+            var isExist = await _branchRepository.FindByCondition(x => x.Code == request.Code).AnyAsync();
+
+            if (isExist)
+            {
+                return BadRequest(Result.Failure(message: "Mã chi nhánh đã tồn tại."));
+            }
+
+            // 3. Gửi yêu cầu
+            var createRequest = request.ToCreateBranchRequest();
+
+            await _branchRequestRepository.CreateAsync(createRequest);
+
+            return Ok(Result.Success());
+        }
+
+        [HttpPost("approve-branch-request")]
+        public async Task<IActionResult> ApproveBranchRequestAsync([FromQuery] ApproveBranchRequest request)
+        {
+            // 1. Validate
+            var branchRequest = await _branchRequestRepository.GetByIdAsync(request.RequestId);
+            if (request == null)
+            {
+                return NotFound(Result.Failure("Yêu cầu không tồn tại."));
+            }
+
+            if (branchRequest.Status != StatusConstant.Pending || branchRequest.RequestType != RequestTypeConstant.Create)
+            {
+                return BadRequest(Result.Failure("Yêu cầu không hợp lệ hoặc đã được xử lý."));
+            }
+
+            // 2. Parse ProposedData
+            var data = branchRequest.ParseProposedData();
+
+            // 3. Check trùng mã (double check lại tránh đua)
+            var isExist = await _branchRepository.FindByCondition(x => x.Code == data.Code).AnyAsync();
+            if (isExist)
+            {
+                return BadRequest(Result.Failure("Mã chi nhánh đã tồn tại."));
+            }
+
+            // 4. Duyệt request
+            await using var transaction = await _branchRepository.BeginTransactionAsync();
+
+            // Tạo chi nhánh
+            var branch = data.ToBranch();
+            await _branchRepository.CreateAsync(branch);
+
+            // Cập nhật request
+            branchRequest.Status = StatusConstant.Approved;
+            branchRequest.ApprovedBy = 1;
+            branchRequest.ApprovedDate = DateTime.UtcNow;
+            branchRequest.ApprovalComment = request.Comment;
+            await _branchRequestRepository.UpdateAsync(branchRequest);
+
+            await transaction.CommitAsync();
+
+            return Ok(Result.Success());
+        }
 
         [HttpPost("create-branch")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateBranchRequest request)

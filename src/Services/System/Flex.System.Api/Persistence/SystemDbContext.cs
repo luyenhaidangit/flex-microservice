@@ -26,32 +26,32 @@ namespace Flex.System.Api.Persistence
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            var modified = ChangeTracker.Entries()
-                .Where(e => e.State == EntityState.Modified ||
-                            e.State == EntityState.Added ||
-                            e.State == EntityState.Deleted);
+            //var modified = ChangeTracker.Entries()
+            //    .Where(e => e.State == EntityState.Modified ||
+            //                e.State == EntityState.Added ||
+            //                e.State == EntityState.Deleted);
 
-            foreach (var item in modified)
-            {
-                switch (item.State)
-                {
-                    case EntityState.Added:
-                        if (item.Entity is IDateTracking addedEntity)
-                        {
-                            addedEntity.CreatedDate = DateTime.UtcNow;
-                        }
-                        break;
+            //foreach (var item in modified)
+            //{
+            //    switch (item.State)
+            //    {
+            //        case EntityState.Added:
+            //            if (item.Entity is IDateTracking addedEntity)
+            //            {
+            //                addedEntity.CreatedDate = DateTime.UtcNow;
+            //            }
+            //            break;
 
-                    case EntityState.Modified:
-                        // Không cho phép sửa thuộc tính "Id"
-                        Entry(item.Entity).Property("Id").IsModified = false;
-                        if (item.Entity is IDateTracking modifiedEntity)
-                        {
-                            modifiedEntity.LastModifiedDate = DateTime.UtcNow;
-                        }
-                        break;
-                }
-            }
+            //        case EntityState.Modified:
+            //            // Không cho phép sửa thuộc tính "Id"
+            //            Entry(item.Entity).Property("Id").IsModified = false;
+            //            if (item.Entity is IDateTracking modifiedEntity)
+            //            {
+            //                modifiedEntity.LastModifiedDate = DateTime.UtcNow;
+            //            }
+            //            break;
+            //    }
+            //}
 
             return base.SaveChangesAsync(cancellationToken);
         }
