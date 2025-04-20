@@ -20,19 +20,19 @@ namespace Flex.System.Api
                 CreatedDate = DateTime.UtcNow
             };
         }
-        public static CreateBranchRequest ParseProposedData(this BranchRequest branchRequest)
+
+        public static T? ParseProposedData<T>(this BranchRequest request)
         {
+            if (string.IsNullOrWhiteSpace(request.ProposedData))
+                return default;
+
             try
             {
-                var data = JsonSerializer.Deserialize<CreateBranchRequest>(branchRequest.ProposedData);
-                if (data == null || string.IsNullOrEmpty(data.Code))
-                    throw new ArgumentException("Thông tin chi nhánh không đầy đủ.");
-
-                return data;
+                return JsonSerializer.Deserialize<T>(request.ProposedData);
             }
-            catch (JsonException)
+            catch
             {
-                throw new ArgumentException("Dữ liệu đề xuất không hợp lệ.");
+                return default;
             }
         }
 

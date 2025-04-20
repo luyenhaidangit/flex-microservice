@@ -13,10 +13,10 @@ namespace Flex.System.Api.Entities
         public string ChangeType { get; set; } // Created, Updated, Closed
 
         [Column("OLD_DATA", TypeName = "CLOB")]
-        public string? OldDataJson { get; set; }
+        public string? OldData { get; set; }
 
         [Column("NEW_DATA", TypeName = "CLOB")]
-        public string? NewDataJson { get; set; }
+        public string? NewData { get; set; }
 
         [Column("COMMENT", TypeName = "NVARCHAR2(1000)")]
         public string? Comment { get; set; }
