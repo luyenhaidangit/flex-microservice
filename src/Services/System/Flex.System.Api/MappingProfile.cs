@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Flex.System.Api.Entities;
 using Flex.Shared.Constants.Common;
+using Flex.Shared.Constants.System.Branch;
 
 namespace Flex.System.Api
 {
@@ -14,8 +15,7 @@ namespace Flex.System.Api
             {
                 Action = RequestTypeConstant.Create,
                 Status = RequestStatusConstant.Unauthorised,
-                MakerId = request.MakerId,
-                MakerDate = DateTime.UtcNow,
+                RequestedDate = DateTime.UtcNow,
                 Comments = request.Comments
             };
         }
@@ -31,19 +31,43 @@ namespace Flex.System.Api
             };
         }
 
-        public static T? ParseProposedData<T>(this BranchRequest request)
+        public static BranchMaster MapToBranchMaster(BranchRequestData data)
         {
-            if (string.IsNullOrWhiteSpace(request.ProposedData))
-                return default;
+            return new BranchMaster
+            {
+                Code = data.Code,
+                Name = data.Name,
+                Address = data.Address,
+                Status = BranchStatusConstant.Active
+            };
+        }
 
-            try
+        public static BranchAuditLog MapToCreateAuditLog(BranchMaster master, string requestedBy, string approvedBy)
+        {
+            return new BranchAuditLog
             {
-                return JsonSerializer.Deserialize<T>(request.ProposedData);
-            }
-            catch
+                EntityId = master.Id,
+                Operation = AuditOperationConstant.Create,
+                OldValue = null,
+                NewValue = JsonSerializer.Serialize(master),
+                RequestedBy = requestedBy,
+                ApproveBy = approvedBy,
+                LogDate = DateTime.UtcNow
+            };
+        }
+
+        public static BranchAuditLog MapToRejectAuditLog(long requestId, string requestedBy, string rejectedBy, string? reason = null)
+        {
+            return new BranchAuditLog
             {
-                return default;
-            }
+                EntityId = requestId,
+                Operation = AuditOperationConstant.Reject,
+                OldValue = null,
+                NewValue = reason,
+                RequestedBy = requestedBy,
+                ApproveBy = rejectedBy,
+                LogDate = DateTime.UtcNow
+            };
         }
     }
 }

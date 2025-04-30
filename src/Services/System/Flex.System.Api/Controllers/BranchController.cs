@@ -58,11 +58,12 @@ namespace Flex.System.Api.Controllers
             // ========== BEGIN TRANSACTION ==========
             await using var transaction = await _headerRepo.BeginTransactionAsync();
 
-            // Create header
+            // 1. Insert header Unauthorised
             var header = MappingProfile.MapToBranchRequestHeader(request);
+            header.RequestedBy = User?.Identity?.Name ?? "anonymous";
             await _headerRepo.CreateAsync(header);
 
-            // Create request data
+            // 2. Create request data
             var requestData = MappingProfile.MapToBranchRequestData(request, header.Id);
             await _dataRepo.CreateAsync(requestData);
 
@@ -75,45 +76,30 @@ namespace Flex.System.Api.Controllers
         [HttpPost("approve-branch-request")]
         public async Task<IActionResult> ApproveBranchRequest([FromBody] ApproveBranchRequest request)
         {
+            // ========== VALIDATION ==========
+            var header = await _headerRepo.GetByIdAsync(request.RequestId);
+            if (header == null) return BadRequest(Result.Failure(message: "Request does not exist."));
+            if (header.Status != RequestStatusConstant.Unauthorised) return BadRequest(Result.Failure(message: "Request has already been processed."));
+
+            var data = await _dataRepo.FindByCondition(x => x.RequestId == request.RequestId).FirstOrDefaultAsync();
+            if (data == null) return BadRequest(Result.Failure(message: "Branch request data is missing."));
+
             // ========== BEGIN TRANSACTION ==========
             await using var transaction = await _headerRepo.BeginTransactionAsync();
 
-            // 1. Lấy header
-            var header = await _headerRepo.GetByIdAsync(request.RequestId);
-            if (header == null) return NotFound(Result.Failure("Yêu cầu không tồn tại."));
-            if (header.Status != RequestStatusConstant.Unauthorised)
-                return BadRequest(Result.Failure("Yêu cầu đã được xử lý."));
-
-            // 2. Lấy dữ liệu chi tiết
-            var data = await _dataRepo.FindByCondition(x => x.RequestId == request.RequestId).FirstOrDefaultAsync();
-            if (data == null) return BadRequest(Result.Failure("Không có dữ liệu chi nhánh."));
-
-            // 3. Ghi vào BranchMaster
-            var master = new BranchMaster
-            {
-                Code = data.Code,
-                Name = data.Name,
-                Address = data.Address,
-                Status = BranchStatusConstant.Active
-            };
+            // 1. Insert BranchMaster
+            var master = MappingProfile.MapToBranchMaster(data);
+            master.Status = BranchStatusConstant.Active;
             await _masterRepo.CreateAsync(master);
 
-            // 4. Cập nhật Header
+            // 2. Update Header
             header.Status = RequestStatusConstant.Authorised;
-            header.CheckerId = request.ApprovedBy;
-            header.CheckerDate = DateTime.UtcNow;
+            header.ApproveBy = User?.Identity?.Name ?? "anonymous";
+            header.ApproveDate = DateTime.UtcNow;
             await _headerRepo.UpdateAsync(header);
 
-            // 5. Ghi Audit Log
-            var audit = new BranchAuditLog
-            {
-                EntityId = master.Id,
-                Operation = AuditOperationConstant.Create,
-                OldValue = null,
-                NewValue = JsonSerializer.Serialize(master),
-                UserId = request.ApprovedBy,
-                LogDate = DateTime.UtcNow
-            };
+            // 3. Insert Audit Log
+            var audit = MappingProfile.MapToCreateAuditLog(master,header.RequestedBy,header.ApproveBy);
             await _auditRepo.CreateAsync(audit);
 
             await transaction.CommitAsync();
@@ -123,32 +109,40 @@ namespace Flex.System.Api.Controllers
         }
 
         [HttpPost("reject-branch-request")]
-        public async Task<IActionResult> Reject(long id, [FromQuery] string checkerId, [FromQuery] string reason)
+        public async Task<IActionResult> RejectBranchRequest([FromBody] RejectBranchRequest request)
         {
-            var header = await _headerRepo.GetByIdAsync(id);
-            if (header == null) return NotFound("Request not found.");
-            if (header.Status != "UNA") return BadRequest("Request already processed.");
+            // ========== VALIDATION ==========
+            var header = await _headerRepo.GetByIdAsync(request.RequestId);
+            if (header == null)
+                return BadRequest(Result.Failure(message: "Request does not exist."));
+            if (header.Status != RequestStatusConstant.Unauthorised)
+                return BadRequest(Result.Failure(message: "Request has already been processed."));
 
-            header.Status = "REJ";
-            header.CheckerId = checkerId;
-            header.CheckerDate = DateTime.UtcNow;
-            header.Comments = (header.Comments ?? "") + $" | Rejected: {reason}";
+            var currentUser = User?.Identity?.Name ?? "anonymous";
 
+            // ========== BEGIN TRANSACTION ==========
+            await using var transaction = await _headerRepo.BeginTransactionAsync();
+
+            // 1. Cập nhật trạng thái bị từ chối
+            header.Status = RequestStatusConstant.Rejected;
+            header.ApproveBy = currentUser;
+            header.ApproveDate = DateTime.UtcNow;
+            header.Comments = (header.Comments ?? "") + $" | Rejected: {request.Comment}";
             await _headerRepo.UpdateAsync(header);
-            await _headerRepo.SaveChangesAsync();
 
-            var audit = new BranchAuditLog
-            {
-                EntityId = id,
-                Operation = "REJECT",
-                UserId = checkerId,
-                LogDate = DateTime.UtcNow
-            };
-
+            // 2. Ghi log
+            var audit = MappingProfile.MapToRejectAuditLog(
+                request.RequestId,
+                header.RequestedBy,
+                currentUser,
+                request.Comment
+            );
             await _auditRepo.CreateAsync(audit);
-            await _auditRepo.SaveChangesAsync();
 
-            return Ok("Rejected successfully.");
+            await transaction.CommitAsync();
+            // ========== END TRANSACTION ==========
+
+            return Ok(Result.Success());
         }
         #endregion
     }

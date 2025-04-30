@@ -56,7 +56,11 @@ namespace Flex.System.Api.Extensions
                            .AddScoped<IDepartmentRequestRepository, DepartmentRequestRepository>()
                            .AddScoped<IBranchRequestRepository, BranchRequestRepository>()
                            .AddScoped<IBranchRepository, BranchRepository>()
-                           .AddScoped<IBranchHistoryRepository, BranchHistoryRepository>();
+                           .AddScoped<IBranchHistoryRepository, BranchHistoryRepository>()
+                           .AddScoped<IBranchRequestHeaderRepository, BranchRequestHeaderRepository>()
+                           .AddScoped<IBranchRequestDataRepository, BranchRequestDataRepository>()
+                           .AddScoped<IBranchMasterRepository, BranchMasterRepository>()
+                           .AddScoped<IBranchAuditLogRepository, BranchAuditLogRepository>(); ;
         }
         #endregion
     }

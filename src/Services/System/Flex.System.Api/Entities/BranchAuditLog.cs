@@ -9,7 +9,7 @@ namespace Flex.System.Api.Entities
     {
         [Required]
         [Column("ENTITY_ID")]
-        public long EntityId { get; set; }               // Branch ID
+        public long EntityId { get; set; }
 
         [Required]
         [Column("OPERATION", TypeName = "VARCHAR2(20)")]
@@ -22,8 +22,11 @@ namespace Flex.System.Api.Entities
         public string? NewValue { get; set; }
 
         [Required]
-        [Column("USER_ID", TypeName = "VARCHAR2(100)")]
-        public string UserId { get; set; } = default!;
+        [Column("REQUESTED_BY", TypeName = "VARCHAR2(100)")]
+        public string RequestedBy { get; set; } = default!;
+
+        [Column("APPROVE_BY", TypeName = "VARCHAR2(100)")]
+        public string? ApproveBy { get; set; }
 
         [Required]
         [Column("LOG_DATE")]
