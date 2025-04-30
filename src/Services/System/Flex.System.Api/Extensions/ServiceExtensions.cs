@@ -40,6 +40,9 @@ namespace Flex.System.Api.Extensions
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);
 
+            // Http Accessor
+            services.AddHttpContextAccessor();
+
             return services;
         }
 

@@ -8,16 +8,26 @@ namespace Flex.System.Api
     public static class MappingProfile
     {
         // Branch
-        public static BranchRequest ToCreateBranchRequest(this CreateBranchRequest dto)
+        public static BranchRequestHeader MapToBranchRequestHeader(CreateBranchRequest request)
         {
-            return new BranchRequest
+            return new BranchRequestHeader
             {
-                BranchId = null,
-                RequestType = RequestTypeConstant.Create,
-                ProposedData = JsonSerializer.Serialize(dto),
-                Status = StatusConstant.Pending,
-                RequestedBy = dto.RequestedBy,
-                CreatedDate = DateTime.UtcNow
+                Action = RequestTypeConstant.Create,
+                Status = RequestStatusConstant.Unauthorised,
+                MakerId = request.MakerId,
+                MakerDate = DateTime.UtcNow,
+                Comments = request.Comments
+            };
+        }
+
+        public static BranchRequestData MapToBranchRequestData(CreateBranchRequest request, long requestId)
+        {
+            return new BranchRequestData
+            {
+                RequestId = requestId,
+                Code = request.Code,
+                Name = request.Name,
+                Address = request.Address
             };
         }
 
@@ -34,20 +44,6 @@ namespace Flex.System.Api
             {
                 return default;
             }
-        }
-
-        public static Branch ToBranch(this CreateBranchRequest request)
-        {
-            return new Branch
-            {
-                Code = request.Code,
-                Name = request.Name,
-                Address = request.Address,
-                Region = request.Region,
-                Manager = request.Manager,
-                EstablishedDate = request.EstablishedDate,
-                Status = StatusConstant.Active
-            };
         }
     }
 }

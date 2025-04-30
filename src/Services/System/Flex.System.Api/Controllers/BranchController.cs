@@ -7,6 +7,7 @@ using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using Flex.Shared.Constants.Common;
+using Flex.Shared.Constants.System.Branch;
 
 namespace Flex.System.Api.Controllers
 {
@@ -21,332 +22,134 @@ namespace Flex.System.Api.Controllers
     [ApiController]
     public class BranchController : ControllerBase
     {
-        private readonly IBranchRepository _branchRepository;
-        private readonly IBranchRequestRepository _branchRequestRepository;
-        private readonly IBranchHistoryRepository _branchHistoryRepository;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
+        private readonly IBranchRequestHeaderRepository _headerRepo;
+        private readonly IBranchRequestDataRepository _dataRepo;
+        private readonly IBranchMasterRepository _masterRepo;
+        private readonly IBranchAuditLogRepository _auditRepo;
+
         public BranchController(
-            IBranchRepository branchRepository,
-            IBranchRequestRepository branchRequestRepository,
-            IBranchHistoryRepository branchHistoryRepository,
             IMapper mapper,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IBranchRequestHeaderRepository headerRepo,
+            IBranchRequestDataRepository dataRepo,
+            IBranchMasterRepository masterRepo,
+            IBranchAuditLogRepository auditRepo)
         {
-            _branchRepository = branchRepository;
-            _branchRequestRepository = branchRequestRepository;
-            _branchHistoryRepository = branchHistoryRepository;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
+
+            _headerRepo = headerRepo;
+            _dataRepo = dataRepo;
+            _masterRepo = masterRepo;
+            _auditRepo = auditRepo;
         }
 
         #region Query
 
-        [HttpGet("get-branches-paging")]
-        public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetBranchesPagingRequest request)
-        {
-            var branchesQuery = _branchRepository.FindAll();
-
-            if (!string.IsNullOrEmpty(request.Keyword))
-            {
-                branchesQuery = branchesQuery.Where(x => x.Name.Contains(request.Keyword) || x.Code.Contains(request.Keyword));
-            }
-            if (!string.IsNullOrEmpty(request.Status))
-            {
-                branchesQuery = branchesQuery.Where(x => x.Status == request.Status);
-            }
-
-            var branches = await branchesQuery.ToListAsync();
-            var branchDict = branches.ToDictionary(x => x.Id);
-
-            var requestQuery = _branchRequestRepository.FindByCondition(x => x.Status == StatusConstant.Pending);
-
-            if (!string.IsNullOrEmpty(request.Keyword))
-            {
-                requestQuery = requestQuery.Where(x => x.ProposedData.Contains(request.Keyword));
-            }
-
-            var pendingRequests = await requestQuery.ToListAsync();
-
-            var resultList = branches
-                .GroupJoin(
-                    pendingRequests.Where(r => r.BranchId != null),
-                    branch => branch.Id,
-                    request => request.BranchId!.Value,
-                    (branch, requests) =>
-                    {
-                        var pending = requests.FirstOrDefault();
-                        return new BranchPagingDto
-                        {
-                            Id = branch.Id,
-                            Code = branch.Code,
-                            Name = branch.Name,
-                            Address = branch.Address,
-                            Region = branch.Region,
-                            Status = branch.Status,
-                            HasPendingRequest = pending != null,
-                            PendingRequestType = pending?.RequestType,
-                            RequestedBy = pending?.RequestedBy,
-                            RequestedDate = pending?.CreatedDate
-                        };
-                    })
-                .ToList();
-
-            var createRequests = pendingRequests
-                .Where(r => r.BranchId == null || !branchDict.ContainsKey(r.BranchId.Value))
-                .Select(r => new BranchPagingDto
-                {
-                    Id = 0,
-                    Code = "---",
-                    Name = "(Đề xuất tạo mới)",
-                    Address = "---",
-                    Region = "---",
-                    Status = StatusConstant.Pending,
-                    HasPendingRequest = true,
-                    PendingRequestType = r.RequestType,
-                    RequestedBy = r.RequestedBy,
-                    RequestedDate = r.CreatedDate
-                });
-
-            resultList.AddRange(createRequests);
-
-            var sortedResult = resultList
-                .OrderBy(x => x.Status != StatusConstant.Pending)
-                .ThenByDescending(x => x.RequestedDate ?? DateTimeOffset.MinValue)
-                .ToList();
-
-            int pageIndex = request.PageIndex ?? 1;
-            int pageSize = request.PageSize ?? sortedResult.Count;
-
-            var pagedResult = sortedResult
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            var response = new PagedResult<BranchPagingDto>
-            {
-                Items = pagedResult,
-                TotalItems = sortedResult.Count,
-                PageIndex = pageIndex,
-                PageSize = pageSize
-            };
-
-            return Ok(Result.Success(response));
-        }
-
-        [HttpGet("get-branch-by-id")]
-        public async Task<IActionResult> GetByIdAsync([FromQuery] long id)
-        {
-            var branch = await _branchRepository.FindByCondition(x => x.Id == id).FirstOrDefaultAsync();
-            if (branch == null)
-                return NotFound(Result.Failure(message: "Branch not found."));
-
-            var dto = _mapper.Map<BranchDto>(branch);
-            return Ok(Result.Success(dto));
-        }
-
-        [HttpGet("get-branch-history")]
-        public async Task<IActionResult> GetHistoryAsync([FromQuery] long branchId)
-        {
-            var histories = await _branchHistoryRepository.FindByCondition(x => x.BranchId == branchId)
-                .OrderByDescending(x => x.CreatedDate)
-                .ToListAsync();
-
-            var result = _mapper.Map<List<BranchHistoryDto>>(histories);
-            return Ok(Result.Success(result));
-        }
-
         #endregion
 
         #region Command
-
         [HttpPost("create-branch-request")]
-        public async Task<IActionResult> CreateBranchRequestAsync([FromBody] CreateBranchRequest request)
+        public async Task<IActionResult> CreateRequest([FromBody] CreateBranchRequest request)
         {
-            var hasPending = await _branchRequestRepository
-                .FindByCondition(x =>
-                    x.Status == StatusConstant.Pending &&
-                    x.RequestType == RequestTypeConstant.Create &&
-                    x.ProposedData.Contains($"\"Code\":\"{request.Code}\""))
-                .AnyAsync();
+            // ========== BEGIN TRANSACTION ==========
+            await using var transaction = await _headerRepo.BeginTransactionAsync();
 
-            if (hasPending)
-                return BadRequest(Result.Failure("Đã có yêu cầu tạo chi nhánh với mã này đang chờ phê duyệt."));
+            // Create header
+            var header = MappingProfile.MapToBranchRequestHeader(request);
+            await _headerRepo.CreateAsync(header);
 
-            var isExist = await _branchRepository.FindByCondition(x => x.Code == request.Code).AnyAsync();
-            if (isExist)
-                return BadRequest(Result.Failure("Mã chi nhánh đã tồn tại."));
+            // Create request data
+            var requestData = MappingProfile.MapToBranchRequestData(request, header.Id);
+            await _dataRepo.CreateAsync(requestData);
 
-            var createRequest = request.ToCreateBranchRequest();
-            await _branchRequestRepository.CreateAsync(createRequest);
-
-            return Ok(Result.Success());
-        }
-
-        [HttpPost("update-branch-request")]
-        public async Task<IActionResult> UpdateBranchRequestAsync([FromBody] UpdateBranchRequest request)
-        {
-            var entity = await _branchRepository.FindByCondition(x => x.Id == request.Id).FirstOrDefaultAsync();
-            if (entity == null)
-                return NotFound(Result.Failure("Branch not found."));
-
-            var updateRequest = new BranchRequest
-            {
-                BranchId = request.Id,
-                RequestType = RequestTypeConstant.Update,
-                ProposedData = JsonSerializer.Serialize(request),
-                Status = StatusConstant.Pending,
-                CreatedDate = DateTimeOffset.UtcNow,
-                RequestedBy = request.RequestedBy
-            };
-            await _branchRequestRepository.CreateAsync(updateRequest);
-
-            return Ok(Result.Success());
-        }
-
-        [HttpPost("delete-branch-request")]
-        public async Task<IActionResult> DeleteBranchRequestAsync([FromBody] long id)
-        {
-            var entity = await _branchRepository.FindByCondition(x => x.Id == id).FirstOrDefaultAsync();
-            if (entity == null)
-                return NotFound(Result.Failure("Branch not found."));
-
-            var requestedBy = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "system";
-
-            var closeRequest = new BranchRequest
-            {
-                BranchId = id,
-                RequestType = RequestTypeConstant.Delete,
-                ProposedData = "{}",
-                Status = StatusConstant.Pending,
-                CreatedDate = DateTimeOffset.UtcNow,
-                RequestedBy = requestedBy
-            };
-            await _branchRequestRepository.CreateAsync(closeRequest);
+            await transaction.CommitAsync();
+            // ========== END TRANSACTION ==========
 
             return Ok(Result.Success());
         }
 
         [HttpPost("approve-branch-request")]
-        public async Task<IActionResult> ApproveBranchRequestAsync([FromBody] ApproveBranchRequest request)
+        public async Task<IActionResult> ApproveBranchRequest([FromBody] ApproveBranchRequest request)
         {
-            var branchRequest = await _branchRequestRepository.GetByIdAsync(request.RequestId);
-            if (branchRequest == null)
-                return BadRequest(Result.Failure(message: "Yêu cầu không tồn tại."));
+            // ========== BEGIN TRANSACTION ==========
+            await using var transaction = await _headerRepo.BeginTransactionAsync();
 
-            if (branchRequest.Status != StatusConstant.Pending)
-                return BadRequest(Result.Failure(message: "Yêu cầu không hợp lệ hoặc đã được xử lý."));
+            // 1. Lấy header
+            var header = await _headerRepo.GetByIdAsync(request.RequestId);
+            if (header == null) return NotFound(Result.Failure("Yêu cầu không tồn tại."));
+            if (header.Status != RequestStatusConstant.Unauthorised)
+                return BadRequest(Result.Failure("Yêu cầu đã được xử lý."));
 
-            await using var transaction = await _branchRepository.BeginTransactionAsync();
+            // 2. Lấy dữ liệu chi tiết
+            var data = await _dataRepo.FindByCondition(x => x.RequestId == request.RequestId).FirstOrDefaultAsync();
+            if (data == null) return BadRequest(Result.Failure("Không có dữ liệu chi nhánh."));
 
-            Result result = branchRequest.RequestType switch
+            // 3. Ghi vào BranchMaster
+            var master = new BranchMaster
             {
-                RequestTypeConstant.Create => await HandleCreateAsync(branchRequest),
-                RequestTypeConstant.Update => await HandleUpdateAsync(branchRequest),
-                RequestTypeConstant.Delete => await HandleDeleteAsync(branchRequest),
-                _ => Result.Failure("Loại yêu cầu không được hỗ trợ.")
+                Code = data.Code,
+                Name = data.Name,
+                Address = data.Address,
+                Status = BranchStatusConstant.Active
             };
+            await _masterRepo.CreateAsync(master);
 
-            if (!result.IsSuccess)
-                return BadRequest(result);
+            // 4. Cập nhật Header
+            header.Status = RequestStatusConstant.Authorised;
+            header.CheckerId = request.ApprovedBy;
+            header.CheckerDate = DateTime.UtcNow;
+            await _headerRepo.UpdateAsync(header);
 
-            branchRequest.Status = StatusConstant.Approved;
-            branchRequest.ApprovedBy = 1; // TODO: lấy từ context
-            branchRequest.ApprovedDate = DateTime.UtcNow;
-            branchRequest.ApprovalComment = request.Comment;
-            await _branchRequestRepository.UpdateAsync(branchRequest);
-
-            // Audit: thêm dòng lịch sử vào bảng lịch sử yêu cầu nếu cần
+            // 5. Ghi Audit Log
+            var audit = new BranchAuditLog
+            {
+                EntityId = master.Id,
+                Operation = AuditOperationConstant.Create,
+                OldValue = null,
+                NewValue = JsonSerializer.Serialize(master),
+                UserId = request.ApprovedBy,
+                LogDate = DateTime.UtcNow
+            };
+            await _auditRepo.CreateAsync(audit);
 
             await transaction.CommitAsync();
+            // ========== END TRANSACTION ==========
 
             return Ok(Result.Success());
         }
 
         [HttpPost("reject-branch-request")]
-        public async Task<IActionResult> RejectBranchRequestAsync([FromBody] RejectBranchRequest request)
+        public async Task<IActionResult> Reject(long id, [FromQuery] string checkerId, [FromQuery] string reason)
         {
-            var branchRequest = await _branchRequestRepository.GetByIdAsync(request.RequestId);
-            if (branchRequest == null)
-                return NotFound(Result.Failure("Yêu cầu không tồn tại."));
+            var header = await _headerRepo.GetByIdAsync(id);
+            if (header == null) return NotFound("Request not found.");
+            if (header.Status != "UNA") return BadRequest("Request already processed.");
 
-            if (branchRequest.Status != StatusConstant.Pending)
-                return BadRequest(Result.Failure("Yêu cầu không hợp lệ hoặc đã được xử lý."));
+            header.Status = "REJ";
+            header.CheckerId = checkerId;
+            header.CheckerDate = DateTime.UtcNow;
+            header.Comments = (header.Comments ?? "") + $" | Rejected: {reason}";
 
-            branchRequest.Status = StatusConstant.Rejected;
-            branchRequest.ApprovedBy = 1; // TODO: context
-            branchRequest.ApprovedDate = DateTime.UtcNow;
-            branchRequest.ApprovalComment = request.Comment;
-            await _branchRequestRepository.UpdateAsync(branchRequest);
+            await _headerRepo.UpdateAsync(header);
+            await _headerRepo.SaveChangesAsync();
 
-            return Ok(Result.Success("Từ chối yêu cầu thành công."));
-        }
-
-        [HttpPost("cancel-branch-request")]
-        public async Task<IActionResult> CancelBranchRequestAsync([FromBody] long requestId)
-        {
-            var branchRequest = await _branchRequestRepository.GetByIdAsync(requestId);
-            if (branchRequest == null)
-                return NotFound(Result.Failure("Yêu cầu không tồn tại."));
-
-            if (branchRequest.Status != StatusConstant.Pending)
-                return BadRequest(Result.Failure("Chỉ có thể hủy yêu cầu đang chờ duyệt."));
-
-            branchRequest.Status = StatusConstant.Canceled;
-            await _branchRequestRepository.UpdateAsync(branchRequest);
-
-            return Ok(Result.Success("Hủy yêu cầu thành công."));
-        }
-
-        private async Task<Result> HandleCreateAsync(BranchRequest request)
-        {
-            var data = request.ParseProposedData<CreateBranchRequest>();
-            if (await _branchRepository.FindByCondition(x => x.Code == data.Code).AnyAsync())
-                return Result.Failure("Mã chi nhánh đã tồn tại.");
-
-            var entity = data.ToBranch();
-            await _branchRepository.CreateAsync(entity);
-            return Result.Success();
-        }
-
-        private async Task<Result> HandleUpdateAsync(BranchRequest request)
-        {
-            var data = request.ParseProposedData<UpdateBranchRequest>();
-            var entity = await _branchRepository.FindByCondition(x => x.Id == data.Id).FirstOrDefaultAsync();
-            if (entity == null)
-                return Result.Failure("Chi nhánh không tồn tại.");
-
-            var history = new BranchHistory
+            var audit = new BranchAuditLog
             {
-                BranchId = entity.Id,
-                OldData = JsonSerializer.Serialize(entity),
-                CreatedDate = DateTime.UtcNow
+                EntityId = id,
+                Operation = "REJECT",
+                UserId = checkerId,
+                LogDate = DateTime.UtcNow
             };
-            await _branchHistoryRepository.CreateAsync(history);
 
-            entity.Name = data.Name;
-            entity.Address = data.Address;
-            entity.Region = data.Region;
-            entity.Manager = data.ManagerName;
-            entity.EstablishedDate = data.EstablishedDate;
-            await _branchRepository.UpdateAsync(entity);
-            return Result.Success();
+            await _auditRepo.CreateAsync(audit);
+            await _auditRepo.SaveChangesAsync();
+
+            return Ok("Rejected successfully.");
         }
-
-        private async Task<Result> HandleDeleteAsync(BranchRequest request)
-        {
-            if (request.BranchId == null)
-                return Result.Failure("Yêu cầu không chứa BranchId để xóa.");
-
-            var entity = await _branchRepository.FindByCondition(x => x.Id == request.BranchId.Value).FirstOrDefaultAsync();
-            if (entity == null)
-                return Result.Failure("Chi nhánh không tồn tại.");
-
-            await _branchRepository.DeleteAsync(entity);
-            return Result.Success();
-        }
-
         #endregion
     }
 }

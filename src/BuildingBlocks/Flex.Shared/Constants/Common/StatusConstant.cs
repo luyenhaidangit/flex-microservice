@@ -1,7 +1,8 @@
 ﻿namespace Flex.Shared.Constants.Common
 {
-    public class StatusConstant
+    public static class StatusConstant
     {
+        public const string All = "ALL";
         public const string Active = "ACTIVE";
         public const string Pending = "PENDING";
         public const string Approved = "APPROVED";

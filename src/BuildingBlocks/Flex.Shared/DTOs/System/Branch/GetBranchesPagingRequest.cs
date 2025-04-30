@@ -9,10 +9,6 @@ namespace Flex.Shared.DTOs.System.Branch
 
         protected override Dictionary<string, string> OrderByMappings => new()
         {
-            { "NAME", "Name" },
-            { "CODE", "Code" },
-            { "STATUS", "Status" },
-            { "CREATEDDATE", "CreatedDate" }
         };
     }
 }
