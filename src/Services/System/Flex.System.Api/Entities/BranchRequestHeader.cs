@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Flex.System.Api.Entities
 {
+    // ========== RELATIONSHIP ==========
+    // 1 - 1: BRANCH_REQUEST_DATA
+    // ========== RELATIONSHIP ==========
     [Table("BRANCH_REQUEST_HEADER")]
     public class BranchRequestHeader : EntityBase<long>
     {

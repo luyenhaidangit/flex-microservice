@@ -8,7 +8,8 @@ namespace Flex.System.Api
 {
     public static class MappingProfile
     {
-        // Branch
+        // ========== BRANCH ==========
+        // 1. CreateBranchRequest -> BranchRequestHeader
         public static BranchRequestHeader MapToBranchRequestHeader(CreateBranchRequest request)
         {
             return new BranchRequestHeader
@@ -20,6 +21,19 @@ namespace Flex.System.Api
             };
         }
 
+        // 2. UpdateBranchRequest -> BranchRequestHeader
+        public static BranchRequestHeader MapToBranchRequestHeader(UpdateBranchRequest request)
+        {
+            return new BranchRequestHeader
+            {
+                Action = RequestTypeConstant.Update,
+                Status = RequestStatusConstant.Unauthorised,
+                RequestedDate = DateTime.UtcNow,
+                Comments = request.Comments
+            };
+        }
+
+        // 3. CreateBranchRequest -> BranchRequestData
         public static BranchRequestData MapToBranchRequestData(CreateBranchRequest request, long requestId)
         {
             return new BranchRequestData
@@ -31,41 +45,70 @@ namespace Flex.System.Api
             };
         }
 
+        // 4. CreateBranchRequest -> BranchRequestData
+        public static BranchRequestData MapToBranchRequestData(UpdateBranchRequest request, long requestId)
+        {
+            return new BranchRequestData
+            {
+                RequestId = requestId,
+                Code = request.Code,
+                Name = request.Name,
+                Address = request.Address
+            };
+        }
+
+        // 5. BranchMaster -> BranchMaster
+        public static BranchMaster CloneBranchMaster(BranchMaster master)
+        {
+            return new BranchMaster
+            {
+                Id = master.Id,
+                Code = master.Code,
+                Name = master.Name,
+                Address = master.Address
+            };
+        }
+
+        public static BranchRequestData MapToBranchRequestData(DeleteBranchRequest request, long requestId)
+        {
+            return new BranchRequestData
+            {
+                RequestId = requestId,
+                Code = request.Code,
+                Name = "",                      // Không có tên, giữ rỗng
+                Address = null,                // Không cần địa chỉ
+            };
+        }
+
+        public static BranchRequestHeader MapToBranchRequestHeader(DeleteBranchRequest request)
+        {
+            return new BranchRequestHeader
+            {
+                Action = RequestTypeConstant.Delete,
+                Status = RequestStatusConstant.Unauthorised,
+                RequestedDate = DateTime.UtcNow
+            };
+        }
         public static BranchMaster MapToBranchMaster(BranchRequestData data)
         {
             return new BranchMaster
             {
                 Code = data.Code,
                 Name = data.Name,
-                Address = data.Address,
-                Status = BranchStatusConstant.Active
+                Address = data.Address
             };
         }
 
-        public static BranchAuditLog MapToCreateAuditLog(BranchMaster master, string requestedBy, string approvedBy)
+        public static BranchAuditLog MapToAuditLog(long entityId,string operation,object? oldValue,object? newValue,string requestedBy,string approvedBy)
         {
             return new BranchAuditLog
             {
-                EntityId = master.Id,
-                Operation = AuditOperationConstant.Create,
-                OldValue = null,
-                NewValue = JsonSerializer.Serialize(master),
+                EntityId = entityId,
+                Operation = operation,
+                OldValue = oldValue != null ? JsonSerializer.Serialize(oldValue) : null,
+                NewValue = newValue != null ? JsonSerializer.Serialize(newValue) : null,
                 RequestedBy = requestedBy,
                 ApproveBy = approvedBy,
-                LogDate = DateTime.UtcNow
-            };
-        }
-
-        public static BranchAuditLog MapToRejectAuditLog(long requestId, string requestedBy, string rejectedBy, string? reason = null)
-        {
-            return new BranchAuditLog
-            {
-                EntityId = requestId,
-                Operation = AuditOperationConstant.Reject,
-                OldValue = null,
-                NewValue = reason,
-                RequestedBy = requestedBy,
-                ApproveBy = rejectedBy,
                 LogDate = DateTime.UtcNow
             };
         }

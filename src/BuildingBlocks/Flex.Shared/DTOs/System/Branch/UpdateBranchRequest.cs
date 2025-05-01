@@ -1,14 +1,15 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Flex.Shared.DTOs.System.Branch
 {
     public class UpdateBranchRequest
     {
-        public long Id { get; set; }
-        public string? Name { get; set; }
+        [Required]
+        public string Code { get; set; }
+
+        [Required]
+        public required string Name { get; set; }
         public string? Address { get; set; }
-        public string? Region { get; set; }
-        public string? Status { get; set; }
-        public DateTime? EstablishedDate { get; set; }
-        public string? ManagerName { get; set; }
-        public string? RequestedBy { get; set; }
+        public string? Comments { get; set; }
     }
 }

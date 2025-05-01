@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Flex.System.Api.Entities
 {
+    // ========== RELATIONSHIP ==========
+    // 1 - 1: BRANCH_REQUEST_HEADER
+    // ========== RELATIONSHIP ==========
     [Table("BRANCH_REQUEST_DATA")]
     public class BranchRequestData : EntityBase<long>
     {
@@ -21,8 +24,5 @@ namespace Flex.System.Api.Entities
 
         [Column("ADDRESS", TypeName = "NVARCHAR2(500)")]
         public string? Address { get; set; }
-
-        [Column("JSON_DATA", TypeName = "CLOB")]
-        public string? JsonData { get; set; }
     }
 }

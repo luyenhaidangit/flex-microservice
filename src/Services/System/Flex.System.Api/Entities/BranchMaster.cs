@@ -18,9 +18,5 @@ namespace Flex.System.Api.Entities
 
         [Column("ADDRESS", TypeName = "NVARCHAR2(500)")]
         public string? Address { get; set; }
-
-        [Required]
-        [Column("STATUS", TypeName = "VARCHAR2(20)")]
-        public string Status { get; set; }
     }
 }
