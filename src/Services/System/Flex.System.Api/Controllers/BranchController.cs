@@ -31,19 +31,17 @@ namespace Flex.System.Api.Controllers
 
         #region Query
         [HttpGet("get-branches-paging")]
-        public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetBranchesPagingRequest r)
+        public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetBranchesPagingRequest request)
         {
-            // shorthand
-            var hdrQ = _headerRepo.FindAll();   // BRANCH_REQUEST_HEADER
-            var dataQ = _dataRepo.FindAll();     // BRANCH_REQUEST_DATA
-            var masterQ = _masterRepo.FindAll();   // BRANCH_MASTER
+            // ========== SHORTHAND ==========
+            var headerQuery = _headerRepo.FindAll();
+            var dataQuery = _dataRepo.FindAll();
+            var masterQuery = _masterRepo.FindAll();
 
-            // 1. Pending (sub-query)
-            var pendingQ =
-                from h in hdrQ
-                where h.Status == "UNA"
-                from d in dataQ
-                    .Where(d => d.RequestId == h.Id)   // tránh join lồng
+            // 1. Get Pending Request Header (sub-query)
+            var pendingQuery =
+                from h in headerQuery.Where(x => x.Status == RequestStatusConstant.Unauthorised)
+                from d in dataQuery.Where(d => d.RequestId == h.Id)
                 select new
                 {
                     d.Code,
@@ -53,12 +51,12 @@ namespace Flex.System.Api.Controllers
                     h.RequestedDate
                 };
 
-            // 2. LEFT JOIN master ↔ pending
+            // 2. Left join: master -> pending
             var masterPart =
-                from m in masterQ
-                join p in pendingQ on m.Code equals p.Code into lj
+                from m in masterQuery
+                join p in pendingQuery on m.Code equals p.Code into lj
                 from p in lj.DefaultIfEmpty()
-                select new               // **anonymous type**, chưa tạo DTO
+                select new
                 {
                     Id = (long?)m.Id,
                     m.Code,
@@ -70,41 +68,41 @@ namespace Flex.System.Api.Controllers
 
             // 3. CREATE chưa có trong master
             var createPart =
-            from p in pendingQ
-            where p.Action == "CREATE"
-            && !masterQ.Any(m => m.Code == p.Code)
-            select new
-            {
-                Id = (long?)null,
-                p.Code,
-                p.Name,
-                p.Address,
-                PendingAction = p.Action,          // ← KHÔNG dùng hằng "CREATE"
-                RequestedDate = (DateTime?)p.RequestedDate
-            };
+                from p in pendingQuery
+                where p.Action == "CREATE"
+                && !masterQuery.Any(m => m.Code == p.Code)
+                select new
+                {
+                    Id = (long?)null,
+                    p.Code,
+                    p.Name,
+                    p.Address,
+                    PendingAction = p.Action,
+                    RequestedDate = (DateTime?)p.RequestedDate
+                };
 
-            // 4. UNION rồi mới projection
+            // 4. UNION masterPart và createPart
             var unionQ = masterPart.Concat(createPart);
 
-            // 5. FILTER keyword (nếu có)
-            if (!string.IsNullOrWhiteSpace(r.Keyword))
+            // 5. FILTER keyword
+            if (!string.IsNullOrWhiteSpace(request.Keyword))
             {
-                var kw = r.Keyword.Trim();
+                var kw = request.Keyword.Trim();
                 unionQ = unionQ.Where(x => x.Code.Contains(kw) || x.Name.Contains(kw));
             }
 
             // 6. SORT
             unionQ = unionQ
-                .OrderBy(x => x.PendingAction == null)   // pending trước
+                .OrderBy(x => x.PendingAction == null)
                 .ThenByDescending(x => x.RequestedDate)
-                .ThenBy(x => x.Code);
+                .ThenBy(x => x.Id);
 
             // 7. Tính total trước khi paging
             var total = await unionQ.CountAsync();
 
-            int pageIndex = r.PageIndex is > 0 ? r.PageIndex.Value : 1;
-            int pageSize = r.PageSize is > 0 && r.PageSize <= 100
-                            ? r.PageSize.Value
+            int pageIndex = request.PageIndex is > 0 ? request.PageIndex.Value : 1;
+            int pageSize = request.PageSize is > 0 && request.PageSize <= 100
+                            ? request.PageSize.Value
                             : 20;
 
             // 8. Paging + chuyển sang DTO ngay trước khi lấy data
