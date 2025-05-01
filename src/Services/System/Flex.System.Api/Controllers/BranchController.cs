@@ -1,22 +1,13 @@
+using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Flex.System.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.System.Branch;
 using Flex.Shared.SeedWork;
-using Microsoft.EntityFrameworkCore;
 using Flex.Shared.Constants.Common;
-using Flex.System.Api.Repositories;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System.Linq.Dynamic.Core;
 
 namespace Flex.System.Api.Controllers
 {
-    /// <summary>
-    /// Quản lý vòng đời Chi nhánh: 
-    ///     • Truy vấn (paging / detail / history)
-    ///     • Gửi yêu cầu (tạo / cập nhật / xóa)
-    ///     • Phê duyệt – Từ chối – Huỷ
-    ///     • Lưu vết (BranchHistory)
-    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class BranchController : ControllerBase
@@ -40,88 +31,104 @@ namespace Flex.System.Api.Controllers
 
         #region Query
         [HttpGet("get-branches-paging")]
-        public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetBranchesPagingRequest request)
+        public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetBranchesPagingRequest r)
         {
-            var headerQuery = _headerRepo.FindAll();
-            var dataQuery = _dataRepo.FindAll();
-            var masterQuery = _masterRepo.FindAll();
+            // shorthand
+            var hdrQ = _headerRepo.FindAll();   // BRANCH_REQUEST_HEADER
+            var dataQ = _dataRepo.FindAll();     // BRANCH_REQUEST_DATA
+            var masterQ = _masterRepo.FindAll();   // BRANCH_MASTER
 
-            // --------- 1. Pending requests (sub-query) ---------
-            IQueryable<PendingInfo> pendingQ =
-                from hdr in headerQuery
-                join data in dataQuery
-                      on hdr.Id equals data.RequestId
-                where hdr.Status == "UNA"
-                select new PendingInfo
+            // 1. Pending (sub-query)
+            var pendingQ =
+                from h in hdrQ
+                where h.Status == "UNA"
+                from d in dataQ
+                    .Where(d => d.RequestId == h.Id)   // tránh join lồng
+                select new
                 {
-                    Code = data.Code,
-                    Action = hdr.Action,
-                    RequestedDate = hdr.RequestedDate,
-                    Name = data.Name,
-                    Address = data.Address
+                    d.Code,
+                    d.Name,
+                    d.Address,
+                    h.Action,
+                    h.RequestedDate
                 };
 
-            // --------- 2. Phần LEFT JOIN với BRANCH_MASTER ---------
-            IQueryable<BranchDto> masterWithPendingQ =
-                from bm in masterQuery
-                join p in pendingQ          // left join
-                      on bm.Code equals p.Code into lj
+            // 2. LEFT JOIN master ↔ pending
+            var masterPart =
+                from m in masterQ
+                join p in pendingQ on m.Code equals p.Code into lj
                 from p in lj.DefaultIfEmpty()
-                select new BranchDto(
-                    bm.Id,
-                    bm.Code,
-                    bm.Name,
-                    bm.Address,
-                    p!.Action,             // null khi không có pending
-                    p!.RequestedDate);
+                select new               // **anonymous type**, chưa tạo DTO
+                {
+                    Id = (long?)m.Id,
+                    m.Code,
+                    Name = m.Name,
+                    Address = m.Address,
+                    PendingAction = (string?)p.Action,
+                    RequestedDate = (DateTime?)p.RequestedDate
+                };
 
-            // --------- 3. Những CREATE chưa có trên master (UNION) ---------
-            IQueryable<BranchDto> createOnlyQ =
-                from p in pendingQ
-                where p.Action == "CREATE"
-                   && !masterQuery.Any(m => m.Code == p.Code)
-                select new BranchDto(
-                    null,                  // Id = NULL
-                    p.Code,
-                    p.Name,
-                    p.Address,
-                    "CREATE",
-                    p.RequestedDate);
-
-            // --------- 4. Hợp nhất + FILTER theo keyword ---------
-            IQueryable<BranchDto> unionQ = masterWithPendingQ.Concat(createOnlyQ);
-
-            if (!string.IsNullOrWhiteSpace(request.Keyword))
+            // 3. CREATE chưa có trong master
+            var createPart =
+            from p in pendingQ
+            where p.Action == "CREATE"
+            && !masterQ.Any(m => m.Code == p.Code)
+            select new
             {
-                string kw = request.Keyword.Trim();
-                unionQ = unionQ.Where(x =>
-                    x.Code.Contains(kw) ||
-                    x.Name.Contains(kw));
+                Id = (long?)null,
+                p.Code,
+                p.Name,
+                p.Address,
+                PendingAction = p.Action,          // ← KHÔNG dùng hằng "CREATE"
+                RequestedDate = (DateTime?)p.RequestedDate
+            };
+
+            // 4. UNION rồi mới projection
+            var unionQ = masterPart.Concat(createPart);
+
+            // 5. FILTER keyword (nếu có)
+            if (!string.IsNullOrWhiteSpace(r.Keyword))
+            {
+                var kw = r.Keyword.Trim();
+                unionQ = unionQ.Where(x => x.Code.Contains(kw) || x.Name.Contains(kw));
             }
 
-            // --------- 5. SORT (pending trước, mới nhất trước, sau đó Code) ---------
+            // 6. SORT
             unionQ = unionQ
-                .OrderBy(x => x.PendingAction == null)          // false (có pending) < true
+                .OrderBy(x => x.PendingAction == null)   // pending trước
                 .ThenByDescending(x => x.RequestedDate)
                 .ThenBy(x => x.Code);
 
-            // --------- 6. PAGING & kết quả ---------
-            int total = await unionQ.CountAsync();
+            // 7. Tính total trước khi paging
+            var total = await unionQ.CountAsync();
 
-            List<BranchDto> items = await unionQ
-                .Skip((request.PageIndex.Value - 1) * request.PageSize.Value)
-                .Take(request.PageSize.Value)
+            int pageIndex = r.PageIndex is > 0 ? r.PageIndex.Value : 1;
+            int pageSize = r.PageSize is > 0 && r.PageSize <= 100
+                            ? r.PageSize.Value
+                            : 20;
+
+            // 8. Paging + chuyển sang DTO ngay trước khi lấy data
+            var items = await unionQ
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new BranchDto(          // **project sang DTO ở đây**
+                    x.Id,
+                    x.Code,
+                    x.Name,
+                    x.Address,
+                    x.PendingAction,
+                    x.RequestedDate))
                 .ToListAsync();
 
-            var response = new Flex.Shared.SeedWork.PagedResult<BranchDto>
+            var resp = new Flex.Shared.SeedWork.PagedResult<BranchDto>
             {
                 Items = items,
-                TotalItems = items.Count,
-                PageIndex = request.PageIndex.Value,
-                PageSize = request.PageSize.Value
+                TotalItems = total,
+                PageIndex = pageIndex,
+                PageSize = pageSize
             };
 
-            return Ok(Result.Success(data: response));
+            return Ok(Result.Success(data: resp));
         }
         #endregion
 
