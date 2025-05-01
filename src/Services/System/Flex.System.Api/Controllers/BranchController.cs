@@ -4,9 +4,9 @@ using Flex.Shared.DTOs.System.Branch;
 using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
 using Flex.Shared.Constants.Common;
-using Flex.Shared.Constants.System.Branch;
-using static StackExchange.Redis.Role;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using Flex.System.Api.Repositories;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Linq.Dynamic.Core;
 
 namespace Flex.System.Api.Controllers
 {
@@ -39,7 +39,90 @@ namespace Flex.System.Api.Controllers
         }
 
         #region Query
+        [HttpGet("get-branches-paging")]
+        public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetBranchesPagingRequest request)
+        {
+            var headerQuery = _headerRepo.FindAll();
+            var dataQuery = _dataRepo.FindAll();
+            var masterQuery = _masterRepo.FindAll();
 
+            // --------- 1. Pending requests (sub-query) ---------
+            IQueryable<PendingInfo> pendingQ =
+                from hdr in headerQuery
+                join data in dataQuery
+                      on hdr.Id equals data.RequestId
+                where hdr.Status == "UNA"
+                select new PendingInfo
+                {
+                    Code = data.Code,
+                    Action = hdr.Action,
+                    RequestedDate = hdr.RequestedDate,
+                    Name = data.Name,
+                    Address = data.Address
+                };
+
+            // --------- 2. Phần LEFT JOIN với BRANCH_MASTER ---------
+            IQueryable<BranchDto> masterWithPendingQ =
+                from bm in masterQuery
+                join p in pendingQ          // left join
+                      on bm.Code equals p.Code into lj
+                from p in lj.DefaultIfEmpty()
+                select new BranchDto(
+                    bm.Id,
+                    bm.Code,
+                    bm.Name,
+                    bm.Address,
+                    p!.Action,             // null khi không có pending
+                    p!.RequestedDate);
+
+            // --------- 3. Những CREATE chưa có trên master (UNION) ---------
+            IQueryable<BranchDto> createOnlyQ =
+                from p in pendingQ
+                where p.Action == "CREATE"
+                   && !masterQuery.Any(m => m.Code == p.Code)
+                select new BranchDto(
+                    null,                  // Id = NULL
+                    p.Code,
+                    p.Name,
+                    p.Address,
+                    "CREATE",
+                    p.RequestedDate);
+
+            // --------- 4. Hợp nhất + FILTER theo keyword ---------
+            IQueryable<BranchDto> unionQ = masterWithPendingQ.Concat(createOnlyQ);
+
+            if (!string.IsNullOrWhiteSpace(request.Keyword))
+            {
+                string kw = request.Keyword.Trim();
+                unionQ = unionQ.Where(x =>
+                    x.Code.Contains(kw) ||
+                    x.Name.Contains(kw));
+            }
+
+            // --------- 5. SORT (pending trước, mới nhất trước, sau đó Code) ---------
+            unionQ = unionQ
+                .OrderBy(x => x.PendingAction == null)          // false (có pending) < true
+                .ThenByDescending(x => x.RequestedDate)
+                .ThenBy(x => x.Code);
+
+            // --------- 6. PAGING & kết quả ---------
+            int total = await unionQ.CountAsync();
+
+            List<BranchDto> items = await unionQ
+                .Skip((request.PageIndex.Value - 1) * request.PageSize.Value)
+                .Take(request.PageSize.Value)
+                .ToListAsync();
+
+            var response = new Flex.Shared.SeedWork.PagedResult<BranchDto>
+            {
+                Items = items,
+                TotalItems = items.Count,
+                PageIndex = request.PageIndex.Value,
+                PageSize = request.PageSize.Value
+            };
+
+            return Ok(Result.Success(data: response));
+        }
         #endregion
 
         #region Command
@@ -338,5 +421,41 @@ namespace Flex.System.Api.Controllers
             return Ok(Result.Success());
         }
         #endregion
+    }
+
+    public class BranchDto
+    {
+        public long? Id { get; set; }
+        public string Code { get; set; } = default!;
+        public string Name { get; set; } = default!;
+        public string Address { get; set; } = default!;
+        public string? PendingAction { get; set; }
+        public DateTime? RequestedDate { get; set; }
+
+        public BranchDto(
+        long? id,
+        string code,
+        string name,
+        string address,
+        string? pendingAction,
+        DateTime? requestedDate)
+        {
+            Id = id;
+            Code = code ?? throw new ArgumentNullException(nameof(code));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Address = address ?? throw new ArgumentNullException(nameof(address));
+            PendingAction = pendingAction;
+            RequestedDate = requestedDate;
+        }
+
+    }
+
+    public sealed record PendingInfo
+    {
+        public string Code { get; init; } = default!;
+        public string Action { get; init; } = default!;
+        public DateTime? RequestedDate { get; init; }
+        public string Name { get; init; } = default!;
+        public string? Address { get; init; }
     }
 }

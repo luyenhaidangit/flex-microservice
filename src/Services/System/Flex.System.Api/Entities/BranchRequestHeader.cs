@@ -23,7 +23,7 @@ namespace Flex.System.Api.Entities
         public string RequestedBy { get; set; } = default!;
 
         [Required]
-        [Column("MAKER_DATE")]
+        [Column("REQUESTED_DATE")]
         public DateTime RequestedDate { get; set; } = DateTime.UtcNow;
 
         [Column("APPROVE_BY", TypeName = "VARCHAR2(100)")]

@@ -13,18 +13,18 @@ namespace Flex.System.Api.Validators
             StatusConstant.Canceled,
         };
 
-        public static bool Validate(this GetBranchesPagingRequest request)
-        {
-            if (!string.IsNullOrWhiteSpace(request.Status) &&
-                !AllowedStatuses.Contains(request.Status.Trim(), StringComparer.OrdinalIgnoreCase))
-            {
-                throw new BadHttpRequestException(
-                    $"Invalid Status. Allowed values: {string.Join(", ", AllowedStatuses)}",
-                    StatusCodes.Status400BadRequest
-                );
-            }
+        //public static bool Validate(this GetBranchesPagingRequest request)
+        //{
+        //    if (!string.IsNullOrWhiteSpace(request.Status) &&
+        //        !AllowedStatuses.Contains(request.Status.Trim(), StringComparer.OrdinalIgnoreCase))
+        //    {
+        //        throw new BadHttpRequestException(
+        //            $"Invalid Status. Allowed values: {string.Join(", ", AllowedStatuses)}",
+        //            StatusCodes.Status400BadRequest
+        //        );
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
     }
 }
