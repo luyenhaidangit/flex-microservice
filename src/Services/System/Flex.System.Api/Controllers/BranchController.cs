@@ -33,7 +33,7 @@ namespace Flex.System.Api.Controllers
         [HttpGet("get-branches-paging")]
         public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetBranchesPagingRequest request)
         {
-            // ========== SHORTHAND ==========
+            // ========== PAGING ==========
             var headerQuery = _headerRepo.FindAll();
             var dataQuery = _dataRepo.FindAll();
             var masterQuery = _masterRepo.FindAll();
@@ -120,6 +120,7 @@ namespace Flex.System.Api.Controllers
                 .ToListAsync();
 
             var resp = Shared.SeedWork.PagedResult<BranchPagingDto>.Create(pageIndex,pageSize,total,items);
+            // ========== PAGING ==========
 
             return Ok(Result.Success(data: resp));
         }
