@@ -119,13 +119,7 @@ namespace Flex.System.Api.Controllers
                     x.RequestedDate))
                 .ToListAsync();
 
-            var resp = new Shared.SeedWork.PagedResult<BranchPagingDto>
-            {
-                Items = items,
-                TotalItems = total,
-                PageIndex = pageIndex,
-                PageSize = pageSize
-            };
+            var resp = Shared.SeedWork.PagedResult<BranchPagingDto>.Create(pageIndex,pageSize,total,items);
 
             return Ok(Result.Success(data: resp));
         }

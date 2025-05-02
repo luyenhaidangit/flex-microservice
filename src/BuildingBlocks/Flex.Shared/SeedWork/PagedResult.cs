@@ -20,7 +20,7 @@ namespace Flex.Shared.SeedWork
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? SortBy { get; set; }
 
-        public static PagedResult<T> Create(int pageIndex, int pageSize, int total, IEnumerable<T> items, string order = default, string sort = default)
+        public static PagedResult<T> Create(int pageIndex, int pageSize, int total, IEnumerable<T> items, string? order = default, string? sort = default)
         {
             return new PagedResult<T>
             {
