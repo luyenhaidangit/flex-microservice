@@ -38,7 +38,7 @@ namespace Flex.System.Api.Controllers
             var dataQuery = _dataRepo.FindAll();
             var masterQuery = _masterRepo.FindAll();
 
-            // 1. Get Pending Request Header (sub-query)
+            // 1. Get pending request header (sub-query)
             var pendingQuery =
                 from h in headerQuery.Where(x => x.Status == RequestStatusConstant.Unauthorised)
                 from d in dataQuery.Where(d => d.RequestId == h.Id)
@@ -66,10 +66,10 @@ namespace Flex.System.Api.Controllers
                     RequestedDate = (DateTime?)p.RequestedDate
                 };
 
-            // 3. CREATE chưa có trong master
+            // 3. Get create request pending
             var createPart =
                 from p in pendingQuery
-                where p.Action == "CREATE"
+                where p.Action == RequestTypeConstant.Create
                 && !masterQuery.Any(m => m.Code == p.Code)
                 select new
                 {
@@ -81,35 +81,36 @@ namespace Flex.System.Api.Controllers
                     RequestedDate = (DateTime?)p.RequestedDate
                 };
 
-            // 4. UNION masterPart và createPart
+            // 4. Union masterPart and createPart
             var unionQ = masterPart.Concat(createPart);
 
-            // 5. FILTER keyword
+            // 5. Filter keyword
             if (!string.IsNullOrWhiteSpace(request.Keyword))
             {
                 var kw = request.Keyword.Trim();
                 unionQ = unionQ.Where(x => x.Code.Contains(kw) || x.Name.Contains(kw));
             }
 
-            // 6. SORT
+            // 6. Sort: Pending -> Time request pending -> Id
             unionQ = unionQ
                 .OrderBy(x => x.PendingAction == null)
                 .ThenByDescending(x => x.RequestedDate)
                 .ThenBy(x => x.Id);
 
-            // 7. Tính total trước khi paging
+            // 7. Total items
             var total = await unionQ.CountAsync();
 
-            int pageIndex = request.PageIndex is > 0 ? request.PageIndex.Value : 1;
-            int pageSize = request.PageSize is > 0 && request.PageSize <= 100
-                            ? request.PageSize.Value
-                            : 20;
+            if (request.PageIndex == null) request.PageIndex = 1;
+            if (request.PageSize == null) request.PageSize = total;
 
-            // 8. Paging + chuyển sang DTO ngay trước khi lấy data
+            int pageIndex = request.PageIndex == null ? 1 : request.PageIndex.Value;
+            int pageSize = request.PageSize == null ? total : request.PageSize.Value;
+
+            // 8. Paging + select data
             var items = await unionQ
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
-                .Select(x => new BranchDto(          // **project sang DTO ở đây**
+                .Select(x => new BranchPagingDto(
                     x.Id,
                     x.Code,
                     x.Name,
@@ -118,7 +119,7 @@ namespace Flex.System.Api.Controllers
                     x.RequestedDate))
                 .ToListAsync();
 
-            var resp = new Flex.Shared.SeedWork.PagedResult<BranchDto>
+            var resp = new Shared.SeedWork.PagedResult<BranchPagingDto>
             {
                 Items = items,
                 TotalItems = total,
@@ -426,41 +427,5 @@ namespace Flex.System.Api.Controllers
             return Ok(Result.Success());
         }
         #endregion
-    }
-
-    public class BranchDto
-    {
-        public long? Id { get; set; }
-        public string Code { get; set; } = default!;
-        public string Name { get; set; } = default!;
-        public string Address { get; set; } = default!;
-        public string? PendingAction { get; set; }
-        public DateTime? RequestedDate { get; set; }
-
-        public BranchDto(
-        long? id,
-        string code,
-        string name,
-        string address,
-        string? pendingAction,
-        DateTime? requestedDate)
-        {
-            Id = id;
-            Code = code ?? throw new ArgumentNullException(nameof(code));
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            Address = address ?? throw new ArgumentNullException(nameof(address));
-            PendingAction = pendingAction;
-            RequestedDate = requestedDate;
-        }
-
-    }
-
-    public sealed record PendingInfo
-    {
-        public string Code { get; init; } = default!;
-        public string Action { get; init; } = default!;
-        public DateTime? RequestedDate { get; init; }
-        public string Name { get; init; } = default!;
-        public string? Address { get; init; }
     }
 }
