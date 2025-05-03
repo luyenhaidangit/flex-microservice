@@ -2,6 +2,8 @@
 {
     public class DeleteBranchRequest
     {
-        public string Code { get; set; } = default!;
+        public required string Code { get; set; }
+        public required string Name { get; set; }
+        public string? Address { get; set; }
     }
 }

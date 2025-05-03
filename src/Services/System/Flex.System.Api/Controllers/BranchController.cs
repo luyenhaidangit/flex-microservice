@@ -381,6 +381,10 @@ namespace Flex.System.Api.Controllers
                 .AnyAsync();
             if (hasPending) return BadRequest(Result.Failure("Branch already has a pending request."));
 
+            // Map current branch info to request
+            request.Name = master.Name;
+            request.Address = master.Address;
+
             // ========== BEGIN TRANSACTION ==========
             await using var tx = await _headerRepo.BeginTransactionAsync();
 

@@ -73,8 +73,8 @@ namespace Flex.System.Api
             {
                 RequestId = requestId,
                 Code = request.Code,
-                Name = "",                      // Không có tên, giữ rỗng
-                Address = null,                // Không cần địa chỉ
+                Name = request.Name,    // Add this field to DeleteBranchRequest
+                Address = request.Address // Add this field to DeleteBranchRequest  
             };
         }
 
