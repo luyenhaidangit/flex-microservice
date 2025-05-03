@@ -10,6 +10,5 @@ namespace Flex.Shared.DTOs.System.Branch
         [Required]
         public required string Name { get; set; }
         public string? Address { get; set; }
-        public string? Comments { get; set; }
     }
 }

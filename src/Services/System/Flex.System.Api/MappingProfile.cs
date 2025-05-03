@@ -27,8 +27,7 @@ namespace Flex.System.Api
             {
                 Action = RequestTypeConstant.Update,
                 Status = RequestStatusConstant.Unauthorised,
-                RequestedDate = DateTime.UtcNow,
-                Comments = request.Comments
+                RequestedDate = DateTime.UtcNow
             };
         }
 
