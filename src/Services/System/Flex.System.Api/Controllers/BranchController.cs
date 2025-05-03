@@ -128,6 +128,35 @@ namespace Flex.System.Api.Controllers
 
             return Ok(Result.Success(data: resp));
         }
+
+        [HttpGet("get-pending-update-request")]
+        public async Task<IActionResult> GetPendingUpdateRequest([FromQuery] string code)
+        {
+            var pendingRequest = await _headerRepo.FindAll()
+                .Where(h => h.Status == RequestStatusConstant.Unauthorised 
+                       && h.Action == RequestTypeConstant.Update)
+                .Join(
+                    _dataRepo.FindAll().Where(d => d.Code == code),
+                    header => header.Id,
+                    data => data.RequestId,
+                    (header, data) => new GetPendingUpdateRequestResponse
+                    {
+                        RequestId = header.Id,
+                        Code = data.Code,
+                        Name = data.Name,
+                        Address = data.Address,
+                        RequestedBy = header.RequestedBy,
+                        RequestedDate = header.RequestedDate
+                    })
+                .FirstOrDefaultAsync();
+
+            if (pendingRequest == null)
+            {
+                return NotFound(Result.Failure("No pending update request found for this branch."));
+            }
+
+            return Ok(Result.Success(data: pendingRequest));
+        }
         #endregion
 
         #region Command
