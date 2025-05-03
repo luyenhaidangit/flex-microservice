@@ -7,6 +7,8 @@
         public string Name { get; set; } = default!;
         public string? Address { get; set; } = default!;
         public string? PendingAction { get; set; }
+
+        public long? RequestId { get; set; }
         public DateTime? RequestedDate { get; set; }
 
         public BranchPagingDto(
@@ -14,6 +16,7 @@
         string code,
         string name,
         string? address,
+        long? requestId,
         string? pendingAction,
         DateTime? requestedDate)
         {
@@ -22,6 +25,7 @@
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Address = address;
             PendingAction = pendingAction;
+            RequestId = requestId;
             RequestedDate = requestedDate;
         }
     }

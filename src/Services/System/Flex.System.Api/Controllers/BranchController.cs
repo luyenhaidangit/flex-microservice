@@ -48,6 +48,7 @@ namespace Flex.System.Api.Controllers
                     d.Name,
                     d.Address,
                     h.Action,
+                    h.Id,
                     h.RequestedDate
                 };
 
@@ -63,6 +64,7 @@ namespace Flex.System.Api.Controllers
                     Name = m.Name,
                     Address = m.Address,
                     PendingAction = (string?)p.Action,
+                    RequestId = (long?)p.Id,
                     RequestedDate = (DateTime?)p.RequestedDate
                 };
 
@@ -78,6 +80,7 @@ namespace Flex.System.Api.Controllers
                     p.Name,
                     p.Address,
                     PendingAction = p.Action,
+                    RequestId = (long?)p.Id,
                     RequestedDate = (DateTime?)p.RequestedDate
                 };
 
@@ -115,6 +118,7 @@ namespace Flex.System.Api.Controllers
                     x.Code,
                     x.Name,
                     x.Address,
+                    x.RequestId,
                     x.PendingAction,
                     x.RequestedDate))
                 .ToListAsync();
