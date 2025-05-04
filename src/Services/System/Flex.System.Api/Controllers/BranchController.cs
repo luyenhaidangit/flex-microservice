@@ -5,6 +5,8 @@ using Flex.System.Api.Repositories.Interfaces;
 using Flex.Shared.DTOs.System.Branch;
 using Flex.Shared.SeedWork;
 using Flex.Shared.Constants.Common;
+using Flex.Shared.SeedWork.General;
+using Flex.System.Api.Entities;
 
 namespace Flex.System.Api.Controllers
 {
@@ -160,111 +162,20 @@ namespace Flex.System.Api.Controllers
         #endregion
 
         #region Command
-        [HttpPost("create-branch-request")]
-        public async Task<IActionResult> CreateRequest([FromBody] CreateBranchRequest request)
+        [HttpPost("request")]
+        public async Task<IActionResult> ProcessBranchRequest([FromBody] BranchRequestDTO request)
         {
-            // ========== VALIDATION ==========
-            var existsInMaster = await _masterRepo.FindByCondition(x => x.Code == request.Code).AnyAsync();
-            if (existsInMaster) return BadRequest(Result.Failure(message: "Branch code already exists in master."));
-            var existsPendingRequest = await _dataRepo.FindAll().Where(data => data.Code == request.Code)
-                .Join(
-                    _headerRepo.FindAll().Where(header => header.Status == RequestStatusConstant.Unauthorised),
-                    data => data.RequestId,
-                    header => header.Id,
-                    (data, header) => data
-                )
-                .AnyAsync();
-            if (existsPendingRequest) return BadRequest(Result.Failure(message: "Branch code already has a pending request."));
-
-            // ========== BEGIN TRANSACTION ==========
-            await using var transaction = await _headerRepo.BeginTransactionAsync();
-
-            // 1. Insert header Unauthorised
-            var header = MappingProfile.MapToBranchRequestHeader(request);
-            header.RequestedBy = User?.Identity?.Name ?? "anonymous";
-            await _headerRepo.CreateAsync(header);
-
-            // 2. Create request data
-            var requestData = MappingProfile.MapToBranchRequestData(request, header.Id);
-            await _dataRepo.CreateAsync(requestData);
-
-            await transaction.CommitAsync();
-            // ========== END TRANSACTION ==========
-
-            return Ok(Result.Success());
-        }
-
-        [HttpPost("approve-branch-request")]
-        public async Task<IActionResult> ApproveBranchRequest([FromBody] ApproveBranchRequest request)
-        {
-            // ========== VALIDATION ==========
-            // 1. Request exits
-            var header = await _headerRepo.GetByIdAsync(request.RequestId);
-            if (header == null) return BadRequest(Result.Failure(message: "Request does not exist."));
-            if (header.Status != RequestStatusConstant.Unauthorised) return BadRequest(Result.Failure(message: "Request has already been processed."));
-
-            var data = await _dataRepo.FindByCondition(x => x.RequestId == request.RequestId).FirstOrDefaultAsync();
-            if (data == null) return BadRequest(Result.Failure(message: "Branch request data is missing."));
-
-            // ========== BEGIN TRANSACTION ==========
-            await using var transaction = await _headerRepo.BeginTransactionAsync();
-
-            // 1. Insert BranchMaster
-            var master = MappingProfile.MapToBranchMaster(data);
-            await _masterRepo.CreateAsync(master);
-
-            // 2. Update Header
-            header.Status = RequestStatusConstant.Authorised;
-            header.ApproveBy = User?.Identity?.Name ?? "anonymous";
-            header.ApproveDate = DateTime.UtcNow;
-            await _headerRepo.UpdateAsync(header);
-
-            // 3. Insert Audit Log
-            var audit = MappingProfile.MapToAuditLog(master.Id, AuditOperationConstant.CreateBranch, null, master, header.RequestedBy, header.ApproveBy);
-            await _auditRepo.CreateAsync(audit);
-
-            await transaction.CommitAsync();
-            // ========== END TRANSACTION ==========
-
-            return Ok(Result.Success());
-        }
-
-        [HttpPost("reject-branch-request")]
-        public async Task<IActionResult> RejectBranchRequest([FromBody] RejectBranchRequest request)
-        {
-            // ========== VALIDATION ==========
-            var header = await _headerRepo.GetByIdAsync(request.RequestId);
-            if (header == null) return BadRequest(Result.Failure(message: "Request does not exist."));
-            if (header.Status != RequestStatusConstant.Unauthorised) return BadRequest(Result.Failure(message: "Request has already been processed."));
-
-            var currentUser = User?.Identity?.Name ?? "anonymous";
-
-            // ========== BEGIN TRANSACTION ==========
-            await using var transaction = await _headerRepo.BeginTransactionAsync();
-
-            // 1. Update Status Reject
-            header.Status = RequestStatusConstant.Rejected;
-            header.ApproveBy = currentUser;
-            header.ApproveDate = DateTime.UtcNow;
-            header.Comments = (header.Comments ?? "") + $" | Rejected: {request.Comment}";
-            await _headerRepo.UpdateAsync(header);
-
-            // 2. Insert log
-            var audit = MappingProfile.MapToAuditLog(header.Id, AuditOperationConstant.RejectRequest, null, new { Reason = request.Comment }, header.RequestedBy, header.ApproveBy);
-            await _auditRepo.CreateAsync(audit);
-
-            await transaction.CommitAsync();
-            // ========== END TRANSACTION ==========
-
-            return Ok(Result.Success());
-        }
-
-        [HttpPost("update-branch-request")]
-        public async Task<IActionResult> UpdateBranchRequest([FromBody] UpdateBranchRequest request)
-        {
-            // ========== VALIDATION ==========
-            var master = await _masterRepo.FindByCondition(x => x.Code == request.Code).FirstOrDefaultAsync();
-            if (master == null) return BadRequest(Result.Failure("Branch does not exist."));
+            // Validation chung
+            if (request.RequestType == RequestTypeConstant.Create)
+            {
+                var existsInMaster = await _masterRepo.FindByCondition(x => x.Code == request.Code).AnyAsync();
+                if (existsInMaster) return BadRequest(Result.Failure("Branch code already exists in master."));
+            }
+            else
+            {
+                var master = await _masterRepo.FindByCondition(x => x.Code == request.Code).FirstOrDefaultAsync();
+                if (master == null) return BadRequest(Result.Failure("Branch does not exist."));
+            }
 
             var hasPending = await _headerRepo.FindAll()
                 .Where(header => header.Status == RequestStatusConstant.Unauthorised)
@@ -277,185 +188,112 @@ namespace Flex.System.Api.Controllers
                 .AnyAsync();
             if (hasPending) return BadRequest(Result.Failure("Branch already has a pending request."));
 
-            // ========== BEGIN TRANSACTION ==========
+            // Begin transaction
             await using var tx = await _headerRepo.BeginTransactionAsync();
 
-            // 1. Insert header Unauthorised
-            var header = MappingProfile.MapToBranchRequestHeader(request);
-            header.RequestedBy = User?.Identity?.Name ?? "anonymous";
+            // 1. Insert header
+            var header = new BranchRequestHeader
+            {
+                Action = request.RequestType,
+                Status = RequestStatusConstant.Unauthorised,
+                RequestedBy = User?.Identity?.Name ?? "anonymous",
+                RequestedDate = DateTime.UtcNow
+            };
             await _headerRepo.CreateAsync(header);
 
-            // 2. Create request data
-            var data = MappingProfile.MapToBranchRequestData(request, header.Id);
+            // 2. Insert request data
+            var data = new BranchRequestData
+            {
+                RequestId = header.Id,
+                Code = request.Code,
+                Name = request.Name,
+                Address = request.Address
+            };
             await _dataRepo.CreateAsync(data);
 
             await tx.CommitAsync();
             return Ok(Result.Success());
         }
 
-        [HttpPost("approve-update-request")]
-        public async Task<IActionResult> ApproveUpdateRequest([FromBody] ApproveBranchRequest request)
+        [HttpPost("process-branch-request")]
+        public async Task<IActionResult> ProcessBranchRequest([FromBody] ApproveOrRejectRequest<long> request)
         {
             // ========== VALIDATION ==========
-            var header = await _headerRepo.GetByIdAsync(request.RequestId);
-            if (header == null || header.Action != RequestTypeConstant.Update) return BadRequest(Result.Failure("Update-request not found."));
-            if (header.Status != RequestStatusConstant.Unauthorised) return BadRequest(Result.Failure("Request has already been processed."));
-
-            var data = await _dataRepo.FindByCondition(x => x.RequestId == request.RequestId).FirstOrDefaultAsync();
-            if (data == null) return BadRequest(Result.Failure("Request data is missing."));
-            var master = await _masterRepo.FindByCondition(x => x.Code == data.Code).FirstOrDefaultAsync();
-            if (master == null) return BadRequest(Result.Failure("Branch no longer exists."));
-
-            var oldMaster = MappingProfile.CloneBranchMaster(master);
-            // ========== BEGIN TRANSACTION ==========
-            await using var tx = await _headerRepo.BeginTransactionAsync();
-
-            // 1. Update master
-            master.Name = data.Name;
-            master.Address = data.Address;
-            await _masterRepo.UpdateAsync(master);
-
-            // 2. Update header
-            header.Status = RequestStatusConstant.Authorised;
-            header.ApproveBy = User?.Identity?.Name ?? "anonymous";
-            header.ApproveDate = DateTime.UtcNow;
-            await _headerRepo.UpdateAsync(header);
-
-            // 3. Insert Audit Log
-            var audit = MappingProfile.MapToAuditLog(master.Id, AuditOperationConstant.UpdateBranch, oldMaster, master, header.RequestedBy, header.ApproveBy);
-            await _auditRepo.CreateAsync(audit);
-
-            await tx.CommitAsync();
-            // ========== END TRANSACTION ==========
-
-            return Ok(Result.Success());
-        }
-
-        [HttpPost("reject-update-request")]
-        public async Task<IActionResult> RejectUpdateRequest([FromBody] RejectBranchRequest request)
-        {
-            // ========== VALIDATION ==========
-            var header = await _headerRepo.GetByIdAsync(request.RequestId);
-            if (header == null || header.Action != RequestTypeConstant.Update)
-                return BadRequest(Result.Failure("Update request does not exist."));
+            var header = await _headerRepo.GetByIdAsync(request.Id);
+            if (header == null) return BadRequest(Result.Failure("Request does not exist."));
             if (header.Status != RequestStatusConstant.Unauthorised)
                 return BadRequest(Result.Failure("Request has already been processed."));
+
+            var data = await _dataRepo.FindByCondition(x => x.RequestId == request.Id).FirstOrDefaultAsync();
+            if (data == null) return BadRequest(Result.Failure("Request data is missing."));
 
             var currentUser = User?.Identity?.Name ?? "anonymous";
 
-            // ========== BEGIN TRANSACTION ==========
-            await using var transaction = await _headerRepo.BeginTransactionAsync();
+            // Process based on action type and approval decision
+            if (request.IsApprove)
+            {
+                await using var tx = await _headerRepo.BeginTransactionAsync();
 
-            // 1. Update status to Rejected
-            header.Status = RequestStatusConstant.Rejected;
-            header.ApproveBy = currentUser;
-            header.ApproveDate = DateTime.UtcNow;
-            header.Comments = (header.Comments ?? "") + $" | Rejected: {request.Comment}";
-            await _headerRepo.UpdateAsync(header);
+                switch (header.Action)
+                {
+                    case RequestTypeConstant.Create:
+                        var newMaster = MappingProfile.MapToBranchMaster(data);
+                        await _masterRepo.CreateAsync(newMaster);
+                        var createAudit = MappingProfile.MapToAuditLog(newMaster.Id, AuditOperationConstant.CreateBranch,
+                            null, newMaster, header.RequestedBy, currentUser);
+                        await _auditRepo.CreateAsync(createAudit);
+                        break;
 
-            // 2. Insert Audit Log
-            var audit = MappingProfile.MapToAuditLog(header.Id, AuditOperationConstant.RejectRequest, null, new { Reason = request.Comment }, header.RequestedBy, header.ApproveBy);
-            await _auditRepo.CreateAsync(audit);
+                    case RequestTypeConstant.Update:
+                        var master = await _masterRepo.FindByCondition(x => x.Code == data.Code).FirstOrDefaultAsync();
+                        if (master == null) return BadRequest(Result.Failure("Branch no longer exists."));
+                        var oldMaster = MappingProfile.CloneBranchMaster(master);
 
-            await transaction.CommitAsync();
-            // ========== END TRANSACTION ==========
+                        master.Name = data.Name;
+                        master.Address = data.Address;
+                        await _masterRepo.UpdateAsync(master);
 
-            return Ok(Result.Success());
-        }
+                        var updateAudit = MappingProfile.MapToAuditLog(master.Id, AuditOperationConstant.UpdateBranch,
+                            oldMaster, master, header.RequestedBy, currentUser);
+                        await _auditRepo.CreateAsync(updateAudit);
+                        break;
 
-        [HttpPost("delete-branch-request")]
-        public async Task<IActionResult> DeleteBranchRequest([FromBody] DeleteBranchRequest request)
-        {
-            // ========== VALIDATION ==========
-            var master = await _masterRepo.FindByCondition(x => x.Code == request.Code).FirstOrDefaultAsync();
-            if (master == null) return BadRequest(Result.Failure("Branch does not exist."));
+                    case RequestTypeConstant.Delete:
+                        var deleteMaster = await _masterRepo.FindByCondition(x => x.Code == data.Code).FirstOrDefaultAsync();
+                        if (deleteMaster == null) return BadRequest(Result.Failure("Branch no longer exists."));
 
-            var hasPending = await _headerRepo.FindAll()
-                .Where(header => header.Status == RequestStatusConstant.Unauthorised)
-                .Join(
-                    _dataRepo.FindAll().Where(data => data.Code == request.Code),
-                    header => header.Id,
-                    data => data.RequestId,
-                    (header, data) => header
-                )
-                .AnyAsync();
-            if (hasPending) return BadRequest(Result.Failure("Branch already has a pending request."));
+                        var deleteAudit = MappingProfile.MapToAuditLog(deleteMaster.Id, AuditOperationConstant.DeleteBranch,
+                            deleteMaster, null, header.RequestedBy, currentUser);
+                        await _auditRepo.CreateAsync(deleteAudit);
 
-            // Map current branch info to request
-            request.Name = master.Name;
-            request.Address = master.Address;
+                        await _masterRepo.DeleteAsync(deleteMaster);
+                        break;
+                }
 
-            // ========== BEGIN TRANSACTION ==========
-            await using var tx = await _headerRepo.BeginTransactionAsync();
+                header.Status = RequestStatusConstant.Authorised;
+                header.ApproveBy = currentUser;
+                header.ApproveDate = DateTime.UtcNow;
+                await _headerRepo.UpdateAsync(header);
 
-            var header = MappingProfile.MapToBranchRequestHeader(request);
-            header.RequestedBy = User?.Identity?.Name ?? "anonymous";
-            await _headerRepo.CreateAsync(header);
+                await tx.CommitAsync();
+            }
+            else
+            {
+                await using var tx = await _headerRepo.BeginTransactionAsync();
 
-            var data = MappingProfile.MapToBranchRequestData(request, header.Id);
-            await _dataRepo.CreateAsync(data);
+                header.Status = RequestStatusConstant.Rejected;
+                header.ApproveBy = currentUser;
+                header.ApproveDate = DateTime.UtcNow;
+                header.Comments = (header.Comments ?? "") + $" | Rejected: {request.Comment}";
+                await _headerRepo.UpdateAsync(header);
 
-            await tx.CommitAsync();
-            return Ok(Result.Success());
-        }
+                var rejectAudit = MappingProfile.MapToAuditLog(header.Id, AuditOperationConstant.RejectRequest,
+                    null, new { Reason = request.Comment }, header.RequestedBy, currentUser);
+                await _auditRepo.CreateAsync(rejectAudit);
 
-        [HttpPost("approve-delete-request")]
-        public async Task<IActionResult> ApproveDeleteRequest([FromBody] ApproveBranchRequest request)
-        {
-            // ========== VALIDATION ==========
-            var header = await _headerRepo.GetByIdAsync(request.RequestId);
-            if (header == null || header.Action != RequestTypeConstant.Delete)
-                return BadRequest(Result.Failure("Delete request not found."));
-            if (header.Status != RequestStatusConstant.Unauthorised)
-                return BadRequest(Result.Failure("Request has already been processed."));
+                await tx.CommitAsync();
+            }
 
-            var data = await _dataRepo.FindByCondition(x => x.RequestId == request.RequestId).FirstOrDefaultAsync();
-            if (data == null) return BadRequest(Result.Failure("Request data is missing."));
-
-            var master = await _masterRepo.FindByCondition(x => x.Code == data.Code).FirstOrDefaultAsync();
-            if (master == null) return BadRequest(Result.Failure("Branch no longer exists."));
-
-            var oldMaster = MappingProfile.CloneBranchMaster(master);
-
-            // ========== BEGIN TRANSACTION ==========
-            await using var tx = await _headerRepo.BeginTransactionAsync();
-
-            await _masterRepo.DeleteAsync(master);
-
-            header.Status = RequestStatusConstant.Authorised;
-            header.ApproveBy = User?.Identity?.Name ?? "anonymous";
-            header.ApproveDate = DateTime.UtcNow;
-            await _headerRepo.UpdateAsync(header);
-
-            var audit = MappingProfile.MapToAuditLog(master.Id, AuditOperationConstant.DeleteBranch, oldMaster, master, header.RequestedBy, header.ApproveBy);
-            await _auditRepo.CreateAsync(audit);
-
-            await tx.CommitAsync();
-            return Ok(Result.Success());
-        }
-
-        [HttpPost("reject-delete-request")]
-        public async Task<IActionResult> RejectDeleteRequest([FromBody] RejectBranchRequest request)
-        {
-            // ========== VALIDATION ==========
-            var header = await _headerRepo.GetByIdAsync(request.RequestId);
-            if (header == null || header.Action != RequestTypeConstant.Delete)
-                return BadRequest(Result.Failure("Delete request does not exist."));
-            if (header.Status != RequestStatusConstant.Unauthorised)
-                return BadRequest(Result.Failure("Request has already been processed."));
-
-            var currentUser = User?.Identity?.Name ?? "anonymous";
-
-            // ========== BEGIN TRANSACTION ==========
-            await using var transaction = await _headerRepo.BeginTransactionAsync();
-
-            header.Status = RequestStatusConstant.Rejected;
-            header.ApproveBy = currentUser;
-            header.ApproveDate = DateTime.UtcNow;
-            header.Comments = (header.Comments ?? "") + $" | Rejected: {request.Comment}";
-            await _headerRepo.UpdateAsync(header);
-
-            await transaction.CommitAsync();
             return Ok(Result.Success());
         }
         #endregion
