@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.Security;
 using Flex.Shared.Constants;
+using Flex.System.Api.Repositories;
+using Flex.System.Api.Repositories.Interfaces;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -44,6 +46,15 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);
+
+            return services;
+        }
+
+        public static IServiceCollection AddRepositories(this IServiceCollection services)
+        {
+            services.AddScoped<IUserRequestHeaderRepository, UserRequestHeaderRepository>();
+            services.AddScoped<IUserRequestDataRepository, UserRequestDataRepository>();
+            services.AddScoped<IUserAuditLogRepository, UserAuditLogRepository>();
 
             return services;
         }
