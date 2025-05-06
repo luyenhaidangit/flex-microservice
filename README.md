@@ -150,4 +150,4 @@ If you have questions or need help, feel free to open an issue or email the auth
 - Special thanks to [MassTransit](https://masstransit-project.com/) for simplifying RabbitMQ integration.
 
 ## Technology
-- IdentityServer
+- IdentityServer.
