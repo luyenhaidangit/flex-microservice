@@ -446,6 +446,6 @@ terraform.rc
 *.pem
 *.ppk
 
-# File đặc biệt cho từng OS
+# File đặc biệt cho từng OS.
 .DS_Store           # macOS
 Thumbs.db           # Windows
