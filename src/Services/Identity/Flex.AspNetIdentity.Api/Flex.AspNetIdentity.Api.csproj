@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
@@ -21,6 +23,10 @@
     <ProjectReference Include="..\..\..\Modules\Flex.Security\Flex.Security.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="..\..\..\Services\System\Flex.System.Api\Protos\branch.proto" GrpcServices="Client" />
+	</ItemGroup>
 
   <!-- <PropertyGroup>
     <PostBuildEvent>

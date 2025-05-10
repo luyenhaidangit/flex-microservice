@@ -7,6 +7,10 @@ using Flex.Security;
 using Flex.Shared.Constants;
 using Flex.System.Api.Repositories;
 using Flex.System.Api.Repositories.Interfaces;
+using Flex.AspNetIdentity.Api.Services.Interfaces;
+using Flex.AspNetIdentity.Api.Services;
+using Flex.AspNetIdentity.Api.Validators;
+using Flex.System;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -47,6 +51,11 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);
 
+            services.AddGrpcClient<BranchService>(o =>
+            {
+                o.Address = new Uri("https://localhost:5001"); // đúng với BranchService
+            });
+
             return services;
         }
 
@@ -58,6 +67,19 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             return services;
         }
+
+        //public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        //{
+        //    services.AddScoped<IBranchService, BranchService>();
+        //    services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>();
+
+        //    services.AddHttpClient("SystemApi", client =>
+        //    {
+        //        client.BaseAddress = new Uri("http://system-api/");
+        //    });
+
+        //    return services;
+        //}
 
         #region Infrastructure
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)

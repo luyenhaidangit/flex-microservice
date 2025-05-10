@@ -99,6 +99,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Integration", "Integration"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.BankIntegration.Api", "src\Services\Integration\Flex.BankIntegration.Api\Flex.BankIntegration.Api.csproj", "{ADC51D83-D85B-4929-9113-6B0C7C41A6ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Grpc.Protos", "src\BuildingBlocks\Flex.Grpc.Protos\Flex.Grpc.Protos.csproj", "{7AF56803-EA2A-4CB0-9907-CEFA9072C220}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -217,6 +219,10 @@ Global
 		{ADC51D83-D85B-4929-9113-6B0C7C41A6ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADC51D83-D85B-4929-9113-6B0C7C41A6ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADC51D83-D85B-4929-9113-6B0C7C41A6ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AF56803-EA2A-4CB0-9907-CEFA9072C220}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AF56803-EA2A-4CB0-9907-CEFA9072C220}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AF56803-EA2A-4CB0-9907-CEFA9072C220}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AF56803-EA2A-4CB0-9907-CEFA9072C220}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -264,6 +270,7 @@ Global
 		{2F22F456-5177-452F-B8EF-FD3C96209C97} = {530D590E-4271-451D-A935-ABDA3636EDA9}
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
 		{ADC51D83-D85B-4929-9113-6B0C7C41A6ED} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{7AF56803-EA2A-4CB0-9907-CEFA9072C220} = {6930348E-6306-444F-9C44-7D59D69428DD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}
