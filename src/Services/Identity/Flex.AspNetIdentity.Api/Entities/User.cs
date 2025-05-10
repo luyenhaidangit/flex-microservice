@@ -8,13 +8,11 @@ namespace Flex.AspNetIdentity.Api.Entities
     {
         // UserName and PasswordHash are inherited from IdentityUser
 
-        [Required]
         [StringLength(250)]
         [Column("FULL_NAME")]
-        public string FullName { get; set; } = string.Empty;
+        public string? FullName { get; set; } = string.Empty;
 
-        [Required]
         [Column("BRANCH_ID")] 
-        public long BranchId { get; set; }
+        public long? BranchId { get; set; }
     }
 }
