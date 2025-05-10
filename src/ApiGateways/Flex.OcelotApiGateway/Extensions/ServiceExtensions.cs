@@ -7,6 +7,7 @@ using Flex.Shared.Extensions;
 using Flex.Infrastructure.Swashbuckle;
 using Flex.OcelotApiGateway.Constants;
 using Flex.Security;
+using Flex.OcelotApiGateway.Models;
 
 namespace Flex.OcelotApiGateway.Extensions
 {
@@ -16,6 +17,10 @@ namespace Flex.OcelotApiGateway.Extensions
         {
             services.AddOptions<ApiConfiguration>().Bind(configuration.GetSection(ConfigKeyConstants.ApiConfiguration)).ValidateDataAnnotations().ValidateOnStart();
             services.AddOptions<Security.JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
+            services.AddOptions<JwtSchemeSettings>(GatewayConstants.AuthenticationProviderKey.AdminPortal)
+            .Bind(configuration.GetSection($"{ConfigKeyConstants.AuthenticationSchemes}:{GatewayConstants.AuthenticationProviderKey.AdminPortal}"))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
             return services;
         }
@@ -24,6 +29,9 @@ namespace Flex.OcelotApiGateway.Extensions
         {
             // Bind configuration settings
             var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigKeyConstants.ApiConfiguration);
+            var jwtSettingsAdmin = configuration
+                .GetSection($"{ConfigKeyConstants.AuthenticationSchemes}:{GatewayConstants.AuthenticationProviderKey.AdminPortal}")
+                .Get<JwtSchemeSettings>()!;
 
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
@@ -43,6 +51,11 @@ namespace Flex.OcelotApiGateway.Extensions
 
             // Add Jwt authentication
             services.AddAuthenticationJwtToken(configuration);
+            //services.AddAuthentication()
+            //        .AddJwtBearer(GatewayConstants.AuthenticationProviderKey.AdminPortal, options => {
+            //            options.Authority = jwtSettingsAdmin.Authority;
+            //            options.Audience = jwtSettingsAdmin.Audience;
+            //        });
 
             // Configure Cors
             services.ConfigureCors(configuration);

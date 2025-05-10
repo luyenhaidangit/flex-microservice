@@ -9,7 +9,9 @@
 
         public const string AllowOrigins = "AllowOrigins";
 
-        public const string IpWhitelist = "IpWhitelist";  
+        public const string IpWhitelist = "IpWhitelist";
+
+        public const string AuthenticationSchemes = "AuthenticationSchemes";
 
         public class IdentityServer
         {

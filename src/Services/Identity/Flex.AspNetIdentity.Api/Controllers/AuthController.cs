@@ -91,6 +91,8 @@ namespace Flex.AspNetIdentity.Api.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypesApp.Jti,  Guid.NewGuid().ToString()),
+                new Claim(ClaimTypesApp.Iss, _jwtSettings.Issuer),
+                new Claim(ClaimTypesApp.Aud, _jwtSettings.Audience),
                 new Claim(ClaimTypesApp.Sub, user.UserName ?? string.Empty),
                 new Claim(ClaimTypesApp.Email, user.Email ?? string.Empty),
             };

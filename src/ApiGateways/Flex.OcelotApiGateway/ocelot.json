@@ -14,17 +14,17 @@
       ]
     },
     {
-      "Key": "identity-server-service",
-      "DownstreamPathTemplate": "/api/auth/{everything}",
-      "UpstreamPathTemplate": "/api/identity-server/auth/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamScheme": "https",
+      "RouteName": "UserService_Route",
+      "DownstreamPathTemplate": "/api/user/{everything}",
+      "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7002
+          "Port": 7001
         }
-      ]
+      ],
+      "UpstreamPathTemplate": "/api/user/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
     },
     {
       "Key": "investor-service",
