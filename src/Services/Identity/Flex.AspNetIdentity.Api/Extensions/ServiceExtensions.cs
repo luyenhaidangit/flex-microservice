@@ -9,8 +9,6 @@ using Flex.System.Api.Repositories;
 using Flex.System.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.AspNetIdentity.Api.Services;
-using Flex.AspNetIdentity.Api.Validators;
-using Flex.System.Grpc;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -90,6 +88,8 @@ namespace Flex.AspNetIdentity.Api.Extensions
         #region Infrastructure
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
+            services.AddScoped<IBranchService, BranchClientService>();
+
             return services;
         }
 

@@ -16,7 +16,7 @@
     {
       "RouteName": "UserService_Route",
       "DownstreamPathTemplate": "/api/user/{everything}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
