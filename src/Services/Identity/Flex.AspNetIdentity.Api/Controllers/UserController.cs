@@ -46,8 +46,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 return BadRequest(Result.Failure(message: "Branch Id exists with this username."));
             }
 
-            return Ok("ff");
-
             // Create user
             var user = new User
             {
