@@ -9,6 +9,8 @@ using Flex.System.Api.Repositories;
 using Flex.System.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.AspNetIdentity.Api.Services;
+using Grpc.Net.Client.Configuration;
+using Grpc.Core;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -25,6 +27,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
         {
             // Bind JwtSettings settings
             var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigKeyConstants.JwtSettings);
+            var systemUrlGrpc = configuration.GetRequiredValue<string>(ConfigKeyConstants.GrpcSettings_SystemUrl);
 
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
@@ -52,11 +55,8 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // Configure gRPC client
             services.AddGrpcClient<System.Grpc.BranchService.BranchServiceClient>(options =>
             {
-                options.Address = new Uri(configuration["GrpcSettings:SystemUrl"]);
-            }).ConfigureChannel(options =>
-            {
-                options.UnsafeUseInsecureChannelCallCredentials = true;
-            });
+                options.Address = new Uri(systemUrlGrpc);
+            }).ConfigureGrpcChannelOptions();
 
             return services;
         }
@@ -91,6 +91,35 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddScoped<IBranchService, BranchClientService>();
 
             return services;
+        }
+        private static bool ConfigureGrpcChannelOptions(this IHttpClientBuilder builder)
+        {
+            var methodConfigs = new MethodConfig
+            {
+                Names = { MethodName.Default },
+                RetryPolicy = new RetryPolicy
+                {
+                    MaxAttempts = 5,
+                    InitialBackoff = TimeSpan.FromSeconds(1),
+                    MaxBackoff = TimeSpan.FromSeconds(5),
+                    BackoffMultiplier = 1.5,
+                    RetryableStatusCodes =
+                    {
+                        // Whatever status codes we want to look for
+                        StatusCode.Unauthenticated, StatusCode.NotFound, StatusCode.Unavailable,
+                    }
+                }
+            };
+
+            builder.ConfigureChannel(options =>
+            {
+                options.ServiceConfig = new ServiceConfig
+                {
+                    MethodConfigs = { methodConfigs }
+                };
+            });
+
+            return true;
         }
 
         private static IServiceCollection ConfigureAspNetIdentity(this IServiceCollection services)

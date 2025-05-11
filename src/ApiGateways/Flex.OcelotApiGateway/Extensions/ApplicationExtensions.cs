@@ -1,5 +1,4 @@
-﻿using Flex.Infrastructure.Extensions;
-using Flex.Infrastructure.Middlewares;
+﻿using Flex.Infrastructure.Middlewares;
 using Flex.OcelotApiGateway.Constants;
 using Ocelot.Middleware;
 using Serilog;
