@@ -10,7 +10,7 @@ using Flex.System.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.AspNetIdentity.Api.Services;
 using Flex.AspNetIdentity.Api.Validators;
-using Flex.System;
+using Flex.System.Grpc;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -51,9 +51,13 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);
 
-            services.AddGrpcClient<BranchService>(o =>
+            // Configure gRPC client
+            services.AddGrpcClient<System.Grpc.BranchService.BranchServiceClient>(options =>
             {
-                o.Address = new Uri("https://localhost:5001"); // đúng với BranchService
+                options.Address = new Uri(configuration["GrpcSettings:SystemUrl"]);
+            }).ConfigureChannel(options =>
+            {
+                options.UnsafeUseInsecureChannelCallCredentials = true;
             });
 
             return services;
@@ -64,6 +68,8 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddScoped<IUserRequestHeaderRepository, UserRequestHeaderRepository>();
             services.AddScoped<IUserRequestDataRepository, UserRequestDataRepository>();
             services.AddScoped<IUserAuditLogRepository, UserAuditLogRepository>();
+
+            services.AddScoped<IBranchService, BranchClientService>();
 
             return services;
         }

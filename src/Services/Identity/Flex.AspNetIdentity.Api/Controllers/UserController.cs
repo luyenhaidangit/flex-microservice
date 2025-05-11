@@ -1,5 +1,6 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models.Requests;
+using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +13,13 @@ namespace Flex.AspNetIdentity.Api.Controllers
     { 
         private readonly UserManager<User> _userManager;
         private readonly ILogger<AuthController> _logger;
+        private readonly IBranchService _branchService;
 
-        public UserController(UserManager<User> userManager, ILogger<AuthController> logger)
+        public UserController(UserManager<User> userManager, ILogger<AuthController> logger, IBranchService branchService)
         {
             _userManager = userManager;
             _logger = logger;
+            _branchService = branchService;
         }
 
         [HttpPost("create-user")]
@@ -35,6 +38,12 @@ namespace Flex.AspNetIdentity.Api.Controllers
             if (existingUsername != null)
             {
                 return BadRequest(Result.Failure(message: "User already exists with this username."));
+            }
+
+            var existingBranchId = await _branchService.IsBranchExistsAsync(request.BranchId);
+            if (existingBranchId)
+            {
+                return BadRequest(Result.Failure(message: "Branch Id exists with this username."));
             }
 
             // Create user

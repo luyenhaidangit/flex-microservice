@@ -1,20 +1,23 @@
+using Flex.System.Grpc;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
-    public class BranchService : IBranchService
+    public class BranchClientService : IBranchService
     {
-        private readonly HttpClient _httpClient;
+        private readonly BranchService.BranchServiceClient _branchServiceClient;
 
-        public BranchService(IHttpClientFactory httpClientFactory)
+        public BranchClientService(BranchService.BranchServiceClient branchServiceClient)
         {
-            _httpClient = httpClientFactory.CreateClient("SystemApi");
+            _branchServiceClient = branchServiceClient;
         }
 
-        public async Task<bool> ValidateBranchExistsAsync(long branchId)
+        public async Task<bool> IsBranchExistsAsync(long branchId)
         {
-            var response = await _httpClient.GetAsync($"/api/Branch/validate/{branchId}");
-            return response.IsSuccessStatusCode;
+            var reply = await _branchServiceClient.CheckBranchExistsAsync(new BranchRequest { BranchId = branchId });
+            var result = reply.Exists;
+
+            return result;
         }
     }
 }
