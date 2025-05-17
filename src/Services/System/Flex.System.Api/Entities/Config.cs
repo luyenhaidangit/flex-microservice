@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Flex.System.Api.Entities
 {
-    [Table("Configs")]
+    [Table("CONFIGS")]
     public class Config : EntityAuditBase<long>
     {
         [Required]

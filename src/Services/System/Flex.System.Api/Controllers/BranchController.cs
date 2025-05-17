@@ -98,7 +98,7 @@ namespace Flex.System.Api.Controllers
 
             // 6. Sort: Pending -> Time request pending -> Id
             unionQ = unionQ
-                .OrderBy(x => x.PendingAction == null)
+                .OrderBy(u => u.PendingAction == null ? 1 : 0)
                 .ThenByDescending(x => x.RequestedDate)
                 .ThenBy(x => x.Id);
 
