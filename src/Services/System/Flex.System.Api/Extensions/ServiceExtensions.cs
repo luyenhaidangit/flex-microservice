@@ -34,7 +34,7 @@ namespace Flex.System.Api.Extensions
             services.AddInfrastructureServices();
 
             // Database
-            services.ConfigureServiceDbContext<SystemDbContext>(configuration);
+            services.ConfigureServiceDbContext<SystemDbContext>(configuration, useWallet: true);
             services.ConfigureStackExchangeRedisCache(configuration);
 
             // AutoMapper

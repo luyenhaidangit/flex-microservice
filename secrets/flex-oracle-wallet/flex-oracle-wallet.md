@@ -42,8 +42,8 @@ Thêm các thông tin sau vào file appsettings.json:
 ```json
 {
   "OracleWallet": {
-    "WalletLocation": "/path/to/flex-oracle-wallet",
-    "TNSAdmin": "/path/to/flex-oracle-wallet"
+    "WalletLocation": "c:\\luyenhaidangit\\flex-microservice\\secrets\\flex-oracle-wallet",
+    "TNSAdmin": "c:\\luyenhaidangit\\flex-microservice\\secrets\\flex-oracle-wallet"
   }
 }
 ```
