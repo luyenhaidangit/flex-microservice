@@ -1,4 +1,7 @@
-﻿public class CreateRoleDto
+﻿using Flex.AspNetIdentity.Api.Models;
+using Flex.Shared.SeedWork;
+
+public class CreateRoleDto
 {
     public string Name { get; set; }
     public string Code { get; set; }
@@ -32,6 +35,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
     public interface IRoleService
     {
         // ===== Role =====
+        Task<PagedResult<RolePagingDto>> GetRolePagedAsync();
         Task<IEnumerable<RoleDto>> GetAllAsync();
         Task<RoleDto?> GetByIdAsync(long id);
         Task<RoleDto?> GetBySystemNameAsync(string systemName);

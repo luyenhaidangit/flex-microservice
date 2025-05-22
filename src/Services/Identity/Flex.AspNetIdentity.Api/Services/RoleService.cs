@@ -1,4 +1,5 @@
 using Flex.AspNetIdentity.Api.Services.Interfaces;
+using Flex.Shared.SeedWork;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -47,6 +48,11 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         public Task<IEnumerable<ClaimDto>> GetClaimsAsync(long roleId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PagedResult<RolePagingDto>> GetRolePagedAsync()
         {
             throw new NotImplementedException();
         }
