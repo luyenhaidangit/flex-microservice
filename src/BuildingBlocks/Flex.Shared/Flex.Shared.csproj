@@ -16,6 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Proto\" />
+    <ProjectReference Include="..\Flex.Contracts\Flex.Contracts.csproj" />
   </ItemGroup>
 </Project>

@@ -16,5 +16,11 @@ namespace Flex.AspNetIdentity.Api.Persistence
 
             modelBuilder.ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
         }
+
+        #region DbSet
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<RoleClaim> RoleClaims { get; set; }
+        public DbSet<RoleRequest> RoleRequests { get; set; }
+        #endregion
     }
 }

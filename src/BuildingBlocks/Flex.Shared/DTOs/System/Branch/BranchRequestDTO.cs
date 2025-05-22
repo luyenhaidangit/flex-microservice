@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Flex.Shared.Constants.Common;
+using Flex.Shared.SeedWork.Workflow.Constants;
 
 namespace Flex.Shared.DTOs.System.Branch 
 {

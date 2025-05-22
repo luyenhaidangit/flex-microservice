@@ -1,4 +1,4 @@
-﻿namespace Flex.Shared.Constants.Common
+﻿namespace Flex.Shared.SeedWork.Workflow.Constants
 {
     public static class RequestStatusConstant
     {

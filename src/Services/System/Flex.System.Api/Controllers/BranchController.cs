@@ -7,6 +7,7 @@ using Flex.Shared.SeedWork;
 using Flex.Shared.Constants.Common;
 using Flex.Shared.SeedWork.General;
 using Flex.System.Api.Entities;
+using Flex.Shared.SeedWork.Workflow.Constants;
 
 namespace Flex.System.Api.Controllers
 {

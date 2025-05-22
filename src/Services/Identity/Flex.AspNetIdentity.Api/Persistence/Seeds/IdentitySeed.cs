@@ -20,7 +20,7 @@ namespace Flex.AspNetIdentity.Api.Persistence.Seeds
                 {
                     if (!await roleManager.RoleExistsAsync(role))
                     {
-                        await roleManager.CreateAsync(new Role(role));
+                        await roleManager.CreateAsync(new Role(role,"0000"));
                         logger.Information("Seeded role {RoleName}", role);
                     }
                 }

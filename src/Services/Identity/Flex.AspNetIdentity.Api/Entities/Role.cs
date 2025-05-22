@@ -1,18 +1,28 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Flex.Contracts.Domains.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Flex.AspNetIdentity.Api.Entities
 {
-    public class Role : IdentityRole<long>
+    public class Role : IdentityRole<long>, IEntityBase<long>
     {
-        public Role()
-        {
-        }
+        [Required]
+        [Column("CODE")]
+        public string Code { get; set; }
 
-        public Role(string roleName)
+        [Column("DESCRIPTION")]
+        public string? Description { get; set; } = string.Empty;
+
+        [Column("IS_ACTIVE")]
+        public bool? IsActive { get; set; } = true;
+
+        public Role(string roleName, string code)
         {
             Name = roleName;
             NormalizedName = roleName.ToUpper();
             ConcurrencyStamp = Guid.NewGuid().ToString();
+            Code = code;
         }
     }
 }
