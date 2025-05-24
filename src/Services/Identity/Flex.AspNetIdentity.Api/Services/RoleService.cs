@@ -10,6 +10,7 @@ using Flex.Shared.SeedWork.Workflow.Constants;
 using Microsoft.EntityFrameworkCore;
 using Flex.Infrastructure.EF;
 using Flex.Shared.Constants.Common;
+using Flex.Shared.DTOs.System.Branch;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -25,7 +26,7 @@ namespace Flex.AspNetIdentity.Api.Services
             _roleRequestRepository = roleRequestRepository;
             _roleManager = roleManager;
         }
-        public Task<PagedResult<RolePagingDto>> GetRolePagedAsync(GetRolesPagingRequest request)
+        public async Task<PagedResult<RolePagingDto>> GetRolePagedAsync(GetRolesPagingRequest request)
         {
             var keyword = request?.Keyword?.Trim().ToLower();
 
@@ -57,28 +58,20 @@ namespace Flex.AspNetIdentity.Api.Services
 
             // Combined and paging
             var combinedQuery = approvedRolesQuery.Union(proposedRolesQuery);
+            var total = await approvedRolesQuery.CountAsync();
+            int pageIndex = request.PageIndex == null ? 1 : request.PageIndex.Value;
+            int pageSize = request.PageSize == null ? total : request.PageSize.Value;
 
-            combinedQuery = combinedQuery
-                .OrderBy(x => x.Status != StatusConstant.Approved)
-                .ThenBy(x => x.Id);
+            var items = await combinedQuery
+            .OrderBy(x => x.Status != StatusConstant.Approved ? 1 : 0)
+            .ThenBy(x => x.Id)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
-            // ========== PAGING ==========
+            var resp = PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
 
-
-            //var pendingQuery =
-            //    from req in roleRequestsQuery
-            //    let data = JsonSerializer.Deserialize<RolePendingData>(req.RequestedData)
-            //    select new
-            //    {
-            //        req.Id,
-            //        req.Action,
-            //        req.RequestedDate,
-            //        data.Code,
-            //        data.Name,
-            //        data.Description
-            //    };
-
-            return null;
+            return resp;
         }
 
         public Task AddClaimsAsync(long roleId, IEnumerable<ClaimDto> claims)
