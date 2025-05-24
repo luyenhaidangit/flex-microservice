@@ -1,11 +1,10 @@
-﻿using Flex.Contracts.Domains.Interfaces;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Flex.AspNetIdentity.Api.Entities
 {
-    public class Role : IdentityRole<long>, IEntityBase<long>
+    public class Role : IdentityRole<long>
     {
         [Required]
         [Column("CODE")]

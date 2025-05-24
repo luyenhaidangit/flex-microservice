@@ -1,15 +1,84 @@
+using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Models;
+using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
+using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
+using MediatR;
+using Flex.Shared.SeedWork.Workflow.Constants;
+using Microsoft.EntityFrameworkCore;
+using Flex.Infrastructure.EF;
+using Flex.Shared.Constants.Common;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
     public class RoleService : IRoleService
     {
         private readonly ILogger<RoleService> _logger;
+        private readonly RoleManager<Role> _roleManager;
+        private readonly IRoleRequestRepository _roleRequestRepository;
 
-        public RoleService(ILogger<RoleService> logger)
+        public RoleService(ILogger<RoleService> logger, IRoleRequestRepository roleRequestRepository, RoleManager<Role> roleManager)
         {
             _logger = logger;
+            _roleRequestRepository = roleRequestRepository;
+            _roleManager = roleManager;
+        }
+        public Task<PagedResult<RolePagingDto>> GetRolePagedAsync(GetRolesPagingRequest request)
+        {
+            var keyword = request?.Keyword?.Trim().ToLower();
+
+            // ========== PAGING ==========
+            var roleQuery = _roleManager.Roles.AsNoTracking();
+            var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery();
+
+            // Filter query
+            var approvedRolesQuery = roleQuery
+                .WhereIf(!string.IsNullOrEmpty(request?.Keyword), b => b.Code.ToLower().Contains(keyword) || b.Description.ToLower().Contains(keyword))
+                .Select(role => new RolePagingDto
+                {
+                    Id = role.Id,
+                    Name = role.Name,
+                    Description = role.Description,
+                    Status = "APPROVED"
+                });
+
+            var proposedRolesQuery = proposedBranchQuery
+                .WhereIf(!string.IsNullOrEmpty(request?.Keyword), b => b.Code.ToLower().Contains(keyword) || b.Description.ToLower().Contains(keyword))
+                .Where(r => r.Status == RequestStatusConstant.Unauthorised)
+                .Select(r => new RolePagingDto
+                {
+                    Id = r.Id,
+                    Name = r.Code,
+                    Description = r.Name,
+                    Status = "PENDING"
+                });
+
+            // Combined and paging
+            var combinedQuery = approvedRolesQuery.Union(proposedRolesQuery);
+
+            combinedQuery = combinedQuery
+                .OrderBy(x => x.Status != StatusConstant.Approved)
+                .ThenBy(x => x.Id);
+
+            // ========== PAGING ==========
+
+
+            //var pendingQuery =
+            //    from req in roleRequestsQuery
+            //    let data = JsonSerializer.Deserialize<RolePendingData>(req.RequestedData)
+            //    select new
+            //    {
+            //        req.Id,
+            //        req.Action,
+            //        req.RequestedDate,
+            //        data.Code,
+            //        data.Name,
+            //        data.Description
+            //    };
+
+            return null;
         }
 
         public Task AddClaimsAsync(long roleId, IEnumerable<ClaimDto> claims)
@@ -51,12 +120,6 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             throw new NotImplementedException();
         }
-
-        public Task<PagedResult<RolePagingDto>> GetRolePagedAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public Task RemoveClaimAsync(long roleId, ClaimDto claim)
         {
             throw new NotImplementedException();
