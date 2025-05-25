@@ -1,12 +1,6 @@
 ﻿using Flex.AspNetIdentity.Api.Models;
 using Flex.Shared.SeedWork;
 
-public class ClaimDto
-{
-    public string Type { get; set; } = "permission";
-    public string Value { get; set; } = default!;
-}
-
 namespace Flex.AspNetIdentity.Api.Services.Interfaces
 {
     public interface IRoleService

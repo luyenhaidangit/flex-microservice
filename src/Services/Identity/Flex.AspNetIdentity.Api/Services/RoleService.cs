@@ -397,6 +397,115 @@ namespace Flex.AspNetIdentity.Api.Services
             await _roleRequestRepository.CreateAsync(request);
             return request.Id;
         }
+        public async Task ApproveRoleRequestAsync(long requestId, string? comment = null)
+        {
+            var request = await _roleRequestRepository
+                .FindAll()
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+
+            if (request == null)
+                throw new Exception("Pending role request not found.");
+
+            var approvedBy = "system";
+
+            // Xử lý theo loại yêu cầu
+            if (request.Action == RequestTypeConstant.Create)
+            {
+                var dto = JsonSerializer.Deserialize<CreateRoleDto>(request.RequestedData);
+                if (dto == null) throw new Exception("Invalid request data");
+
+                var newRole = new Role("", "");
+
+                await _roleManager.CreateAsync(newRole);
+
+                if (dto.Claims != null)
+                {
+                    //foreach (var claim in dto.Claims)
+                    //{
+                    //    await _roleManager.AddClaimAsync(newRole, new System.Security.Claims.Claim(claim.Type, claim.Value));
+                    //}
+                }
+
+                request.EntityId = newRole.Id;
+            }
+            else if (request.Action == RequestTypeConstant.Update)
+            {
+                var dto = JsonSerializer.Deserialize<UpdateRoleDto>(request.RequestedData);
+                if (dto == null) throw new Exception("Invalid request data");
+
+                var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+                if (role == null) throw new Exception("Original role not found");
+
+                //role.Name = dto.Name;
+                //role.Description = dto.Description;
+                //role.LastModifiedBy = approvedBy;
+                //role.LastModifiedDate = DateTime.UtcNow;
+
+                await _roleManager.UpdateAsync(role);
+
+                //if (dto.Claims != null)
+                //{
+                //    var existingClaims = await _roleManager.GetClaimsAsync(role);
+
+                //    foreach (var c in existingClaims)
+                //        await _roleManager.RemoveClaimAsync(role, c);
+
+                //    //foreach (var claim in dto.Claims)
+                //    //    await _roleManager.AddClaimAsync(role, new System.Security.Claims.Claim(claim.Type, claim.Value));
+                //}
+            }
+            else if (request.Action == RequestTypeConstant.Delete)
+            {
+                var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+                if (role == null) throw new Exception("Role not found");
+
+                await _roleManager.DeleteAsync(role);
+            }
+
+            // Cập nhật trạng thái yêu cầu
+            //request.Status = RequestStatusConstant.Approved;
+            //request.ApprovedBy = approvedBy;
+            //request.ApprovedDate = DateTime.UtcNow;
+            //request.Comment = comment;
+
+            await _roleRequestRepository.UpdateAsync(request);
+        }
+        public async Task RejectRoleRequestAsync(long requestId, string reason)
+        {
+            var request = await _roleRequestRepository
+                .FindAll()
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+
+            if (request == null)
+                throw new Exception("Pending request not found.");
+
+            request.Status = RequestStatusConstant.Rejected;
+            //request.ApprovedBy = _currentUser?.UserName ?? "system";
+            //request.ApprovedDate = DateTime.UtcNow;
+            //request.RejectReason = reason;
+
+            await _roleRequestRepository.UpdateAsync(request);
+        }
+        public async Task CancelRoleRequestAsync(long requestId)
+        {
+            var request = await _roleRequestRepository
+                .FindAll()
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+
+            if (request == null)
+                throw new Exception("Pending request not found or already processed.");
+
+            var currentUser = "system";
+
+            if (request.CheckerId != currentUser)
+                throw new Exception("You can only cancel your own request.");
+
+            request.Status = RequestStatusConstant.Cancelled;
+            request.MakerId = currentUser;
+            request.ApproveDate = DateTime.UtcNow;
+
+            await _roleRequestRepository.UpdateAsync(request);
+        }
 
         #endregion
         public Task AddClaimsAsync(long roleId, IEnumerable<ClaimDto> claims)
@@ -449,20 +558,6 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         public Task<PagedResult<RolePagingDto>> GetRolePagedAsync()
-        {
-            throw new NotImplementedException();
-        }
-        public Task ApproveRoleRequestAsync(long requestId, string? comment = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task RejectRoleRequestAsync(long requestId, string reason)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task CancelRoleRequestAsync(long requestId)
         {
             throw new NotImplementedException();
         }
