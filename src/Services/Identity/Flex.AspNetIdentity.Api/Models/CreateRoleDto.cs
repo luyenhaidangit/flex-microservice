@@ -2,5 +2,8 @@
 {
     public class CreateRoleDto
     {
+        public string Name { get; set; }
+        public string Code { get; set; }
+        public List<string>? Claims { get; set; }
     }
 }

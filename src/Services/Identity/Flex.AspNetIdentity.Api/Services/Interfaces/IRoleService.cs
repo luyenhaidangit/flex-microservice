@@ -1,13 +1,6 @@
 ﻿using Flex.AspNetIdentity.Api.Models;
 using Flex.Shared.SeedWork;
 
-public class CreateRoleDto
-{
-    public string Name { get; set; }
-    public string Code { get; set; }
-    public List<string>? Claims { get; set; }
-}
-
 public class ClaimDto
 {
     public string Type { get; set; } = "permission";
@@ -23,14 +16,15 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<RoleDto?> GetRoleByIdAsync(long id);
         Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId);
         Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId);
-        Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId); // ảnh hưởng nếu duyệt
-        Task<string?> CompareRoleWithRequestAsync(long requestId); // trả về diff dạng HTML/json (tuỳ UI)
+        Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId);
+        Task<string?> CompareRoleWithRequestAsync(long requestId); 
+
         // Request
         Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto);
         Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto);
         Task<long> CreateDeleteRoleRequestAsync(long roleId);
 
-        // ===== Phê duyệt yêu cầu =====
+        // Approve
         Task ApproveRoleRequestAsync(long requestId, string? comment = null);
         Task RejectRoleRequestAsync(long requestId, string reason);
         Task CancelRoleRequestAsync(long requestId); // Maker huỷ trước khi duyệt
