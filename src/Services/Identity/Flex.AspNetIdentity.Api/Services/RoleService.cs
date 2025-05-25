@@ -506,23 +506,19 @@ namespace Flex.AspNetIdentity.Api.Services
 
             await _roleRequestRepository.UpdateAsync(request);
         }
-
         #endregion
         public Task AddClaimsAsync(long roleId, IEnumerable<ClaimDto> claims)
         {
             throw new NotImplementedException();
         }
-
         public Task<long> CreateAsync(CreateRoleDto dto)
         {
             throw new NotImplementedException();
         }
-
         public Task<long> CreateFromApprovedRequestAsync(string requestedDataJson)
         {
             throw new NotImplementedException();
         }
-
         public Task<IEnumerable<ClaimDto>> GetClaimsAsync(long roleId)
         {
             throw new NotImplementedException();
@@ -531,7 +527,6 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             throw new NotImplementedException();
         }
-
         public Task UpdateAsync(long roleId, UpdateRoleDto dto)
         {
             throw new NotImplementedException();
