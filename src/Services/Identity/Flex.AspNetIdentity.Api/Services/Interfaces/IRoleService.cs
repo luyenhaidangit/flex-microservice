@@ -25,14 +25,15 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
 {
     public interface IRoleService
     {
-        // ===== Role gốc (đã duyệt) =====
+        // Query
         Task<PagedResult<RolePagingDto>> GetRolePagedAsync(GetRolesPagingRequest request);
         Task<RoleDto?> GetRoleByIdAsync(long id);
-        //Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId);
+        Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId);
+        Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId);
+        Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId); // ảnh hưởng nếu duyệt
 
-        // ===== Yêu cầu (Request) =====
-        //Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId);
-        //Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId); // ảnh hưởng nếu duyệt
+        // Request
+
         Task<string?> CompareRoleWithRequestAsync(long requestId); // trả về diff dạng HTML/json (tuỳ UI)
         Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto);
         Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto);

@@ -8,6 +8,7 @@ using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.Infrastructure.EF;
 using Flex.Shared.Constants.Common;
+using System.Text.Json;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -15,13 +16,15 @@ namespace Flex.AspNetIdentity.Api.Services
     {
         private readonly ILogger<RoleService> _logger;
         private readonly RoleManager<Role> _roleManager;
+        private readonly UserManager<User> _userManager;
         private readonly IRoleRequestRepository _roleRequestRepository;
 
-        public RoleService(ILogger<RoleService> logger, IRoleRequestRepository roleRequestRepository, RoleManager<Role> roleManager)
+        public RoleService(ILogger<RoleService> logger, IRoleRequestRepository roleRequestRepository, RoleManager<Role> roleManager, UserManager<User> userManager)
         {
             _logger = logger;
             _roleRequestRepository = roleRequestRepository;
             _roleManager = roleManager;
+            _userManager = userManager;
         }
         #region Query
         public async Task<PagedResult<RolePagingDto>> GetRolePagedAsync(GetRolesPagingRequest request)
@@ -128,6 +131,92 @@ namespace Flex.AspNetIdentity.Api.Services
                 .ToListAsync();
 
             return requests;
+        }
+        public async Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId)
+        {
+            var request = await _roleRequestRepository
+                .FindAll()
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null)
+                return null;
+
+            var proposedData = string.IsNullOrEmpty(request.RequestedData)
+                ? null
+                : JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
+
+            return new RoleRequestDto
+            {
+                RequestId = request.Id,
+                RoleId = request.EntityId, // hoặc request.RoleId, tùy DB
+                RequestType = request.Action,
+                Status = request.Status,
+                ProposedData = proposedData
+            };
+        }
+        public async Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId)
+        {
+            var request = await _roleRequestRepository
+                .FindAll()
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null)
+                throw new Exception("Role request not found");
+
+            if (request.Action == RequestTypeConstant.Create)
+                return new List<RoleImpactDto>(); // Tạo mới không ảnh hưởng gì
+
+            var roleId = request.EntityId;
+
+            if (request.Action == RequestTypeConstant.Delete)
+            {
+                // Lấy danh sách user đang dùng role
+                var impactedUsers = await _userManager.Users
+                    .Where(u => u.Roles.Any(ur => ur.RoleId == roleId)) // sửa theo hệ thống của bạn
+                    .Select(u => new RoleImpactDto
+                    {
+                        ImpactType = "User",
+                        Name = u.FullName,
+                        Code = u.UserName,
+                        Description = $"User '{u.UserName}' is using this role"
+                    })
+                    .ToListAsync();
+
+                return impactedUsers;
+            }
+
+            if (request.RequestType == RequestTypeConstant.Update)
+            {
+                // Deserialize proposed role
+                var proposed = JsonSerializer.Deserialize<RoleDto>(request.RequestedData ?? string.Empty);
+                if (proposed == null)
+                    return new List<RoleImpactDto>();
+
+                // Lấy role hiện tại và claims hiện tại
+                var role = await _roleManager.Roles
+                    .FirstOrDefaultAsync(r => r.Id == roleId);
+
+                if (role == null)
+                    return new List<RoleImpactDto>();
+
+                var currentClaims = await _roleManager.GetClaimsAsync(role);
+                var proposedClaims = proposed.Claims ?? new List<ClaimDto>();
+
+                // So sánh các claims bị xóa
+                var removedClaims = currentClaims
+                    .Where(c => !proposedClaims.Any(p => p.Type == c.Type && p.Value == c.Value))
+                    .Select(c => new RoleImpactDto
+                    {
+                        ImpactType = "Claim",
+                        Name = c.Type,
+                        Code = c.Value,
+                        Description = $"Claim {c.Type}:{c.Value} will be removed"
+                    });
+
+                return removedClaims.ToList();
+            }
+
+            return new List<RoleImpactDto>();
         }
         #endregion
 
