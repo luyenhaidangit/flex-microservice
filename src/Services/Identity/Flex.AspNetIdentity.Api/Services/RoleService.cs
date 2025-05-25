@@ -523,26 +523,6 @@ namespace Flex.AspNetIdentity.Api.Services
             throw new NotImplementedException();
         }
 
-        public Task DeleteAsync(long roleId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<RoleDto>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<RoleDto?> GetByIdAsync(long id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<RoleDto?> GetBySystemNameAsync(string systemName)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<IEnumerable<ClaimDto>> GetClaimsAsync(long roleId)
         {
             throw new NotImplementedException();
