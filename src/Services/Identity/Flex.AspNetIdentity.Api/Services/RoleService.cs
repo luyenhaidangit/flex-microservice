@@ -172,7 +172,7 @@ namespace Flex.AspNetIdentity.Api.Services
             {
                 // Lấy danh sách user đang dùng role
                 var impactedUsers = await _userManager.Users
-                    .Where(u => u.Roles.Any(ur => ur.RoleId == roleId)) // sửa theo hệ thống của bạn
+                    //.Where(u => u.Roles.Any(ur => ur.RoleId == roleId)) // sửa theo hệ thống của bạn
                     .Select(u => new RoleImpactDto
                     {
                         ImpactType = "User",
@@ -185,7 +185,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 return impactedUsers;
             }
 
-            if (request.RequestType == RequestTypeConstant.Update)
+            if (request.Action == RequestTypeConstant.Update)
             {
                 // Deserialize proposed role
                 var proposed = JsonSerializer.Deserialize<RoleDto>(request.RequestedData ?? string.Empty);
@@ -270,11 +270,6 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         public Task<PagedResult<RolePagingDto>> GetRolePagedAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<RoleDto?> GetRoleByIdAsync(long id)
         {
             throw new NotImplementedException();
         }
