@@ -8,13 +8,6 @@ public class CreateRoleDto
     public List<string>? Claims { get; set; }
 }
 
-public class UpdateRoleDto
-{
-    public string Name { get; set; }
-    public bool IsActive { get; set; }
-    public List<string>? Claims { get; set; }
-}
-
 public class ClaimDto
 {
     public string Type { get; set; } = "permission";
@@ -31,10 +24,8 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId);
         Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId);
         Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId); // ảnh hưởng nếu duyệt
-
-        // Request
-
         Task<string?> CompareRoleWithRequestAsync(long requestId); // trả về diff dạng HTML/json (tuỳ UI)
+        // Request
         Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto);
         Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto);
         Task<long> CreateDeleteRoleRequestAsync(long roleId);

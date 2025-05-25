@@ -9,6 +9,7 @@ using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.Infrastructure.EF;
 using Flex.Shared.Constants.Common;
 using System.Text.Json;
+using System.Security.Claims;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -218,6 +219,76 @@ namespace Flex.AspNetIdentity.Api.Services
 
             return new List<RoleImpactDto>();
         }
+        public async Task<string?> CompareRoleWithRequestAsync(long requestId)
+        {
+            var request = await _roleRequestRepository
+                .FindAll()
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null || string.IsNullOrEmpty(request.RequestedData))
+                return null;
+
+            var proposed = JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
+            if (proposed == null)
+                return null;
+
+            var role = request.EntityId == null
+                ? await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId)
+                : null;
+
+            var diffs = new List<FieldDiffDto>();
+
+            // ===== So sánh các trường cơ bản =====
+            if (role != null)
+            {
+                if (role.Name != proposed.Name)
+                    diffs.Add(new FieldDiffDto { Field = "Name", Original = role.Name, Proposed = proposed.Name });
+
+                if (role.Description != proposed.Description)
+                    diffs.Add(new FieldDiffDto { Field = "Description", Original = role.Description, Proposed = proposed.Description });
+
+                if (role.Code != proposed.Code)
+                    diffs.Add(new FieldDiffDto { Field = "Code", Original = role.Code, Proposed = proposed.Code });
+            }
+            else
+            {
+                // Tạo mới
+                diffs.Add(new FieldDiffDto { Field = "Name", Original = null, Proposed = proposed.Name });
+                diffs.Add(new FieldDiffDto { Field = "Description", Original = null, Proposed = proposed.Description });
+                diffs.Add(new FieldDiffDto { Field = "Code", Original = null, Proposed = proposed.Code });
+            }
+
+            // ===== So sánh claims =====
+            var currentClaims = role != null ? await _roleManager.GetClaimsAsync(role) : new List<Claim>();
+            var proposedClaims = proposed.Claims ?? new List<ClaimDto>();
+
+            var removedClaims = currentClaims
+                .Where(c => !proposedClaims.Any(p => p.Type == c.Type && p.Value == c.Value))
+                .Select(c => new FieldDiffDto
+                {
+                    Field = "Claim",
+                    Original = $"{c.Type}:{c.Value}",
+                    Proposed = null
+                });
+
+            var addedClaims = proposedClaims
+                .Where(p => !currentClaims.Any(c => c.Type == p.Type && c.Value == p.Value))
+                .Select(p => new FieldDiffDto
+                {
+                    Field = "Claim",
+                    Original = null,
+                    Proposed = $"{p.Type}:{p.Value}"
+                });
+
+            diffs.AddRange(removedClaims);
+            diffs.AddRange(addedClaims);
+
+            return JsonSerializer.Serialize(diffs, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+        }
+
         #endregion
 
         public Task AddClaimsAsync(long roleId, IEnumerable<ClaimDto> claims)
@@ -270,11 +341,6 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         public Task<PagedResult<RolePagingDto>> GetRolePagedAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string?> CompareRoleWithRequestAsync(long requestId)
         {
             throw new NotImplementedException();
         }
