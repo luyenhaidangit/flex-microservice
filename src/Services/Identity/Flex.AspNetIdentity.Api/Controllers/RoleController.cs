@@ -1,11 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Flex.Shared.SeedWork;
+using Microsoft.AspNetCore.Mvc;
+using Flex.AspNetIdentity.Api.Services.Interfaces;
+using Flex.AspNetIdentity.Api.Models;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
     public class RoleController : ControllerBase
     {
-        public RoleController()
+        private IRoleService _roleService;
+        public RoleController(IRoleService roleService)
         {
+            _roleService = roleService;
+        }
+
+        [HttpGet("get-branches-paging")]
+        public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetRolesPagingRequest request)
+        {
+            var result = await _roleService.GetRolePagedAsync(request);
+
+            return Ok(Result.Success(result));
         }
     }
 }
