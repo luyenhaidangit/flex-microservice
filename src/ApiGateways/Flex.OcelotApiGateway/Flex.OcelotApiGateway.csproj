@@ -29,7 +29,7 @@
 	<ProjectReference Include="..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
   </ItemGroup>
 
-  <!-- <PropertyGroup>
+  <PropertyGroup>
 	<PostBuildEvent>
 		if "%SIGNTOOL%"=="" set "SIGNTOOL=C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
 		if exist "%SIGNTOOL%" goto SIGN
@@ -41,6 +41,6 @@
 		echo "%SIGNTOOL%" sign /f $(SolutionDir)\FSSFLEX.pfx /p FSSCFLEX /fd SHA256 /a $(SolutionDir)\HOSTService\bin\Debug\net8.0\HOSTService.exe
 		"%SIGNTOOL%" sign /f $(SolutionDir)\SignCert.pfx /p FSSCFLEX /fd SHA256 /a C:\Users\Admin\Desktop\Flex\flex-microservice\src\ApiGateways\Flex.OcelotApiGateway\bin\Debug\net9.0\Flex.OcelotApiGateway.exe
 	</PostBuildEvent>
-  </PropertyGroup> -->
+  </PropertyGroup>
 
 </Project>

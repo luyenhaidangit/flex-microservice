@@ -9,8 +9,6 @@ using Flex.System.Api.Repositories;
 using Flex.System.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.AspNetIdentity.Api.Services;
-using Grpc.Net.Client.Configuration;
-using Grpc.Core;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -53,10 +51,10 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddAutoMapper(AssemblyReference.Assembly);
 
             // Configure gRPC client
-            services.AddGrpcClient<System.Grpc.BranchService.BranchServiceClient>(options =>
-            {
-                options.Address = new Uri(systemUrlGrpc);
-            }).ConfigureGrpcChannelOptions();
+            //services.AddGrpcClient<System.Grpc.BranchService.BranchServiceClient>(options =>
+            //{
+            //    options.Address = new Uri(systemUrlGrpc);
+            //}).ConfigureGrpcChannelOptions();
 
             return services;
         }
@@ -67,7 +65,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddScoped<IUserRequestDataRepository, UserRequestDataRepository>();
             services.AddScoped<IUserAuditLogRepository, UserAuditLogRepository>();
 
-            services.AddScoped<IBranchService, BranchClientService>();
+            //services.AddScoped<IBranchService, BranchClientService>();
 
             return services;
         }
@@ -88,39 +86,39 @@ namespace Flex.AspNetIdentity.Api.Extensions
         #region Infrastructure
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
-            services.AddScoped<IBranchService, BranchClientService>();
+            //services.AddScoped<IBranchService, BranchClientService>();
 
             return services;
         }
-        private static bool ConfigureGrpcChannelOptions(this IHttpClientBuilder builder)
-        {
-            var methodConfigs = new MethodConfig
-            {
-                Names = { MethodName.Default },
-                RetryPolicy = new RetryPolicy
-                {
-                    MaxAttempts = 5,
-                    InitialBackoff = TimeSpan.FromSeconds(1),
-                    MaxBackoff = TimeSpan.FromSeconds(5),
-                    BackoffMultiplier = 1.5,
-                    RetryableStatusCodes =
-                    {
-                        // Whatever status codes we want to look for
-                        StatusCode.Unauthenticated, StatusCode.NotFound, StatusCode.Unavailable,
-                    }
-                }
-            };
+        //private static bool ConfigureGrpcChannelOptions(this IHttpClientBuilder builder)
+        //{
+        //    var methodConfigs = new MethodConfig
+        //    {
+        //        Names = { MethodName.Default },
+        //        RetryPolicy = new RetryPolicy
+        //        {
+        //            MaxAttempts = 5,
+        //            InitialBackoff = TimeSpan.FromSeconds(1),
+        //            MaxBackoff = TimeSpan.FromSeconds(5),
+        //            BackoffMultiplier = 1.5,
+        //            RetryableStatusCodes =
+        //            {
+        //                // Whatever status codes we want to look for
+        //                StatusCode.Unauthenticated, StatusCode.NotFound, StatusCode.Unavailable,
+        //            }
+        //        }
+        //    };
 
-            builder.ConfigureChannel(options =>
-            {
-                options.ServiceConfig = new ServiceConfig
-                {
-                    MethodConfigs = { methodConfigs }
-                };
-            });
+        //    builder.ConfigureChannel(options =>
+        //    {
+        //        options.ServiceConfig = new ServiceConfig
+        //        {
+        //            MethodConfigs = { methodConfigs }
+        //        };
+        //    });
 
-            return true;
-        }
+        //    return true;
+        //}
 
         private static IServiceCollection ConfigureAspNetIdentity(this IServiceCollection services)
         {

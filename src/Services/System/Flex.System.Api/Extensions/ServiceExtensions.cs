@@ -44,7 +44,7 @@ namespace Flex.System.Api.Extensions
             services.AddHttpContextAccessor();
 
             // Grpc
-            services.AddGrpc();
+            //services.AddGrpc();
 
             return services;
         }
