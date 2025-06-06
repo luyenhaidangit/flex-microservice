@@ -10,6 +10,7 @@ namespace Flex.AspNetIdentity.Api
         {
             // Identity
             CreateMap<RegisterUserRequest, User>();
+            CreateMap<Models.CreateUserDto, User>();
         }
     }
 }
