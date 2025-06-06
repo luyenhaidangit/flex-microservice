@@ -10,6 +10,7 @@ using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.Infrastructure.EF;
 using Flex.Shared.Constants.Common;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -51,6 +52,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     Id = null,
                     Name = r.Name,
                     Code = r.Code,
+                    IsActive = r.IsActive,
                     Description = r.Description,
                     Status = StatusConstant.Pending,
                     RequestType = RequestTypeConstant.Create
@@ -68,6 +70,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     Id = x.role.Id,
                     Name = x.role.Name,
                     Code = x.role.Code,
+                    IsActive = x.role.IsActive,
                     Description = x.role.Description,
                     Status = x.req == null ? StatusConstant.Approved : StatusConstant.Pending,
                     RequestType = x.req == null ? null : x.req.RequestType
@@ -95,24 +98,26 @@ namespace Flex.AspNetIdentity.Api.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == id);
 
-            if (role == null)
-                return null;
+            if (role == null) return null;
 
             var claims = await _roleManager.GetClaimsAsync(role);
+            var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery().Where(r => r.EntityId == id && r.Status == RequestStatusConstant.Unauthorised).FirstOrDefaultAsync();
 
             return new RoleDto
             {
                 Id = role.Id,
                 Name = role.Name,
                 Code = role.Code,
+                IsActive = role.IsActive,
                 Description = role.Description,
-                Claims = claims.Select(c => new ClaimDto
-                {
-                    Type = c.Type,
-                    Value = c.Value
-                }).ToList()
+                HasPendingRequest = pendingRequest != null,
+                PendingRequestId = pendingRequest?.Id,
+                RequestType = pendingRequest?.RequestType,
+                RequestedBy = pendingRequest?.CreatedBy,
+                RequestedAt = pendingRequest?.CreatedDate,
             };
         }
+
         public async Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId)
         {
             var requests = await _roleRequestRepository
