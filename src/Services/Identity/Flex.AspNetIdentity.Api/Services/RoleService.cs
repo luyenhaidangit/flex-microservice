@@ -35,13 +35,17 @@ namespace Flex.AspNetIdentity.Api.Services
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
             // ========== QUERY ==========
-            var roleQuery = _roleManager.Roles.AsNoTracking();
-            var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery().Where(r => r.Status == RequestStatusConstant.Unauthorised).Where(r => r.Status == RequestStatusConstant.Unauthorised);
+            var roleQuery = _roleManager.Roles
+                .WhereIf(!string.IsNullOrEmpty(keyword), x => x.Code.ToLower().Contains(keyword) || x.Description.ToLower().Contains(keyword))
+                .AsNoTracking();
+            var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.Status == RequestStatusConstant.Unauthorised)
+                .WhereIf(!string.IsNullOrEmpty(keyword), r => r.Code.ToLower().Contains(keyword) || r.Description.ToLower().Contains(keyword))
+                .AsNoTracking();
 
             // ========== PENDING CREATE ==========
             var pendingCreates = proposedBranchQuery
                 .Where(r => r.RequestType == RequestTypeConstant.Create)
-                .WhereIf(!string.IsNullOrEmpty(keyword), r => r.Code.ToLower().Contains(keyword) || r.Description.ToLower().Contains(keyword))
                 .Select(r => new RolePagingDto
                 {
                     Id = null,
@@ -55,11 +59,10 @@ namespace Flex.AspNetIdentity.Api.Services
             // ========== ROLES ==========
             var rolesWithOverlay = roleQuery
                 .GroupJoin(
-                    proposedBranchQuery.Where(r => r.RequestType != RequestTypeConstant.Create),
+                    proposedBranchQuery,
                     role => role.Id,
                     req => req.EntityId,
                     (role, reqs) => new { role, req = reqs.FirstOrDefault() })
-                .WhereIf(!string.IsNullOrEmpty(keyword), x => x.role.Code.ToLower().Contains(keyword) || x.role.Description.ToLower().Contains(keyword))
                 .Select(x => new RolePagingDto
                 {
                     Id = x.role.Id,
