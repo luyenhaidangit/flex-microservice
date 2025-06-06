@@ -87,6 +87,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
             //services.AddScoped<IBranchService, BranchClientService>();
+            services.AddScoped<IUserService, UserService>();
 
             return services;
         }
