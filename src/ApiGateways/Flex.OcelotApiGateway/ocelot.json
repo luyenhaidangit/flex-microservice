@@ -27,6 +27,19 @@
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
     {
+      "RouteName": "IdentityService_Route",
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
+    },
+    {
       "Key": "investor-service",
       "DownstreamPathTemplate": "/api/investor/{everything}",
       "UpstreamPathTemplate": "/api/investor/{everything}",
