@@ -113,7 +113,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 .AsNoTracking();
 
             // ===== TẠO DANH SÁCH PENDING CREATE =====
-            var pendingCreates = await proposedBranchQuery
+            var pendingCreatesQuery = proposedBranchQuery
                 .Where(r => r.Action == RequestTypeConstant.Create)
                 .Select(r => new RolePagingDto
                 {
@@ -124,10 +124,10 @@ namespace Flex.AspNetIdentity.Api.Services
                     Description = r.Description,
                     Status = StatusConstant.Pending.ToString(),
                     RequestType = RequestTypeConstant.Create.ToString()
-                }).ToListAsync();
+                });
 
             // ===== GHÉP ROLE VỚI REQUEST (PENDING UPDATE/DELETE) =====
-            var rolesWithOverlay = await roleQuery
+            var rolesWithOverlayQuery = roleQuery
                 .GroupJoin(proposedBranchQuery,
                     role => role.Id,
                     req => req.EntityId,
@@ -140,21 +140,20 @@ namespace Flex.AspNetIdentity.Api.Services
                     IsActive = x.role.IsActive,
                     Description = x.role.Description,
                     Status = x.req == null ? StatusConstant.Approved.ToString() : StatusConstant.Pending.ToString(),
-                    RequestType = x.req.Action
-                }).ToListAsync();
+                    RequestType = x.req == null ? null : x.req.Action
+                });
 
             // ===== GHÉP DANH SÁCH CUỐI & SẮP XẾP =====
-            var combined = rolesWithOverlay.Concat(pendingCreates)
+            var combinedQuery = rolesWithOverlayQuery.Union(pendingCreatesQuery)
                 .OrderBy(dto => dto.Status == StatusConstant.Pending.ToString() ? 0 : 1)
-                .ThenBy(dto => dto.Id ?? long.MinValue) // nếu null thì đẩy lên đầu
-                .ToList();
+                .ThenBy(dto => dto.Id);
 
             // ===== PHÂN TRANG =====
-            var total = combined.Count;
-            var items = combined
+            var total = await combinedQuery.CountAsync();
+            var items = await combinedQuery
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
-                .ToList();
+                .ToListAsync();
 
             return PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
         }
