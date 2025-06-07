@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using System.Security.Claims;
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
@@ -10,7 +9,6 @@ using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.Infrastructure.EF;
 using Flex.Shared.Constants.Common;
-using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -163,139 +161,75 @@ namespace Flex.AspNetIdentity.Api.Services
                 ProposedData = proposedData
             };
         }
-        public async Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId)
-        {
-            var request = await _roleRequestRepository
-                .FindAll()
-                .FirstOrDefaultAsync(r => r.Id == requestId);
+        //public async Task<string?> CompareRoleWithRequestAsync(long requestId)
+        //{
+        //    var request = await _roleRequestRepository
+        //        .FindAll()
+        //        .FirstOrDefaultAsync(r => r.Id == requestId);
 
-            if (request == null)
-                throw new Exception("Role request not found");
+        //    if (request == null || string.IsNullOrEmpty(request.RequestedData))
+        //        return null;
 
-            if (request.Action == RequestTypeConstant.Create)
-                return new List<RoleImpactDto>(); // Tạo mới không ảnh hưởng gì
+        //    var proposed = JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
+        //    if (proposed == null)
+        //        return null;
 
-            var roleId = request.EntityId;
+        //    var role = request.EntityId == null
+        //        ? await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId)
+        //        : null;
 
-            if (request.Action == RequestTypeConstant.Delete)
-            {
-                // Lấy danh sách user đang dùng role
-                var impactedUsers = await _userManager.Users
-                    //.Where(u => u.Roles.Any(ur => ur.RoleId == roleId)) // sửa theo hệ thống của bạn
-                    .Select(u => new RoleImpactDto
-                    {
-                        ImpactType = "User",
-                        Name = u.FullName,
-                        Code = u.UserName,
-                        Description = $"User '{u.UserName}' is using this role"
-                    })
-                    .ToListAsync();
+        //    var diffs = new List<FieldDiffDto>();
 
-                return impactedUsers;
-            }
+        //    // ===== So sánh các trường cơ bản =====
+        //    if (role != null)
+        //    {
+        //        if (role.Name != proposed.Name)
+        //            diffs.Add(new FieldDiffDto { Field = "Name", Original = role.Name, Proposed = proposed.Name });
 
-            if (request.Action == RequestTypeConstant.Update)
-            {
-                // Deserialize proposed role
-                var proposed = JsonSerializer.Deserialize<RoleDto>(request.RequestedData ?? string.Empty);
-                if (proposed == null)
-                    return new List<RoleImpactDto>();
+        //        if (role.Description != proposed.Description)
+        //            diffs.Add(new FieldDiffDto { Field = "Description", Original = role.Description, Proposed = proposed.Description });
 
-                // Lấy role hiện tại và claims hiện tại
-                var role = await _roleManager.Roles
-                    .FirstOrDefaultAsync(r => r.Id == roleId);
+        //        if (role.Code != proposed.Code)
+        //            diffs.Add(new FieldDiffDto { Field = "Code", Original = role.Code, Proposed = proposed.Code });
+        //    }
+        //    else
+        //    {
+        //        // Tạo mới
+        //        diffs.Add(new FieldDiffDto { Field = "Name", Original = null, Proposed = proposed.Name });
+        //        diffs.Add(new FieldDiffDto { Field = "Description", Original = null, Proposed = proposed.Description });
+        //        diffs.Add(new FieldDiffDto { Field = "Code", Original = null, Proposed = proposed.Code });
+        //    }
 
-                if (role == null)
-                    return new List<RoleImpactDto>();
+        //    // ===== So sánh claims =====
+        //    var currentClaims = role != null ? await _roleManager.GetClaimsAsync(role) : new List<Claim>();
+        //    var proposedClaims = proposed.Claims ?? new List<ClaimDto>();
 
-                var currentClaims = await _roleManager.GetClaimsAsync(role);
-                var proposedClaims = proposed.Claims ?? new List<ClaimDto>();
+        //    var removedClaims = currentClaims
+        //        .Where(c => !proposedClaims.Any(p => p.Type == c.Type && p.Value == c.Value))
+        //        .Select(c => new FieldDiffDto
+        //        {
+        //            Field = "Claim",
+        //            Original = $"{c.Type}:{c.Value}",
+        //            Proposed = null
+        //        });
 
-                // So sánh các claims bị xóa
-                var removedClaims = currentClaims
-                    .Where(c => !proposedClaims.Any(p => p.Type == c.Type && p.Value == c.Value))
-                    .Select(c => new RoleImpactDto
-                    {
-                        ImpactType = "Claim",
-                        Name = c.Type,
-                        Code = c.Value,
-                        Description = $"Claim {c.Type}:{c.Value} will be removed"
-                    });
+        //    var addedClaims = proposedClaims
+        //        .Where(p => !currentClaims.Any(c => c.Type == p.Type && c.Value == p.Value))
+        //        .Select(p => new FieldDiffDto
+        //        {
+        //            Field = "Claim",
+        //            Original = null,
+        //            Proposed = $"{p.Type}:{p.Value}"
+        //        });
 
-                return removedClaims.ToList();
-            }
+        //    diffs.AddRange(removedClaims);
+        //    diffs.AddRange(addedClaims);
 
-            return new List<RoleImpactDto>();
-        }
-        public async Task<string?> CompareRoleWithRequestAsync(long requestId)
-        {
-            var request = await _roleRequestRepository
-                .FindAll()
-                .FirstOrDefaultAsync(r => r.Id == requestId);
-
-            if (request == null || string.IsNullOrEmpty(request.RequestedData))
-                return null;
-
-            var proposed = JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
-            if (proposed == null)
-                return null;
-
-            var role = request.EntityId == null
-                ? await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId)
-                : null;
-
-            var diffs = new List<FieldDiffDto>();
-
-            // ===== So sánh các trường cơ bản =====
-            if (role != null)
-            {
-                if (role.Name != proposed.Name)
-                    diffs.Add(new FieldDiffDto { Field = "Name", Original = role.Name, Proposed = proposed.Name });
-
-                if (role.Description != proposed.Description)
-                    diffs.Add(new FieldDiffDto { Field = "Description", Original = role.Description, Proposed = proposed.Description });
-
-                if (role.Code != proposed.Code)
-                    diffs.Add(new FieldDiffDto { Field = "Code", Original = role.Code, Proposed = proposed.Code });
-            }
-            else
-            {
-                // Tạo mới
-                diffs.Add(new FieldDiffDto { Field = "Name", Original = null, Proposed = proposed.Name });
-                diffs.Add(new FieldDiffDto { Field = "Description", Original = null, Proposed = proposed.Description });
-                diffs.Add(new FieldDiffDto { Field = "Code", Original = null, Proposed = proposed.Code });
-            }
-
-            // ===== So sánh claims =====
-            var currentClaims = role != null ? await _roleManager.GetClaimsAsync(role) : new List<Claim>();
-            var proposedClaims = proposed.Claims ?? new List<ClaimDto>();
-
-            var removedClaims = currentClaims
-                .Where(c => !proposedClaims.Any(p => p.Type == c.Type && p.Value == c.Value))
-                .Select(c => new FieldDiffDto
-                {
-                    Field = "Claim",
-                    Original = $"{c.Type}:{c.Value}",
-                    Proposed = null
-                });
-
-            var addedClaims = proposedClaims
-                .Where(p => !currentClaims.Any(c => c.Type == p.Type && c.Value == p.Value))
-                .Select(p => new FieldDiffDto
-                {
-                    Field = "Claim",
-                    Original = null,
-                    Proposed = $"{p.Type}:{p.Value}"
-                });
-
-            diffs.AddRange(removedClaims);
-            diffs.AddRange(addedClaims);
-
-            return JsonSerializer.Serialize(diffs, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-        }
+        //    return JsonSerializer.Serialize(diffs, new JsonSerializerOptions
+        //    {
+        //        WriteIndented = true
+        //    });
+        //}
         #endregion
 
         #region Command
@@ -383,11 +317,11 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 Name = role.Name,
                 Description = role.Description,
-                Claims = claims.Select(c => new ClaimDto
-                {
-                    Type = c.Type,
-                    Value = c.Value
-                }).ToList()
+                //Claims = claims.Select(c => new ClaimDto
+                //{
+                //    Type = c.Type,
+                //    Value = c.Value
+                //}).ToList()
             };
 
             var requestedBy = "system";
@@ -541,6 +475,16 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         public Task<PagedResult<RolePagingDto>> GetRolePagedAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string?> CompareRoleWithRequestAsync(long requestId)
         {
             throw new NotImplementedException();
         }

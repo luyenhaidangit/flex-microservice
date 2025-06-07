@@ -5,6 +5,8 @@ using Flex.AspNetIdentity.Api.Models;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class RoleController : ControllerBase
     {
         private IRoleService _roleService;
