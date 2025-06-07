@@ -1,7 +1,7 @@
 using Serilog;
 using Flex.SeriLog;
 using Flex.AspNetIdentity.Api.Extensions;
-using Flex.AspNetIdentity.Api.Persistence;
+//using Flex.AspNetIdentity.Api.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -19,10 +19,10 @@ try
     var app = builder.Build();
     app.UseInfrastructure();
 
-    await app.MigrateDatabase<IdentityDbContext>(async (context, services) =>
-    {
-        await IdentityDbSeed.InitAsync(services, Log.Logger);
-    });
+    //await app.MigrateDatabase<IdentityDbContext>(async (context, services) =>
+    //{
+    //    await IdentityDbSeed.InitAsync(services, Log.Logger);
+    //});
 
     app.Run();
 }

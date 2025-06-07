@@ -8,7 +8,11 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Role> builder)
         {
-            builder.ToTable("Roles");
+            builder.ToTable("ROLES");
+
+            // Columns
+            builder.Property(r => r.Id).HasColumnName("ID");
+            builder.Property(r => r.Name).HasColumnName("NAME");
         }
     }
 }

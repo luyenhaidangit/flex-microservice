@@ -27,24 +27,94 @@ namespace Flex.AspNetIdentity.Api.Services
             _userManager = userManager;
         }
         #region Query
+        //public async Task<PagedResult<RolePagingDto>> GetRolePagedAsync(GetRolesPagingRequest request)
+        //{
+        //    var keyword = request?.Keyword?.Trim().ToLower();
+        //    int pageIndex = Math.Max(1, request.PageIndex ?? 1);
+        //    int pageSize = Math.Max(1, request.PageSize ?? 10);
+
+        //    // ========== QUERY ==========
+        //    var roleQuery = _roleManager.Roles
+        //        .WhereIf(!string.IsNullOrEmpty(keyword), x => x.Code.ToLower().Contains(keyword) || x.Description.ToLower().Contains(keyword))
+        //        .AsNoTracking();
+        //    var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery()
+        //        .Where(r => r.Status == RequestStatusConstant.Unauthorised.ToString())
+        //        .WhereIf(!string.IsNullOrEmpty(keyword), r => r.Code.ToLower().Contains(keyword) || r.Description.ToLower().Contains(keyword))
+        //        .AsNoTracking();
+
+        //    // ========== PENDING CREATE ==========
+        //    var pendingCreates = proposedBranchQuery
+        //        .Where(r => r.Action == RequestTypeConstant.Create)
+        //        .Select(r => new RolePagingDto
+        //        {
+        //            Id = null,
+        //            Name = r.Name,
+        //            Code = r.Code,
+        //            IsActive = r.IsActive,
+        //            Description = r.Description,
+        //            Status = StatusConstant.Pending.ToString(),
+        //            RequestType = RequestTypeConstant.Create.ToString()
+        //        });
+
+        //    // ========== ROLES ==========
+        //    var rolesWithOverlay = roleQuery
+        //        .GroupJoin(
+        //            proposedBranchQuery,
+        //            role => role.Id,
+        //            req => req.EntityId,
+        //            (role, reqs) => new { role, req = reqs.FirstOrDefault() })
+        //        .Select(x => new RolePagingDto
+        //        {
+        //            Id = x.role.Id,
+        //            Name = x.role.Name,
+        //            Code = x.role.Code,
+        //            IsActive = x.role.IsActive,
+        //            Description = x.role.Description,
+        //            Status = x.req == null ? StatusConstant.Approved.ToString() : StatusConstant.Pending.ToString(),
+        //            RequestType = x.req == null ? null : x.req.Action
+        //        });
+
+        //    // ========== UNION && ORDER ==========
+        //    var combined = rolesWithOverlay.Union(pendingCreates)
+        //        .OrderBy(dto => dto.Status == StatusConstant.Pending.ToString() ? 0 : 1)
+        //        .ThenBy(dto => dto.Id);
+
+        //    // ========== PAGINATION ==========
+        //    var total = await combined.CountAsync();
+        //    var items = await combined
+        //                    .Skip((pageIndex - 1) * pageSize)
+        //                    .Take(pageSize)
+        //                    .ToListAsync();
+
+        //    var resp = PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
+
+        //    return resp;
+        //}
+
+
         public async Task<PagedResult<RolePagingDto>> GetRolePagedAsync(GetRolesPagingRequest request)
         {
-            var keyword = request?.Keyword?.Trim().ToLower();
+            var keyword = request?.Keyword?.Trim();
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
-            // ========== QUERY ==========
+            // ===== TRUY VẤN CHÍNH =====
             var roleQuery = _roleManager.Roles
-                .WhereIf(!string.IsNullOrEmpty(keyword), x => x.Code.ToLower().Contains(keyword) || x.Description.ToLower().Contains(keyword))
-                .AsNoTracking();
-            var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Status == RequestStatusConstant.Unauthorised)
-                .WhereIf(!string.IsNullOrEmpty(keyword), r => r.Code.ToLower().Contains(keyword) || r.Description.ToLower().Contains(keyword))
+                .WhereIf(!string.IsNullOrEmpty(keyword),
+                    x => EF.Functions.Like(x.Code, $"%{keyword}%") ||
+                         EF.Functions.Like(x.Description, $"%{keyword}%"))
                 .AsNoTracking();
 
-            // ========== PENDING CREATE ==========
-            var pendingCreates = proposedBranchQuery
-                .Where(r => r.RequestType == RequestTypeConstant.Create)
+            var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.Status == RequestStatusConstant.Unauthorised.ToString())
+                .WhereIf(!string.IsNullOrEmpty(keyword),
+                    r => EF.Functions.Like(r.Code, $"%{keyword}%") ||
+                         EF.Functions.Like(r.Description, $"%{keyword}%"))
+                .AsNoTracking();
+
+            // ===== TẠO DANH SÁCH PENDING CREATE =====
+            var pendingCreates = await proposedBranchQuery
+                .Where(r => r.Action == RequestTypeConstant.Create)
                 .Select(r => new RolePagingDto
                 {
                     Id = null,
@@ -52,14 +122,13 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = r.Code,
                     IsActive = r.IsActive,
                     Description = r.Description,
-                    Status = StatusConstant.Pending,
-                    RequestType = RequestTypeConstant.Create
-                });
+                    Status = StatusConstant.Pending.ToString(),
+                    RequestType = RequestTypeConstant.Create.ToString()
+                }).ToListAsync();
 
-            // ========== ROLES ==========
-            var rolesWithOverlay = roleQuery
-                .GroupJoin(
-                    proposedBranchQuery,
+            // ===== GHÉP ROLE VỚI REQUEST (PENDING UPDATE/DELETE) =====
+            var rolesWithOverlay = await roleQuery
+                .GroupJoin(proposedBranchQuery,
                     role => role.Id,
                     req => req.EntityId,
                     (role, reqs) => new { role, req = reqs.FirstOrDefault() })
@@ -70,26 +139,26 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = x.role.Code,
                     IsActive = x.role.IsActive,
                     Description = x.role.Description,
-                    Status = x.req == null ? StatusConstant.Approved : StatusConstant.Pending,
-                    RequestType = x.req == null ? null : x.req.RequestType
-                });
+                    Status = x.req == null ? StatusConstant.Approved.ToString() : StatusConstant.Pending.ToString(),
+                    RequestType = x.req.Action
+                }).ToListAsync();
 
-            // ========== UNION && ORDER ==========
-            var combined = rolesWithOverlay.Union(pendingCreates)
-                .OrderBy(dto => dto.Status == StatusConstant.Pending ? 0 : 1)
-                .ThenBy(dto => dto.Id);
+            // ===== GHÉP DANH SÁCH CUỐI & SẮP XẾP =====
+            var combined = rolesWithOverlay.Concat(pendingCreates)
+                .OrderBy(dto => dto.Status == StatusConstant.Pending.ToString() ? 0 : 1)
+                .ThenBy(dto => dto.Id ?? long.MinValue) // nếu null thì đẩy lên đầu
+                .ToList();
 
-            // ========== PAGINATION ==========
-            var total = await combined.CountAsync();
-            var items = await combined
-                            .Skip((pageIndex - 1) * pageSize)
-                            .Take(pageSize)
-                            .ToListAsync();
+            // ===== PHÂN TRANG =====
+            var total = combined.Count;
+            var items = combined
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
-            var resp = PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
-
-            return resp;
+            return PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
         }
+
         public async Task<RoleDto?> GetRoleByIdAsync(long id)
         {
             var role = await _roleManager.Roles
@@ -110,7 +179,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 Description = role.Description,
                 HasPendingRequest = pendingRequest != null,
                 PendingRequestId = pendingRequest?.Id,
-                RequestType = pendingRequest?.RequestType,
+                RequestType = pendingRequest?.Action,
                 RequestedBy = pendingRequest?.CreatedBy,
                 RequestedAt = pendingRequest?.CreatedDate,
             };

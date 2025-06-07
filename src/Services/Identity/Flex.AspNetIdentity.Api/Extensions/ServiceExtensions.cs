@@ -9,6 +9,11 @@ using Flex.System.Api.Repositories;
 using Flex.System.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.AspNetIdentity.Api.Services;
+using Flex.AspNetIdentity.Api.Repositories.Interfaces;
+using Flex.AspNetIdentity.Api.Repositories;
+using Flex.Contracts.Domains.Interfaces;
+using Flex.Infrastructure.Common.Repositories;
+using Flex.Infrastructure.Common;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -41,7 +46,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddInfrastructureServices();
 
             // Database
-            services.ConfigureServiceDbContext<IdentityDbContext>(configuration);
+            services.ConfigureServiceDbContext<IdentityDbContext>(configuration, useWallet: true);
 
             // Identity
             services.ConfigureAspNetIdentity();
@@ -86,7 +91,15 @@ namespace Flex.AspNetIdentity.Api.Extensions
         #region Infrastructure
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
-            //services.AddScoped<IBranchService, BranchClientService>();
+            // Base
+            services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>));
+            services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+
+            // Services
+            services.AddScoped<IRoleService, RoleService>();
+
+            // Repositories
+            services.AddScoped<IRoleRequestRepository, RoleRequestRepository>();
 
             return services;
         }

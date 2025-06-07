@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Flex.AspNetIdentity.Api.Entities
 {
+    [Table("ROLES")]
     public class Role : IdentityRole<long>
     {
         [Required]
