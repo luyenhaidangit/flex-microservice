@@ -16,6 +16,10 @@ namespace Flex.AspNetIdentity.Api.Entities
         [Column("IS_ACTIVE")]
         public bool? IsActive { get; set; } = true;
 
+        public Role()
+        {
+        }
+
         public Role(string roleName, string code)
         {
             Name = roleName;
