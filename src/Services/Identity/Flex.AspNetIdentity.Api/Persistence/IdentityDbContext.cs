@@ -18,6 +18,12 @@ namespace Flex.AspNetIdentity.Api.Persistence
             modelBuilder.ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
         }
 
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.DefaultTypeMapping<string>(
+                b => b.IsUnicode(false));
+        }
+
         #region DbSet
         public DbSet<Role> Roles { get; set; }
         public DbSet<RoleClaim> RoleClaims { get; set; }
