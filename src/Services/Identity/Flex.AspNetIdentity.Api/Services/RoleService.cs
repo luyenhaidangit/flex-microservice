@@ -28,10 +28,8 @@ namespace Flex.AspNetIdentity.Api.Services
         #region Query
 
         /// <summary>
-        /// Trả về danh sách phân trang Role (bao gồm các Role đã duyệt và các yêu cầu tạo/cập nhật/xoá đang chờ duyệt).
+        /// Trả về danh sách phân trang, gồm cả Entity đã duyệt và yêu cầu đang chờ.
         /// </summary>
-        /// <param name="request">Thông tin phân trang và từ khoá tìm kiếm.</param>
-        /// <returns>Danh sách phân trang RolePagingDto.</returns>
         public async Task<PagedResult<RolePagingDto>> GetRolePagedAsync(GetRolesPagingRequest request)
         {
             // ===== Xử lý tham số phân trang & tìm kiếm =====
