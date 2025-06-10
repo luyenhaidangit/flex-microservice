@@ -8,6 +8,7 @@ using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.Infrastructure.EF;
+using Flex.Shared.Constants.Common;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -62,8 +63,8 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = r.Code,
                     IsActive = r.IsActive,
                     Description = r.Description,
-                    Status = "PENDING",
-                    RequestType = "CREATE"
+                    Status = StatusConstant.Pending,
+                    RequestType = RequestTypeConstant.Create
                 });
 
             // ===== Gộp ,format data và phân trang =====
@@ -79,12 +80,12 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = x.role.Code,
                     IsActive = x.role.IsActive,
                     Description = x.role.Description,
-                    Status = (x.req == null ? "APPROVED" : "PENDING"), 
-                    RequestType = (x.req == null ? null : x.req.Action + "")
+                    Status = (x.req == null ? StatusConstant.Approved : StatusConstant.Pending), 
+                    RequestType = (x.req == null ? null : x.req.Action)
                 });
 
             var combinedQuery = rolesWithOverlayQuery.Union(pendingCreatesQuery)
-                .OrderBy(dto => dto.Status == "PENDING" ? 0 : 1)
+                .OrderBy(dto => dto.Status == StatusConstant.Pending ? 0 : 1)
                 .ThenBy(dto => dto.Id);
 
             var total = await combinedQuery.CountAsync();
