@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Flex.AspNetIdentity.Api.Entities
 {
+    [Table("USERS")]
     public class User : IdentityUser<long>
     {
         // UserName and PasswordHash are inherited from IdentityUser
