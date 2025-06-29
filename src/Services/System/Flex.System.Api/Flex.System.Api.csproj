@@ -27,18 +27,4 @@
 	<Protobuf Include="Protos\branch.proto" GrpcServices="Server" />
   </ItemGroup>
 
-	<PropertyGroup>
-	<PostBuildEvent>
-		if "%SIGNTOOL%"=="" set "SIGNTOOL=C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
-		if exist "%SIGNTOOL%" goto SIGN
-		echo "Must set environment variable SIGNTOOL to full path for signtool.exe code signing utility"
-		echo Location is of the form "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe"
-		echo %SIGNTOOL%
-		exit -1
-		:SIGN
-		echo "%SIGNTOOL%" sign /f $(SolutionDir)\FSSFLEX.pfx /p FSSCFLEX /fd SHA256 /a $(SolutionDir)\HOSTService\bin\Debug\net8.0\HOSTService.exe
-		"%SIGNTOOL%" sign /f $(SolutionDir)\SignCert.pfx /p FSSCFLEX /fd SHA256 /a C:\Users\Admin\Desktop\Flex\flex-microservice\src\Services\System\Flex.System.Api\bin\Debug\net9.0\Flex.System.Api.exe
-	</PostBuildEvent>
-  </PropertyGroup>
-
 </Project>

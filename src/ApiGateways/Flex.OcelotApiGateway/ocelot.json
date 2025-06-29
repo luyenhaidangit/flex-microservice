@@ -1,21 +1,8 @@
 {
   "Routes": [
     {
-      "Key": "aspnet-identity-service",
+      "RouteName": "AuthServie",
       "DownstreamPathTemplate": "/api/auth/{everything}",
-      "UpstreamPathTemplate": "/api/aspnet-identity/auth/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7001
-        }
-      ]
-    },
-    {
-      "RouteName": "UserService_Route",
-      "DownstreamPathTemplate": "/api/user/{everything}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
@@ -23,77 +10,141 @@
           "Port": 7001
         }
       ],
-      "UpstreamPathTemplate": "/api/user/{everything}",
+      "UpstreamPathTemplate": "/api/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
     {
-      "RouteName": "IdentityService_Route",
-      "DownstreamPathTemplate": "/api/{everything}",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7001
-        }
-      ],
-      "UpstreamPathTemplate": "/api/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ]
-    },
-    {
-      "Key": "investor-service",
-      "DownstreamPathTemplate": "/api/investor/{everything}",
-      "UpstreamPathTemplate": "/api/investor/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7003
-        }
-      ]
-    },
-    {
-      "Key": "config-system-service",
+      "RouteName": "ConfigService",
       "DownstreamPathTemplate": "/api/config/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ],
       "UpstreamPathTemplate": "/api/config/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7004
-        }
-      ]
-    },
-    {
-      "Key": "department-system-service",
-      "DownstreamPathTemplate": "/api/department/{everything}",
-      "UpstreamPathTemplate": "/api/department/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7004
-        }
-      ]
-    },
-    {
-      "Key": "branch-system-service",
-      "DownstreamPathTemplate": "/api/branch/{everything}",
-      "UpstreamPathTemplate": "/api/branch/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7004
-        }
-      ]
+      "UpstreamHttpMethod": [ "GET", "POST" ]
     }
+    //{
+    //  "RouteName": "ConfigService",
+    //  "DownstreamPathTemplate": "/api/config/{everything}",
+    //  "UpstreamPathTemplate": "/api/config/{everything}",
+    //  "UpstreamHttpMethod": [ "GET", "POST" ],
+    //  "DownstreamScheme": "https",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 7004
+    //    }
+    //  ]
+    //}
+    //{
+    //  "RouteName": "SystemService",
+    //  "DownstreamPathTemplate": "/api/system/{everything}",
+    //  "DownstreamScheme": "https",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 7004
+    //    }
+    //  ],
+    //  "UpstreamPathTemplate": "/api/system/{everything}",
+    //  "UpstreamHttpMethod": [ "GET", "POST" ]
+    //}
+    //{
+    //  "Key": "aspnet-identity-service",
+    //  "DownstreamPathTemplate": "/api/auth/{everything}",
+    //  "UpstreamPathTemplate": "/api/aspnet-identity/auth/{everything}",
+    //  "UpstreamHttpMethod": [ "GET", "POST" ],
+    //  "DownstreamScheme": "https",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 7001
+    //    }
+    //  ]
+    //},
+    //{
+    //  "RouteName": "UserService_Route",
+    //  "DownstreamPathTemplate": "/api/user/{everything}",
+    //  "DownstreamScheme": "https",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 7001
+    //    }
+    //  ],
+    //  "UpstreamPathTemplate": "/api/user/{everything}",
+    //  "UpstreamHttpMethod": [ "GET", "POST" ]
+    //},
+    //{
+    //  "RouteName": "IdentityService_Route",
+    //  "DownstreamPathTemplate": "/api/{everything}",
+    //  "DownstreamScheme": "https",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 7001
+    //    }
+    //  ],
+    //  "UpstreamPathTemplate": "/api/{everything}",
+    //  "UpstreamHttpMethod": [ "GET", "POST" ]
+    //},
+    //{
+    //  "Key": "investor-service",
+    //  "DownstreamPathTemplate": "/api/investor/{everything}",
+    //  "UpstreamPathTemplate": "/api/investor/{everything}",
+    //  "UpstreamHttpMethod": [ "GET", "POST" ],
+    //  "DownstreamScheme": "https",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 7003
+    //    }
+    //  ]
+    //},
+    //{
+    //  "Key": "config-system-service",
+    //  "DownstreamPathTemplate": "/api/config/{everything}",
+    //  "UpstreamPathTemplate": "/api/config/{everything}",
+    //  "UpstreamHttpMethod": [ "GET", "POST" ],
+    //  "DownstreamScheme": "https",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 7004
+    //    }
+    //  ]
+    //}
+    //{
+    //  "Key": "department-system-service",
+    //  "DownstreamPathTemplate": "/api/department/{everything}",
+    //  "UpstreamPathTemplate": "/api/department/{everything}",
+    //  "UpstreamHttpMethod": [ "GET", "POST" ],
+    //  "DownstreamScheme": "https",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 7004
+    //    }
+    //  ]
+    //},
+    //{
+    //  "Key": "branch-system-service",
+    //  "DownstreamPathTemplate": "/api/branch/{everything}",
+    //  "UpstreamPathTemplate": "/api/branch/{everything}",
+    //  "UpstreamHttpMethod": [ "GET", "POST" ],
+    //  "DownstreamScheme": "https",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "localhost",
+    //      "Port": 7004
+    //    }
+    //  ]
+    //}
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "http://localhost:7000",
     "RequestIdKey": "Oc-Request-ID",
     "RateLimitOptions": {
       "EnableRateLimiting": true,
