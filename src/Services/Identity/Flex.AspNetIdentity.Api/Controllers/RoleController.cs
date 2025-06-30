@@ -5,7 +5,7 @@ using Flex.AspNetIdentity.Api.Models;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/roles")]
     [ApiController]
     public class RoleController : ControllerBase
     {
@@ -15,7 +15,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             _roleService = roleService;
         }
 
-        [HttpGet("get-branches-paging")]
+        [HttpGet]
         public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetRolesPagingRequest request)
         {
             var result = await _roleService.GetRolePagedAsync(request);
