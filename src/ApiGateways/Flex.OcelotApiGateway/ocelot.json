@@ -25,6 +25,19 @@
       ],
       "UpstreamPathTemplate": "/api/config/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST" ]
+    },
+    {
+      "RouteName": "BranchService",
+      "DownstreamPathTemplate": "/api/branch/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ],
+      "UpstreamPathTemplate": "/api/branch/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
     }
     //{
     //  "RouteName": "ConfigService",
