@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.AspNetIdentity.Api.Models;
+using System.Collections.Generic;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
@@ -69,6 +70,27 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> CancelRoleRequest(long requestId)
         {
             await _roleService.CancelRoleRequestAsync(requestId);
+            return Ok(Result.Success());
+        }
+
+        [HttpGet("{roleId}/claims")]
+        public async Task<IActionResult> GetRoleClaims(long roleId)
+        {
+            var claims = await _roleService.GetClaimsAsync(roleId);
+            return Ok(Result.Success(claims));
+        }
+
+        [HttpPost("{roleId}/claims")]
+        public async Task<IActionResult> AddRoleClaims(long roleId, [FromBody] IEnumerable<ClaimDto> claims)
+        {
+            await _roleService.AddClaimsAsync(roleId, claims);
+            return Ok(Result.Success());
+        }
+
+        [HttpDelete("{roleId}/claims")]
+        public async Task<IActionResult> RemoveRoleClaim(long roleId, [FromBody] ClaimDto claim)
+        {
+            await _roleService.RemoveClaimAsync(roleId, claim);
             return Ok(Result.Success());
         }
     }
