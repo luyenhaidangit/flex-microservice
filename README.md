@@ -125,7 +125,7 @@ To deploy the Flex Microservice to a production environment:
 
 ## Contributing
 
-We welcome contributions from the community! Please read our [Contributing Guidelines](link/to/contributing.md) to get started.
+We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) to get started.
 
 ### Ways to Contribute
 
