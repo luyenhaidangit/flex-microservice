@@ -475,9 +475,15 @@ namespace Flex.AspNetIdentity.Api.Services
             await _roleRequestRepository.UpdateAsync(request);
         }
         #endregion
-        public Task AddClaimsAsync(long roleId, IEnumerable<ClaimDto> claims)
+        public async Task AddClaimsAsync(long roleId, IEnumerable<ClaimDto> claims)
         {
-            throw new NotImplementedException();
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId)
+                       ?? throw new Exception("Role not found");
+
+            foreach (var claim in claims)
+            {
+                await _roleManager.AddClaimAsync(role, new System.Security.Claims.Claim(claim.Type, claim.Value));
+            }
         }
         public Task<long> CreateAsync(CreateRoleDto dto)
         {
@@ -487,13 +493,20 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             throw new NotImplementedException();
         }
-        public Task<IEnumerable<ClaimDto>> GetClaimsAsync(long roleId)
+        public async Task<IEnumerable<ClaimDto>> GetClaimsAsync(long roleId)
         {
-            throw new NotImplementedException();
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId)
+                       ?? throw new Exception("Role not found");
+
+            var claims = await _roleManager.GetClaimsAsync(role);
+            return claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value });
         }
-        public Task RemoveClaimAsync(long roleId, ClaimDto claim)
+
+        public async Task RemoveClaimAsync(long roleId, ClaimDto claim)
         {
-            throw new NotImplementedException();
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId)
+                       ?? throw new Exception("Role not found");
+            await _roleManager.RemoveClaimAsync(role, new System.Security.Claims.Claim(claim.Type, claim.Value));
         }
         public Task UpdateAsync(long roleId, UpdateRoleDto dto)
         {
