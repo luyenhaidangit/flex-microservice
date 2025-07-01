@@ -136,7 +136,31 @@ namespace Flex.AspNetIdentity.Api.Services
 
         public async Task<RoleDto?> GetRoleByCodeAsync(string code)
         {
-            // 1. Tìm Role theo code
+            // 1. Ưu tiên tìm request đang chờ theo code
+            var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.Code == code && r.Status == RequestStatusConstant.Unauthorised)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (pendingRequest != null)
+            {
+                // Nếu là request tạo mới thì chưa có entityId
+                return new RoleDto
+                {
+                    Id = pendingRequest.EntityId,
+                    Name = pendingRequest.Name,
+                    Code = pendingRequest.Code,
+                    IsActive = pendingRequest.IsActive,
+                    Description = pendingRequest.Description,
+                    HasPendingRequest = true,
+                    PendingRequestId = pendingRequest.Id,
+                    RequestType = pendingRequest.Action,
+                    RequestedBy = pendingRequest.CreatedBy,
+                    RequestedAt = pendingRequest.CreatedDate,
+                };
+            }
+
+            // 2. Nếu không có request, tìm ở bảng chính
             var role = await _roleManager.Roles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Code == code);
@@ -144,13 +168,6 @@ namespace Flex.AspNetIdentity.Api.Services
             if (role == null)
                 return null;
 
-            // 2. Tìm yêu cầu đang chờ liên quan đến Role này (nếu có)
-            var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.EntityId == role.Id && r.Status == RequestStatusConstant.Unauthorised)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
-            // 3. Trả về thông tin Role cùng trạng thái yêu cầu (nếu có)
             return new RoleDto
             {
                 Id = role.Id,
@@ -158,12 +175,11 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 IsActive = role.IsActive,
                 Description = role.Description,
-
-                HasPendingRequest = pendingRequest != null,
-                PendingRequestId = pendingRequest?.Id,
-                RequestType = pendingRequest?.Action,
-                RequestedBy = pendingRequest?.CreatedBy,
-                RequestedAt = pendingRequest?.CreatedDate,
+                HasPendingRequest = false,
+                PendingRequestId = null,
+                RequestType = null,
+                RequestedBy = null,
+                RequestedAt = null,
             };
         }
 
