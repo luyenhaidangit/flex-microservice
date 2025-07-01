@@ -43,3 +43,12 @@ dotnet build
 dotnet test
 ```
 
+## External Repositories
+
+- **Frontend**: Source code for the UI resides in
+  [luyenhaidangit/flex-microfrontend](https://github.com/luyenhaidangit/flex-microfrontend).
+  Use this repository to retrieve frontend components and integration details.
+- **Database**: Database schemas and scripts are available in the repositories
+  under [luyenhaidangit](https://github.com/luyenhaidangit?tab=repositories).
+  Refer to those projects when setting up or updating database resources.
+
