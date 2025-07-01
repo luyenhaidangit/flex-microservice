@@ -24,10 +24,17 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(result));
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:long}")]
         public async Task<IActionResult> GetRoleById(long id)
         {
             var result = await _roleService.GetRoleByIdAsync(id);
+            return Ok(Result.Success(result));
+        }
+
+        [HttpGet("{code}")]
+        public async Task<IActionResult> GetRoleByCode(string code)
+        {
+            var result = await _roleService.GetRoleByCodeAsync(code);
             return Ok(Result.Success(result));
         }
 

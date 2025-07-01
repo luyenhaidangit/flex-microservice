@@ -13,6 +13,13 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
             // Columns
             builder.Property(r => r.Id).HasColumnName("ID");
             builder.Property(r => r.Name).HasColumnName("NAME");
+            builder.Property(r => r.Code).HasColumnName("CODE");
+            builder.Property(r => r.Description).HasColumnName("DESCRIPTION");
+            builder.Property(r => r.IsActive).HasColumnName("IS_ACTIVE");
+
+            // Ignore NormalizedName and ConcurrencyStamp if not present in DB
+            builder.Ignore(r => r.NormalizedName);
+            builder.Ignore(r => r.ConcurrencyStamp);
         }
     }
 }

@@ -134,6 +134,39 @@ namespace Flex.AspNetIdentity.Api.Services
             };
         }
 
+        public async Task<RoleDto?> GetRoleByCodeAsync(string code)
+        {
+            // 1. Tìm Role theo code
+            var role = await _roleManager.Roles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Code == code);
+
+            if (role == null)
+                return null;
+
+            // 2. Tìm yêu cầu đang chờ liên quan đến Role này (nếu có)
+            var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.EntityId == role.Id && r.Status == RequestStatusConstant.Unauthorised)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            // 3. Trả về thông tin Role cùng trạng thái yêu cầu (nếu có)
+            return new RoleDto
+            {
+                Id = role.Id,
+                Name = role.Name,
+                Code = role.Code,
+                IsActive = role.IsActive,
+                Description = role.Description,
+
+                HasPendingRequest = pendingRequest != null,
+                PendingRequestId = pendingRequest?.Id,
+                RequestType = pendingRequest?.Action,
+                RequestedBy = pendingRequest?.CreatedBy,
+                RequestedAt = pendingRequest?.CreatedDate,
+            };
+        }
+
         public async Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId)
         {
             var requests = await _roleRequestRepository

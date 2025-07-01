@@ -15,7 +15,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
