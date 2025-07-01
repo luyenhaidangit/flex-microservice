@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
@@ -482,7 +483,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
             foreach (var claim in claims)
             {
-                await _roleManager.AddClaimAsync(role, new System.Security.Claims.Claim(claim.Type, claim.Value));
+                await _roleManager.AddClaimAsync(role, new Claim(claim.Type, claim.Value));
             }
         }
         public Task<long> CreateAsync(CreateRoleDto dto)
@@ -506,7 +507,7 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId)
                        ?? throw new Exception("Role not found");
-            await _roleManager.RemoveClaimAsync(role, new System.Security.Claims.Claim(claim.Type, claim.Value));
+            await _roleManager.RemoveClaimAsync(role, new Claim(claim.Type, claim.Value));
         }
         public Task UpdateAsync(long roleId, UpdateRoleDto dto)
         {
