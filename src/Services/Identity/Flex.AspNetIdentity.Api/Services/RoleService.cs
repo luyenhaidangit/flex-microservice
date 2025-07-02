@@ -65,7 +65,11 @@ namespace Flex.AspNetIdentity.Api.Services
                     IsActive = r.IsActive,
                     Description = r.Description,
                     Status = StatusConstant.Pending,
-                    RequestType = RequestTypeConstant.Create
+                    RequestType = RequestTypeConstant.Create,
+                    RequestedBy = r.CreatedBy,
+                    RequestedDate = r.CreatedDate,
+                    ApprovedBy = null,
+                    ApprovedDate = null
                 });
 
             // ===== Gộp ,format data và phân trang =====
@@ -81,8 +85,12 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = x.role.Code,
                     IsActive = x.role.IsActive,
                     Description = x.role.Description,
-                    Status = (x.req == null ? StatusConstant.Approved : StatusConstant.Pending), 
-                    RequestType = (x.req == null ? null : x.req.Action)
+                    Status = x.req == null ? StatusConstant.Approved : StatusConstant.Pending,
+                    RequestType = x.req == null ? null : x.req.Action,
+                    RequestedBy = x.req == null ? null : x.req.CreatedBy,
+                    RequestedDate = x.req == null ? null : x.req.CreatedDate,
+                    ApprovedBy = x.req == null && x.role != null ? null : x.req?.CheckerId,
+                    ApprovedDate = x.req == null && x.role != null ? null : x.req?.ApproveDate
                 });
 
             var combinedQuery = rolesWithOverlayQuery.Concat(pendingCreatesQuery)

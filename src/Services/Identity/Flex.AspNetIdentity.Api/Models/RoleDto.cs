@@ -12,5 +12,9 @@
         public string? RequestType { get; set; }
         public string? RequestedBy { get; set; }
         public DateTime? RequestedAt { get; set; }
+
+        // Thông tin trace/audit
+        public string? ApprovedBy { get; set; }
+        public DateTime? ApprovedDate { get; set; }
     }
 }
