@@ -8,5 +8,6 @@
         public const string Cancelled = "CAN"; // Cancelled
         public const string Hold = "HLD"; // Hold (tạm hoãn)
         public const string Expired = "EXP"; // Expired (hết hạn)
+        public const string Draft = "DRF"; // Draft (lưu nháp)
     }
 }

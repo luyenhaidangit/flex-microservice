@@ -297,6 +297,48 @@ namespace Flex.System.Api.Controllers
 
             return Ok(Result.Success());
         }
+
+        [HttpPost("save-draft")]
+        public async Task<IActionResult> SaveDraft([FromBody] BranchRequestDTO request)
+        {
+            // Kiểm tra đã có draft cho branch này chưa
+            var hasDraft = await _headerRepo.FindAll()
+                .Where(header => header.Status == RequestStatusConstant.Draft)
+                .Join(
+                    _dataRepo.FindAll().Where(data => data.Code == request.Code),
+                    header => header.Id,
+                    data => data.RequestId,
+                    (header, data) => header
+                )
+                .AnyAsync();
+            if (hasDraft) return BadRequest(Result.Failure("Branch already has a draft request."));
+
+            // Begin transaction
+            await using var tx = await _headerRepo.BeginTransactionAsync();
+
+            // 1. Insert header (Draft)
+            var header = new BranchRequestHeader
+            {
+                Action = request.RequestType,
+                Status = RequestStatusConstant.Draft,
+                RequestedBy = User?.Identity?.Name ?? "anonymous",
+                RequestedDate = DateTime.UtcNow
+            };
+            await _headerRepo.CreateAsync(header);
+
+            // 2. Insert request data
+            var data = new BranchRequestData
+            {
+                RequestId = header.Id,
+                Code = request.Code,
+                Name = request.Name,
+                Address = request.Address
+            };
+            await _dataRepo.CreateAsync(data);
+
+            await tx.CommitAsync();
+            return Ok(Result.Success());
+        }
         #endregion
     }
 }
