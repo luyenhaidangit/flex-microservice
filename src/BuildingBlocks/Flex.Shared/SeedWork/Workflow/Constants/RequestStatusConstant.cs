@@ -7,5 +7,6 @@
         public const string Rejected = "REJ"; // Rejected
         public const string Cancelled = "CAN"; // Cancelled
         public const string Hold = "HLD"; // Hold (tạm hoãn)
+        public const string Expired = "EXP"; // Expired (hết hạn)
     }
 }

@@ -70,5 +70,16 @@ namespace Flex.Shared.SeedWork.Workflow
             ApproveDate = DateTime.UtcNow;
             Comments = "Cancelled by maker.";
         }
+
+        public void Expire()
+        {
+            if (Status != RequestStatusConstant.Unauthorised)
+                throw new InvalidOperationException("Only UNA requests can be expired.");
+
+            Status = RequestStatusConstant.Expired;
+            CheckerId = null;
+            ApproveDate = DateTime.UtcNow;
+            Comments = "Expired by system.";
+        }
     }
 }
