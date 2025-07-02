@@ -42,5 +42,11 @@ namespace Flex.AspNetIdentity.Api.Entities.Views
 
         [Column("UPDATED_DATE")]
         public DateTime? UpdatedDate { get; set; }
+
+        [Column("CHECKER_ID")]
+        public string? CheckerId { get; set; }
+
+        [Column("APPROVE_DATE")]
+        public DateTime? ApproveDate { get; set; }
     }
 }

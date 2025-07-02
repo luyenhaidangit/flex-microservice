@@ -89,8 +89,8 @@ namespace Flex.AspNetIdentity.Api.Services
                     RequestType = x.req == null ? null : x.req.Action,
                     RequestedBy = x.req == null ? null : x.req.CreatedBy,
                     RequestedDate = x.req == null ? null : x.req.CreatedDate,
-                    ApprovedBy = x.req == null && x.role != null ? null : x.req?.CheckerId,
-                    ApprovedDate = x.req == null && x.role != null ? null : x.req?.ApproveDate
+                    ApprovedBy = x.req != null && x.role != null ? x.req.CheckerId : null,
+                    ApprovedDate = x.req != null && x.role != null ? x.req.ApproveDate : (DateTime?)null,
                 });
 
             var combinedQuery = rolesWithOverlayQuery.Concat(pendingCreatesQuery)
