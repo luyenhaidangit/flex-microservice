@@ -53,3 +53,4 @@ flowchart TD
 
 - CODE: Nên tự upper, không có dấu cách
 - Lưu nháp thường không hỏi confirm, hoặc autosave luôn.
+- Nháp - Edit - Save nháp - Submit for Approval - xóa nháp
