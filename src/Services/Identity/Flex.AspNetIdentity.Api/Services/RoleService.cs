@@ -132,6 +132,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     RequestType = pendingRequest.Action,
                     RequestedBy = pendingRequest.CreatedBy,
                     RequestedAt = pendingRequest.CreatedDate,
+                    Status = pendingRequest.Status,
                 };
             }
 
@@ -155,6 +156,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 RequestType = pendingRequest?.Action,
                 RequestedBy = pendingRequest?.CreatedBy,
                 RequestedAt = pendingRequest?.CreatedDate,
+                Status = pendingRequest?.Status ?? StatusConstant.Approved,
             };
         }
 
@@ -180,6 +182,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     RequestType = pendingRequest.Action,
                     RequestedBy = pendingRequest.CreatedBy,
                     RequestedAt = pendingRequest.CreatedDate,
+                    Status = pendingRequest.Status,
                 };
             }
 
@@ -209,6 +212,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 RequestType = relatedPendingRequest?.Action,
                 RequestedBy = relatedPendingRequest?.CreatedBy,
                 RequestedAt = relatedPendingRequest?.CreatedDate,
+                Status = relatedPendingRequest?.Status ?? StatusConstant.Approved,
             };
         }
 

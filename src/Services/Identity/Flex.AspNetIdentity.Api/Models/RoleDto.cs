@@ -16,5 +16,6 @@
         // Thông tin trace/audit
         public string? ApprovedBy { get; set; }
         public DateTime? ApprovedDate { get; set; }
+        public string? Status { get; set; }
     }
 }
