@@ -319,6 +319,9 @@ namespace Flex.AspNetIdentity.Api.Services
         #region Command
         public async Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto)
         {
+            // Log nhận giá trị status và description để debug
+            _logger.LogInformation($"[CreateAddRoleRequestAsync] dto.Status: {dto.Status}, dto.Description: {dto.Description}");
+
             // Serialize đề xuất
             var requestedJson = JsonSerializer.Serialize(dto);
 

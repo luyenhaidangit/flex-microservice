@@ -50,3 +50,5 @@ flowchart TD
     C -- No  --> E[Rejected → Quay lại Maker]
     E -->|Chỉnh sửa lại| A
 ```
+
+- CODE: Nên tự upper, không có dấu cách
