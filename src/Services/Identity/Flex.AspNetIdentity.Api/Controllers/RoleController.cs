@@ -83,7 +83,8 @@ namespace Flex.AspNetIdentity.Api.Controllers
         [HttpPost("requests/{requestId}/cancel")]
         public async Task<IActionResult> CancelRoleRequest(long requestId)
         {
-            await _roleService.CancelRoleRequestAsync(requestId);
+            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
+            await _roleService.CancelRoleRequestAsync(requestId, username);
             return Ok(Result.Success());
         }
 
@@ -105,6 +106,18 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> RemoveRoleClaim(long roleId, [FromBody] ClaimDto claim)
         {
             await _roleService.RemoveClaimAsync(roleId, claim);
+            return Ok(Result.Success());
+        }
+
+        [HttpPost("{code}/draft/cancel")]
+        public async Task<IActionResult> CancelDraftByCode(string code)
+        {
+            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
+            // Tìm bản nháp CREATE theo code
+            var pendingRequest = await _roleService.GetDraftCreateRequestByCodeAsync(code, username);
+            if (pendingRequest == null)
+                return NotFound(Result.Failure(message: "Draft create request not found for this code or you are not the creator."));
+            await _roleService.CancelRoleRequestAsync(pendingRequest.Id, username);
             return Ok(Result.Success());
         }
     }

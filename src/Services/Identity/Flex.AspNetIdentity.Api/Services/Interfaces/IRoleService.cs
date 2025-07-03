@@ -22,7 +22,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         // Approve
         Task ApproveRoleRequestAsync(long requestId, string? comment = null);
         Task RejectRoleRequestAsync(long requestId, string reason);
-        Task CancelRoleRequestAsync(long requestId); // Maker huỷ trước khi duyệt
+        Task CancelRoleRequestAsync(long requestId, string currentUser); // Maker huỷ trước khi duyệt
 
         // ===== Lịch sử duyệt / audit =====
         //Task<IEnumerable<ApprovalLogDto>> GetRoleRequestApprovalLogAsync(long requestId);
@@ -31,5 +31,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<IEnumerable<ClaimDto>> GetClaimsAsync(long roleId);
         Task AddClaimsAsync(long roleId, IEnumerable<ClaimDto> claims);
         Task RemoveClaimAsync(long roleId, ClaimDto claim);
+
+        Task<RoleRequestDto?> GetDraftCreateRequestByCodeAsync(string code, string currentUser);
     }
 }

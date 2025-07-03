@@ -504,22 +504,19 @@ namespace Flex.AspNetIdentity.Api.Services
 
             await _roleRequestRepository.UpdateAsync(request);
         }
-        public async Task CancelRoleRequestAsync(long requestId)
+        public async Task CancelRoleRequestAsync(long requestId, string currentUser)
         {
             var request = await _roleRequestRepository
                 .FindAll()
-                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft);
 
             if (request == null)
-                throw new Exception("Pending request not found or already processed.");
+                throw new Exception("Pending draft request not found or already processed.");
 
-            var currentUser = "system";
-
-            if (request.CheckerId != currentUser)
-                throw new Exception("You can only cancel your own request.");
+            if (request.MakerId != currentUser)
+                throw new Exception("You can only cancel your own draft request.");
 
             request.Status = RequestStatusConstant.Cancelled;
-            request.MakerId = currentUser;
             request.ApproveDate = DateTime.UtcNow;
 
             await _roleRequestRepository.UpdateAsync(request);
@@ -576,6 +573,23 @@ namespace Flex.AspNetIdentity.Api.Services
         public Task<string?> CompareRoleWithRequestAsync(long requestId)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<RoleRequestDto?> GetDraftCreateRequestByCodeAsync(string code, string currentUser)
+        {
+            var draft = await _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.Code == code && r.Status == RequestStatusConstant.Draft && r.Action == RequestTypeConstant.Create && r.CreatedBy == currentUser)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+            if (draft == null) return null;
+            return new RoleRequestDto
+            {
+                RequestId = draft.Id,
+                RoleId = draft.EntityId,
+                RequestType = draft.Action,
+                Status = draft.Status,
+                ProposedData = string.IsNullOrEmpty(draft.RequestedData) ? null : JsonSerializer.Deserialize<RoleDto>(draft.RequestedData)
+            };
         }
     }
 }
