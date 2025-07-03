@@ -94,7 +94,8 @@ namespace Flex.AspNetIdentity.Api.Services
                 });
 
             var combinedQuery = rolesWithOverlayQuery.Concat(pendingCreatesQuery)
-                .OrderBy(dto => dto.Status == StatusConstant.Pending ? 0 : 1)
+                .OrderBy(dto => dto.Status == RequestStatusConstant.Draft ? 0 : 1)
+                .ThenBy(dto => dto.Status == RequestStatusConstant.Unauthorised ? 0 : 1)
                 .ThenBy(dto => dto.Id);
 
             var total = await combinedQuery.CountAsync();
