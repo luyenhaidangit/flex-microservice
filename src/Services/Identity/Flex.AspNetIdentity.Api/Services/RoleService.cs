@@ -328,7 +328,9 @@ namespace Flex.AspNetIdentity.Api.Services
             var request = new RoleRequest
             {
                 Action = RequestTypeConstant.Create,
-                Status = RequestStatusConstant.Unauthorised, // PENDING
+                Status = (dto.Status != null && dto.Status.Equals("Draft", StringComparison.OrdinalIgnoreCase))
+                    ? RequestStatusConstant.Draft
+                    : RequestStatusConstant.Unauthorised, // PENDING
                 EntityId = 0,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
