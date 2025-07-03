@@ -49,6 +49,102 @@ flowchart TD
     C -- Yes --> D[Approved → Ghi nhận master]
     C -- No  --> E[Rejected → Quay lại Maker]
     E -->|Chỉnh sửa lại| A
+
+    ✅ Mình đã xem lại rõ ảnh modal “Chi tiết vai trò (nháp)” của bạn. Đây là **màn read-only xem chi tiết NHÁP**, hiện tại nhìn khá đơn giản và sạch. Sau đây là **phân tích UX/UI + gợi ý nâng cấp cho đúng nghiệp vụ nháp**.
+
+---
+
+## 🚀 Đánh giá hiện trạng
+
+| Yếu tố      | Nhận xét                                                                                                                                                                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ➕ Nội dung  | Đang hiển thị các trường cơ bản: Mã vai trò, Tên vai trò, Mô tả, Trạng thái, Người tạo, Ngày tạo.                                                                            |
+| ➕ Giao diện | Đơn giản, dễ đọc, đủ space                                                                                                                                                   |
+| ➖ Thiếu     | Không nhấn mạnh trạng thái `NHÁP`. Không có action ngay để chỉnh sửa hoặc gửi duyệt từ đây. Không có badge màu trạng thái. Không có note rõ đây chưa phải dữ liệu hoạt động. |
+
+---
+
+## ✅ Đề xuất cải tiến UX/UI
+
+### 🔥 1. Làm nổi bật trạng thái NHÁP
+
+* Ngay tiêu đề:
+
+  ```
+  Chi tiết vai trò
+  ( 📝 NHÁP )
+  ```
+* Hoặc thêm badge xám:
+
+  ```
+  <span class="badge badge-secondary">NHÁP</span>
+  ```
+
+---
+
+### 📝 2. Thêm note nghiệp vụ
+
+* Ở cuối modal, thêm đoạn nhỏ:
+
+  ```
+  Đây là bản nháp, chưa được phê duyệt. Bạn có thể chỉnh sửa, lưu tiếp hoặc gửi duyệt.
+  ```
+
+---
+
+### ✏ 3. Thêm action trực tiếp
+
+* Đặt ở footer modal:
+
+  ```
+  [✏ Sửa nháp] [🚀 Gửi duyệt] [🗑 Xoá nháp] [Đóng]
+  ```
+* Giúp người dùng thao tác nhanh thay vì phải quay ra list.
+
+---
+
+### 🖥 4. Format ngày & người
+
+* Ngày nên full `03/07/2025 14:35`.
+* Người nên thêm tên hiển thị, ví dụ:
+
+  ```
+  Người tạo: admin (Nguyễn Văn A)
+  ```
+
+---
+
+### 🧩 5. Tooltip cho mô tả dài
+
+* Hover trên mô tả, show tooltip full text nếu dài.
+
+---
+
+## ✅ Tổng quan nghiệp vụ
+
+| Khi xem NHÁP, modal này sẽ cho                   |
+| ------------------------------------------------ |
+| ✅ Nhấn mạnh đây là NHÁP (badge / tiêu đề).       |
+| ✅ Biết đây chưa áp dụng chính thức.              |
+| ✅ Có nút: ✏ Sửa / 🚀 Gửi duyệt / 🗑 Xoá.         |
+| ✅ Xem thông tin ai tạo, ngày tạo, trạng thái rõ. |
+
+---
+
+## ✍ Kết luận
+
+👉 Hiện modal của bạn **đủ tối thiểu** nhưng chưa tận dụng UX để “hướng nghiệp vụ” rõ.
+
+* ➔ Cần nhấn mạnh `NHÁP`, giải thích đây chỉ là data chuẩn bị, và cho action nhanh.
+
+---
+
+💪 Nếu muốn, mình có thể:
+✅ Viết luôn template HTML cải tiến cho modal này,
+✅ Hoặc build object JSON hiển thị để bạn bind động cho tất cả trạng thái (`NHÁP`, `CHỜ DUYỆT`, `REJECTED`, `APPROVED`).
+
+Bạn chọn nhé 🚀.
+
 ```
 
 - CODE: Nên tự upper, không có dấu cách
