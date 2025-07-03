@@ -112,7 +112,30 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<RoleDto?> GetRoleByIdAsync(long id)
         {
-            // ===== 1. Tìm Role đã tồn tại =====
+            // 1. Ưu tiên tìm request nháp hoặc chờ duyệt theo EntityId
+            var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.EntityId == id && (r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft))
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (pendingRequest != null)
+            {
+                return new RoleDto
+                {
+                    Id = pendingRequest.EntityId,
+                    Name = pendingRequest.Name,
+                    Code = pendingRequest.Code,
+                    IsActive = pendingRequest.IsActive,
+                    Description = pendingRequest.Description,
+                    HasPendingRequest = true,
+                    PendingRequestId = pendingRequest.Id,
+                    RequestType = pendingRequest.Action,
+                    RequestedBy = pendingRequest.CreatedBy,
+                    RequestedAt = pendingRequest.CreatedDate,
+                };
+            }
+
+            // 2. Nếu không có request, tìm ở bảng chính
             var role = await _roleManager.Roles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -120,13 +143,6 @@ namespace Flex.AspNetIdentity.Api.Services
             if (role == null)
                 return null;
 
-            // ===== 2. Tìm yêu cầu đang chờ liên quan đến Role này (nếu có) =====
-            var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.EntityId == id && r.Status == RequestStatusConstant.Unauthorised)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
-            // ===== 3. Trả về thông tin Role cùng trạng thái yêu cầu (nếu có) =====
             return new RoleDto
             {
                 Id = role.Id,
@@ -134,7 +150,6 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 IsActive = role.IsActive,
                 Description = role.Description,
-
                 HasPendingRequest = pendingRequest != null,
                 PendingRequestId = pendingRequest?.Id,
                 RequestType = pendingRequest?.Action,
@@ -145,15 +160,14 @@ namespace Flex.AspNetIdentity.Api.Services
 
         public async Task<RoleDto?> GetRoleByCodeAsync(string code)
         {
-            // 1. Ưu tiên tìm request đang chờ theo code
+            // 1. Ưu tiên tìm request nháp hoặc chờ duyệt theo code
             var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Code == code && r.Status == RequestStatusConstant.Unauthorised)
+                .Where(r => r.Code == code && (r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft))
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
             if (pendingRequest != null)
             {
-                // Nếu là request tạo mới thì chưa có entityId
                 return new RoleDto
                 {
                     Id = pendingRequest.EntityId,
@@ -177,6 +191,12 @@ namespace Flex.AspNetIdentity.Api.Services
             if (role == null)
                 return null;
 
+            // Kiểm tra xem có pending request nào liên quan không (ví dụ update)
+            var relatedPendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.EntityId == role.Id && (r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft))
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
             return new RoleDto
             {
                 Id = role.Id,
@@ -184,11 +204,11 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 IsActive = role.IsActive,
                 Description = role.Description,
-                HasPendingRequest = false,
-                PendingRequestId = null,
-                RequestType = null,
-                RequestedBy = null,
-                RequestedAt = null,
+                HasPendingRequest = relatedPendingRequest != null,
+                PendingRequestId = relatedPendingRequest?.Id,
+                RequestType = relatedPendingRequest?.Action,
+                RequestedBy = relatedPendingRequest?.CreatedBy,
+                RequestedAt = relatedPendingRequest?.CreatedDate,
             };
         }
 
