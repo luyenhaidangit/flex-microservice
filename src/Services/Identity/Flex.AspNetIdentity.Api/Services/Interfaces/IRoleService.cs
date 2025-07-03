@@ -15,9 +15,9 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<string?> CompareRoleWithRequestAsync(long requestId); 
 
         // Request
-        Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto);
-        Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto);
-        Task<long> CreateDeleteRoleRequestAsync(long roleId);
+        Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto, string requestedBy);
+        Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto, string requestedBy);
+        Task<long> CreateDeleteRoleRequestAsync(long roleId, string requestedBy);
 
         // Approve
         Task ApproveRoleRequestAsync(long requestId, string? comment = null);

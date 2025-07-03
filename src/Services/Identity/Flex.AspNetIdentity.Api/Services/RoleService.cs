@@ -318,54 +318,36 @@ namespace Flex.AspNetIdentity.Api.Services
         #endregion
 
         #region Command
-        public async Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto)
+        public async Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto, string requestedBy)
         {
-            // Log nhận giá trị status và description để debug
             _logger.LogInformation($"[CreateAddRoleRequestAsync] dto.Status: {dto.Status}, dto.Description: {dto.Description}");
-
-            // Serialize đề xuất
             var requestedJson = JsonSerializer.Serialize(dto);
-
-            // Lấy người tạo từ context (hoặc truyền vào)
-            var requestedBy = "system"; // cần ICurrentUser nếu có
-
             var request = new RoleRequest
             {
                 Action = RequestTypeConstant.Create,
                 Status = (dto.Status != null && dto.Status.Equals("Draft", StringComparison.OrdinalIgnoreCase))
                     ? RequestStatusConstant.Draft
-                    : RequestStatusConstant.Unauthorised, // PENDING
+                    : RequestStatusConstant.Unauthorised,
                 EntityId = 0,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
                 RequestedData = requestedJson
             };
-
             await _roleRequestRepository.CreateAsync(request);
             return request.Id;
         }
-        public async Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto)
+        public async Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto, string requestedBy)
         {
-            // Kiểm tra role tồn tại
-            var role = await _roleManager.Roles
-                .FirstOrDefaultAsync(r => r.Id == roleId);
-
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
             if (role == null)
                 throw new Exception("Role not found");
-
-            // (Optional) Kiểm tra nếu đã có yêu cầu PENDING
             var existingRequest = await _roleRequestRepository.FindAll()
                 .AnyAsync(r => r.EntityId == roleId &&
                                r.Status == RequestStatusConstant.Unauthorised &&
                                r.Action == RequestTypeConstant.Update);
-
             if (existingRequest)
                 throw new Exception("A pending update request already exists for this role.");
-
-            // Serialize dữ liệu đề xuất
             var requestedJson = JsonSerializer.Serialize(dto);
-            var requestedBy = "system";
-
             var request = new RoleRequest
             {
                 Action = RequestTypeConstant.Update,
@@ -375,47 +357,28 @@ namespace Flex.AspNetIdentity.Api.Services
                 RequestedDate = DateTime.UtcNow,
                 RequestedData = requestedJson
             };
-
             await _roleRequestRepository.CreateAsync(request);
             return request.Id;
         }
-        public async Task<long> CreateDeleteRoleRequestAsync(long roleId)
+        public async Task<long> CreateDeleteRoleRequestAsync(long roleId, string requestedBy)
         {
-            // Kiểm tra role có tồn tại không
-            var role = await _roleManager.Roles
-                .FirstOrDefaultAsync(r => r.Id == roleId);
-
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
             if (role == null)
                 throw new Exception("Role not found.");
-
-            // (Optional) Kiểm tra nếu đã có yêu cầu xóa đang chờ duyệt
             var hasPendingDelete = await _roleRequestRepository.FindAll()
                 .AnyAsync(r => r.EntityId == roleId &&
                                r.Status == RequestStatusConstant.Unauthorised &&
                                r.Action == RequestTypeConstant.Delete);
-
             if (hasPendingDelete)
                 throw new Exception("A pending delete request already exists for this role.");
-
-            // Lấy claims hiện tại của role
             var claims = await _roleManager.GetClaimsAsync(role);
-
-            // Tạo RoleDto để lưu lại trạng thái hiện tại
             var currentSnapshot = new RoleDto
             {
                 Id = role.Id,
                 Code = role.Code,
                 Name = role.Name,
                 Description = role.Description,
-                //Claims = claims.Select(c => new ClaimDto
-                //{
-                //    Type = c.Type,
-                //    Value = c.Value
-                //}).ToList()
             };
-
-            var requestedBy = "system";
-
             var request = new RoleRequest
             {
                 Action = RequestTypeConstant.Delete,
@@ -425,7 +388,6 @@ namespace Flex.AspNetIdentity.Api.Services
                 RequestedDate = DateTime.UtcNow,
                 RequestedData = JsonSerializer.Serialize(currentSnapshot)
             };
-
             await _roleRequestRepository.CreateAsync(request);
             return request.Id;
         }

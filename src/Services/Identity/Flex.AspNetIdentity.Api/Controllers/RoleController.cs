@@ -3,11 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.AspNetIdentity.Api.Models;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
     [Route("api/roles")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class RoleController : ControllerBase
     {
         private IRoleService _roleService;
@@ -41,21 +45,24 @@ namespace Flex.AspNetIdentity.Api.Controllers
         [HttpPost("requests/create")]
         public async Task<IActionResult> CreateRoleRequest([FromBody] CreateRoleDto dto)
         {
-            var id = await _roleService.CreateAddRoleRequestAsync(dto);
+            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
+            var id = await _roleService.CreateAddRoleRequestAsync(dto, username);
             return Ok(Result.Success(id));
         }
 
         [HttpPost("{roleId}/requests/update")]
         public async Task<IActionResult> CreateUpdateRoleRequest(long roleId, [FromBody] UpdateRoleDto dto)
         {
-            var id = await _roleService.CreateUpdateRoleRequestAsync(roleId, dto);
+            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
+            var id = await _roleService.CreateUpdateRoleRequestAsync(roleId, dto, username);
             return Ok(Result.Success(id));
         }
 
         [HttpPost("{roleId}/requests/delete")]
         public async Task<IActionResult> CreateDeleteRoleRequest(long roleId)
         {
-            var id = await _roleService.CreateDeleteRoleRequestAsync(roleId);
+            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
+            var id = await _roleService.CreateDeleteRoleRequestAsync(roleId, username);
             return Ok(Result.Success(id));
         }
 
