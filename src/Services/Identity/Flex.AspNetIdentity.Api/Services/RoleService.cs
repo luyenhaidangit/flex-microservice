@@ -46,9 +46,9 @@ namespace Flex.AspNetIdentity.Api.Services
                          EF.Functions.Like(x.Description, $"%{keyword}%"))
                 .AsNoTracking();
 
-            // ===== Truy vấn các yêu cầu đang chờ duyệt (PENDING) =====
+            // ===== Truy vấn các yêu cầu đang chờ duyệt hoặc nháp (PENDING hoặc DRAFT) =====
             var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Status == RequestStatusConstant.Unauthorised)
+                .Where(r => r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft)
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     r => EF.Functions.Like(r.Code, $"%{keyword}%") ||
                          EF.Functions.Like(r.Description, $"%{keyword}%"))
@@ -64,8 +64,8 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = r.Code,
                     IsActive = r.IsActive,
                     Description = r.Description,
-                    Status = StatusConstant.Pending,
-                    RequestType = RequestTypeConstant.Create,
+                    Status = r.Status,
+                    RequestType = r.Action,
                     RequestedBy = r.CreatedBy,
                     RequestedDate = r.CreatedDate,
                     ApprovedBy = null,
@@ -85,7 +85,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = x.role.Code,
                     IsActive = x.role.IsActive,
                     Description = x.role.Description,
-                    Status = x.req == null ? StatusConstant.Approved : StatusConstant.Pending,
+                    Status = x.req == null ? StatusConstant.Approved : x.req.Status,
                     RequestType = x.req == null ? null : x.req.Action,
                     RequestedBy = x.req == null ? null : x.req.CreatedBy,
                     RequestedDate = x.req == null ? null : x.req.CreatedDate,
