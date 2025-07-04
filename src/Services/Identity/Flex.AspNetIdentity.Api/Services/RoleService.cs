@@ -653,7 +653,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     Status = r.Status,
                     RequestedBy = r.CreatedBy,
                     RequestedDate = r.CreatedDate,
-                    ProposedData = string.IsNullOrEmpty(r.RequestedData) ? null : JsonSerializer.Deserialize<RoleDto>(r.RequestedData)
+                    // ProposedData = null // Không có dữ liệu đề xuất ở view này
                 })
                 .ToListAsync();
 
@@ -665,16 +665,16 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<RoleComparisonDto?> GetRoleComparisonAsync(long requestId)
         {
-            var request = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Id == requestId)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+            // Truy vấn từ entity gốc để lấy RequestedData
+            var request = await _roleRequestRepository
+                .FindAll()
+                .FirstOrDefaultAsync(r => r.Id == requestId);
 
             if (request == null)
                 return null;
 
-            var proposedData = string.IsNullOrEmpty(request.RequestedData) 
-                ? null 
+            var proposedData = string.IsNullOrEmpty(request.RequestedData)
+                ? null
                 : JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
 
             if (proposedData == null)
@@ -684,8 +684,8 @@ namespace Flex.AspNetIdentity.Api.Services
             {
                 RequestId = request.Id,
                 RequestType = request.Action,
-                RequestedBy = request.CreatedBy,
-                RequestedDate = request.CreatedDate,
+                RequestedBy = request.MakerId,
+                RequestedDate = request.RequestedDate,
                 ProposedVersion = proposedData,
                 Changes = new List<FieldDiffDto>()
             };
