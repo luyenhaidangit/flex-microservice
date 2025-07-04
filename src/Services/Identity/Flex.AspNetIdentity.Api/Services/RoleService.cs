@@ -588,7 +588,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 RoleId = draft.EntityId,
                 RequestType = draft.Action,
                 Status = draft.Status,
-                ProposedData = string.IsNullOrEmpty(draft.RequestedData) ? null : JsonSerializer.Deserialize<RoleDto>(draft.RequestedData)
+                ProposedData = string.IsNullOrEmpty("") ? null : JsonSerializer.Deserialize<RoleDto>("")
             };
         }
     }

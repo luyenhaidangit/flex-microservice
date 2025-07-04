@@ -117,7 +117,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             var pendingRequest = await _roleService.GetDraftCreateRequestByCodeAsync(code, username);
             if (pendingRequest == null)
                 return NotFound(Result.Failure(message: "Draft create request not found for this code or you are not the creator."));
-            await _roleService.CancelRoleRequestAsync(pendingRequest.Id, username);
+            await _roleService.CancelRoleRequestAsync(0, username);
             return Ok(Result.Success());
         }
     }
