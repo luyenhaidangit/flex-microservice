@@ -144,5 +144,17 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 return NotFound(Result.Failure("Request not found or invalid"));
             return Ok(Result.Success(result));
         }
+
+        /// <summary>
+        /// Lấy bản nháp (pending/draft) của một vai trò cụ thể
+        /// </summary>
+        [HttpGet("{roleId}/draft")]
+        public async Task<IActionResult> GetDraftByRole(long roleId)
+        {
+            var draft = await _roleService.GetDraftByRoleAsync(roleId);
+            if (draft == null)
+                return NotFound(Result.Failure("No draft or pending request found for this role."));
+            return Ok(Result.Success(draft));
+        }
     }
 }

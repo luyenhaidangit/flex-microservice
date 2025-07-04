@@ -44,5 +44,9 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task RemoveClaimAsync(long roleId, ClaimDto claim);
 
         Task<RoleRequestDto?> GetDraftCreateRequestByCodeAsync(string code, string currentUser);
+        /// <summary>
+        /// Lấy bản nháp (pending/draft) của một vai trò cụ thể
+        /// </summary>
+        Task<RoleRequestDto?> GetDraftByRoleAsync(long roleId);
     }
 }

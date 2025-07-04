@@ -592,9 +592,14 @@ namespace Flex.AspNetIdentity.Api.Services
 
         public async Task<RoleRequestDto?> GetDraftCreateRequestByCodeAsync(string code, string currentUser)
         {
-            var draft = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Code == code && r.Status == RequestStatusConstant.Draft && r.Action == RequestTypeConstant.Create && r.CreatedBy == currentUser)
-                .AsNoTracking()
+            // 1. Tìm roleId theo code
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Code == code);
+            if (role == null) return null;
+
+            // 2. Tìm bản nháp theo roleId
+            var draft = await _roleRequestRepository.FindAll()
+                .Where(r => r.EntityId == role.Id && r.Status == RequestStatusConstant.Draft && r.Action == RequestTypeConstant.Create && r.MakerId == currentUser)
+                .OrderByDescending(r => r.RequestedDate)
                 .FirstOrDefaultAsync();
             if (draft == null) return null;
             return new RoleRequestDto
@@ -603,7 +608,32 @@ namespace Flex.AspNetIdentity.Api.Services
                 RoleId = draft.EntityId,
                 RequestType = draft.Action,
                 Status = draft.Status,
-                ProposedData = string.IsNullOrEmpty("") ? null : JsonSerializer.Deserialize<RoleDto>("")
+                RequestedBy = draft.MakerId,
+                RequestedDate = draft.RequestedDate,
+                ApprovedBy = draft.CheckerId,
+                ApprovedDate = draft.ApproveDate,
+                ProposedData = string.IsNullOrEmpty(draft.RequestedData) ? null : JsonSerializer.Deserialize<RoleDto>(draft.RequestedData)
+            };
+        }
+
+        public async Task<RoleRequestDto?> GetDraftByRoleAsync(long roleId)
+        {
+            var draft = await _roleRequestRepository.FindAll()
+                .Where(r => r.EntityId == roleId && (r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft))
+                .OrderByDescending(r => r.RequestedDate)
+                .FirstOrDefaultAsync();
+            if (draft == null) return null;
+            return new RoleRequestDto
+            {
+                RequestId = draft.Id,
+                RoleId = draft.EntityId,
+                RequestType = draft.Action,
+                Status = draft.Status,
+                RequestedBy = draft.MakerId,
+                RequestedDate = draft.RequestedDate,
+                ApprovedBy = draft.CheckerId,
+                ApprovedDate = draft.ApproveDate,
+                ProposedData = string.IsNullOrEmpty(draft.RequestedData) ? null : JsonSerializer.Deserialize<RoleDto>(draft.RequestedData)
             };
         }
 
