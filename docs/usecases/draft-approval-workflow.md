@@ -283,3 +283,16 @@ Documentation
 - Các task backend cốt lõi đã hoàn thành, đáp ứng nghiệp vụ maker-checker và quản lý nháp/phê duyệt.
 - Cần tập trung hoàn thiện frontend (tab, modal, hiển thị trạng thái) và bổ sung test, tài liệu hướng dẫn.
 - Lưu ý concurrency, consistency, chuẩn hóa action khi mở rộng hoặc tích hợp thêm nghiệp vụ mới.
+
+#### Api
+GET /api/roles?status=APPROVED – Lấy danh sách vai trò đã duyệt (dùng cho tab chính)
+GET /api/roles/pending – Lấy danh sách yêu cầu chờ duyệt (dùng cho tab phê duyệt)
+GET /api/roles/:id – Lấy chi tiết vai trò (bản chính)
+GET /api/roles/:id/draft – Lấy bản nháp của vai trò (nếu có)
+POST /api/roles – Tạo mới vai trò (tạo nháp)
+PUT /api/roles/:id – Sửa vai trò (tạo nháp sửa)
+DELETE /api/roles/:id – Gửi yêu cầu xóa (tạo nháp xóa)
+POST /api/roles/:id/submit – Gửi duyệt bản nháp
+POST /api/roles/:id/approve – Phê duyệt bản nháp
+POST /api/roles/:id/reject – Từ chối bản nháp (có lý do)
+GET /api/roles/:id/compare – So sánh bản chính và bản nháp
