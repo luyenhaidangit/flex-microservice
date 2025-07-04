@@ -1,3 +1,23 @@
+# Tóm tắt mục tiêu
+
+Tài liệu này hướng dẫn cách quản lý bản chính và bản nháp trong hệ thống quản trị nội bộ chứng khoán, đảm bảo quy trình kiểm soát (maker-checker), tách biệt dữ liệu nháp và dữ liệu chính thức, hỗ trợ phê duyệt, truy vết và hiển thị minh bạch.
+
+---
+
+# Flowchart quy trình quản lý bản nháp/phê duyệt
+
+```mermaid
+flowchart TD
+    A["Người tạo (Maker)"] -->|Tạo nháp| B["ROLE_REQUESTS (DRAFT)"]
+    B -->|Gửi duyệt| C["ROLE_REQUESTS (PENDING)"]
+    C -->|Phê duyệt| D["ROLES (APPROVED)"]
+    C -->|Từ chối| E["ROLE_REQUESTS (REJECTED)"]
+    D -->|Ghi lịch sử| F["ROLE_AUDIT_TRAIL"]
+    E -->|Ghi lịch sử| F
+```
+
+---
+
 # Tổng quan về quản lý bản chính và bản nháp trong hệ thống quản trị nội bộ chứng khoán
 
 Trong các hệ thống quản trị nội bộ lĩnh vực chứng khoán, việc xử lý luồng hiển thị danh sách đối tượng có bản chính và bản nháp (có thể có nhiều bản nháp từ nhiều người) là một yêu cầu phổ biến, đặc biệt khi áp dụng quy trình duyệt (maker-checker). Tài liệu này trình bày các phương pháp thực tế về phân quyền, hiển thị, và quản lý dữ liệu bản chính/bản nháp trong các hệ thống này.
@@ -208,3 +228,22 @@ Documentation
 - Mỗi thay đổi vai trò đều tạo bản ghi ở `ROLE_REQUESTS` (có dữ liệu nháp).
 - Khi duyệt, cập nhật vào `ROLES` và ghi lại lịch sử ở `ROLE_AUDIT_TRAIL`.
 - Hỗ trợ nhiều trạng thái, version, liên kết nháp với bản chính, truy vết đầy đủ.
+
+---
+
+# Best Practice & Lưu ý kỹ thuật
+
+- Luôn tách biệt dữ liệu nháp và dữ liệu chính thức, chỉ cập nhật bản chính khi đã được duyệt.
+- Mỗi bản ghi chỉ nên có một nháp chờ duyệt tại một thời điểm để tránh xung đột.
+- Sử dụng transaction và lưu vết (audit trail) cho mọi thao tác phê duyệt/từ chối.
+- Chuẩn hóa trạng thái (enum) và versioning để dễ mở rộng, truy vết.
+- Giao diện nên có tab hoặc bộ lọc riêng cho các yêu cầu chờ duyệt, tránh nhầm lẫn với dữ liệu chính.
+- Đảm bảo rollback an toàn khi thao tác bị từ chối hoặc lỗi.
+- Áp dụng pattern Maker-Checker, State Machine, Audit Trail cho các hệ thống tài chính.
+
+---
+
+# Nguồn tham khảo
+- Kinh nghiệm thiết kế CMS với chức năng nháp/xuất bản
+- Content Approval của SharePoint
+- Tài liệu Maker-Checker (Trackier)
