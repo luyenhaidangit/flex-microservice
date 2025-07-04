@@ -95,9 +95,9 @@ DANH SÁCH CÔNG VIỆC CẦN THỰC HIỆN
 [x] Phân tích luồng nghiệp vụ: Hiểu rõ quy trình Maker-Checker hiện tại
 [x] Xác định vấn đề: Tìm ra các điểm chưa phù hợp với chuẩn ngành
 1.2. Thiết kế cải tiến
-[ ] Thiết kế cấu trúc dữ liệu mới: Định nghĩa rõ ràng bản chính vs bản nháp
-[ ] Thiết kế giao diện: Wireframe cho tab "Yêu cầu phê duyệt" và modal so sánh
-[ ] Thiết kế API: Định nghĩa các endpoint mới cho quản lý bản nháp
+[x] Thiết kế cấu trúc dữ liệu mới: Định nghĩa rõ ràng bản chính vs bản nháp
+[x] Thiết kế giao diện: Wireframe cho tab "Yêu cầu phê duyệt" và modal so sánh
+[x] Thiết kế API: Định nghĩa các endpoint mới cho quản lý bản nháp
 2. BACKEND API (2-3 ngày)
 2.1. Cập nhật API hiện tại
 [x] Sửa API getRoles: Thêm filter để tách riêng bản chính và bản nháp
