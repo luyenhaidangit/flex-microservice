@@ -120,5 +120,29 @@ namespace Flex.AspNetIdentity.Api.Controllers
             await _roleService.CancelRoleRequestAsync(0, username);
             return Ok(Result.Success());
         }
+
+        // ===== API MỚI =====
+
+        /// <summary>
+        /// Lấy danh sách yêu cầu chờ duyệt (Pending/Draft)
+        /// </summary>
+        [HttpGet("pending-requests")]
+        public async Task<IActionResult> GetPendingRequests([FromQuery] PendingRequestsPagingRequest request)
+        {
+            var result = await _roleService.GetPendingRequestsAsync(request);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// So sánh bản chính và bản nháp
+        /// </summary>
+        [HttpGet("requests/{requestId}/compare")]
+        public async Task<IActionResult> GetRoleComparison(long requestId)
+        {
+            var result = await _roleService.GetRoleComparisonAsync(requestId);
+            if (result == null)
+                return NotFound(Result.Failure("Request not found or invalid"));
+            return Ok(Result.Success(result));
+        }
     }
 }

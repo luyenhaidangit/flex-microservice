@@ -14,6 +14,17 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId);
         Task<string?> CompareRoleWithRequestAsync(long requestId); 
 
+        // ===== API MỚI =====
+        /// <summary>
+        /// Lấy danh sách yêu cầu chờ duyệt (Pending/Draft)
+        /// </summary>
+        Task<PagedResult<RoleRequestDto>> GetPendingRequestsAsync(PendingRequestsPagingRequest request);
+        
+        /// <summary>
+        /// So sánh bản chính và bản nháp
+        /// </summary>
+        Task<RoleComparisonDto?> GetRoleComparisonAsync(long requestId);
+
         // Request
         Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto, string requestedBy);
         Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto, string requestedBy);

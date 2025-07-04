@@ -93,7 +93,22 @@ namespace Flex.AspNetIdentity.Api.Services
                     ApprovedDate = x.req != null && x.role != null ? x.req.ApproveDate : (DateTime?)null,
                 });
 
-            var combinedQuery = rolesWithOverlayQuery.Concat(pendingCreatesQuery)
+            var combinedQuery = rolesWithOverlayQuery.Concat(pendingCreatesQuery);
+            
+            // ===== ÁP DỤNG FILTER STATUS =====
+            if (!string.IsNullOrEmpty(request?.Status) && request.Status.ToUpper() != "ALL")
+            {
+                combinedQuery = request.Status.ToUpper() switch
+                {
+                    "APPROVED" => combinedQuery.Where(x => x.Status == StatusConstant.Approved),
+                    "PENDING" => combinedQuery.Where(x => x.Status == RequestStatusConstant.Unauthorised),
+                    "DRAFT" => combinedQuery.Where(x => x.Status == RequestStatusConstant.Draft),
+                    _ => combinedQuery
+                };
+            }
+
+            // ===== SORT =====
+            combinedQuery = combinedQuery
                 .OrderBy(dto => dto.Status == RequestStatusConstant.Draft ? 0 : dto.Status == RequestStatusConstant.Unauthorised ? 1 : 2)
                 .ThenByDescending(dto => (dto.Status == RequestStatusConstant.Draft || dto.Status == RequestStatusConstant.Unauthorised) ? dto.RequestedDate : null)
                 .ThenBy(dto => dto.Id);
@@ -590,6 +605,203 @@ namespace Flex.AspNetIdentity.Api.Services
                 Status = draft.Status,
                 ProposedData = string.IsNullOrEmpty("") ? null : JsonSerializer.Deserialize<RoleDto>("")
             };
+        }
+
+        // ===== API MỚI =====
+        
+        /// <summary>
+        /// Lấy danh sách yêu cầu chờ duyệt (Pending/Draft)
+        /// </summary>
+        public async Task<PagedResult<RoleRequestDto>> GetPendingRequestsAsync(PendingRequestsPagingRequest request)
+        {
+            var keyword = request?.Keyword?.Trim();
+            int pageIndex = Math.Max(1, request.PageIndex ?? 1);
+            int pageSize = Math.Max(1, request.PageSize ?? 10);
+
+            var query = _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft)
+                .WhereIf(!string.IsNullOrEmpty(keyword),
+                    r => EF.Functions.Like(r.Code, $"%{keyword}%") ||
+                         EF.Functions.Like(r.Name, $"%{keyword}%") ||
+                         EF.Functions.Like(r.Description, $"%{keyword}%"))
+                .AsNoTracking();
+
+            // Filter theo RequestType
+            if (!string.IsNullOrEmpty(request?.RequestType) && request.RequestType.ToUpper() != "ALL")
+            {
+                query = query.Where(r => r.Action == request.RequestType);
+            }
+
+            // Filter theo Status
+            if (!string.IsNullOrEmpty(request?.Status) && request.Status.ToUpper() != "ALL")
+            {
+                query = query.Where(r => r.Status == request.Status);
+            }
+
+            // Sort
+            query = query.OrderByDescending(r => r.CreatedDate);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(r => new RoleRequestDto
+                {
+                    RequestId = r.Id,
+                    RoleId = r.EntityId,
+                    RequestType = r.Action,
+                    Status = r.Status,
+                    RequestedBy = r.CreatedBy,
+                    RequestedDate = r.CreatedDate,
+                    ProposedData = string.IsNullOrEmpty(r.RequestedData) ? null : JsonSerializer.Deserialize<RoleDto>(r.RequestedData)
+                })
+                .ToListAsync();
+
+            return PagedResult<RoleRequestDto>.Create(pageIndex, pageSize, total, items);
+        }
+
+        /// <summary>
+        /// So sánh bản chính và bản nháp
+        /// </summary>
+        public async Task<RoleComparisonDto?> GetRoleComparisonAsync(long requestId)
+        {
+            var request = await _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.Id == requestId)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (request == null)
+                return null;
+
+            var proposedData = string.IsNullOrEmpty(request.RequestedData) 
+                ? null 
+                : JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
+
+            if (proposedData == null)
+                return null;
+
+            var comparison = new RoleComparisonDto
+            {
+                RequestId = request.Id,
+                RequestType = request.Action,
+                RequestedBy = request.CreatedBy,
+                RequestedDate = request.CreatedDate,
+                ProposedVersion = proposedData,
+                Changes = new List<FieldDiffDto>()
+            };
+
+            // Lấy bản chính hiện tại (nếu có)
+            RoleDto? currentVersion = null;
+            if (request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete)
+            {
+                var currentRole = await _roleManager.Roles
+                    .Where(r => r.Id == request.EntityId)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync();
+
+                if (currentRole != null)
+                {
+                    currentVersion = new RoleDto
+                    {
+                        Id = currentRole.Id,
+                        Name = currentRole.Name,
+                        Code = currentRole.Code,
+                        Description = currentRole.Description,
+                        IsActive = currentRole.IsActive
+                    };
+                    comparison.CurrentVersion = currentVersion;
+                }
+            }
+
+            // So sánh các trường
+            if (request.Action == RequestTypeConstant.Create)
+            {
+                // Tạo mới - tất cả trường đều là "Added"
+                comparison.Changes.Add(new FieldDiffDto
+                {
+                    FieldName = "Name",
+                    CurrentValue = null,
+                    ProposedValue = proposedData.Name,
+                    ChangeType = "Added"
+                });
+                comparison.Changes.Add(new FieldDiffDto
+                {
+                    FieldName = "Code",
+                    CurrentValue = null,
+                    ProposedValue = proposedData.Code,
+                    ChangeType = "Added"
+                });
+                comparison.Changes.Add(new FieldDiffDto
+                {
+                    FieldName = "Description",
+                    CurrentValue = null,
+                    ProposedValue = proposedData.Description,
+                    ChangeType = "Added"
+                });
+            }
+            else if (request.Action == RequestTypeConstant.Update && currentVersion != null)
+            {
+                // Cập nhật - so sánh từng trường
+                if (currentVersion.Name != proposedData.Name)
+                {
+                    comparison.Changes.Add(new FieldDiffDto
+                    {
+                        FieldName = "Name",
+                        CurrentValue = currentVersion.Name,
+                        ProposedValue = proposedData.Name,
+                        ChangeType = "Modified"
+                    });
+                }
+
+                if (currentVersion.Code != proposedData.Code)
+                {
+                    comparison.Changes.Add(new FieldDiffDto
+                    {
+                        FieldName = "Code",
+                        CurrentValue = currentVersion.Code,
+                        ProposedValue = proposedData.Code,
+                        ChangeType = "Modified"
+                    });
+                }
+
+                if (currentVersion.Description != proposedData.Description)
+                {
+                    comparison.Changes.Add(new FieldDiffDto
+                    {
+                        FieldName = "Description",
+                        CurrentValue = currentVersion.Description,
+                        ProposedValue = proposedData.Description,
+                        ChangeType = "Modified"
+                    });
+                }
+            }
+            else if (request.Action == RequestTypeConstant.Delete && currentVersion != null)
+            {
+                // Xóa - tất cả trường đều là "Removed"
+                comparison.Changes.Add(new FieldDiffDto
+                {
+                    FieldName = "Name",
+                    CurrentValue = currentVersion.Name,
+                    ProposedValue = null,
+                    ChangeType = "Removed"
+                });
+                comparison.Changes.Add(new FieldDiffDto
+                {
+                    FieldName = "Code",
+                    CurrentValue = currentVersion.Code,
+                    ProposedValue = null,
+                    ChangeType = "Removed"
+                });
+                comparison.Changes.Add(new FieldDiffDto
+                {
+                    FieldName = "Description",
+                    CurrentValue = currentVersion.Description,
+                    ProposedValue = null,
+                    ChangeType = "Removed"
+                });
+            }
+
+            return comparison;
         }
     }
 }

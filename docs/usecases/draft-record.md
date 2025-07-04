@@ -67,3 +67,112 @@ Trong các hệ thống tài chính – chứng khoán, việc tách bạch bả
 * Kinh nghiệm thiết kế CMS với chức năng nháp/xuất bản (mô tả cách hiển thị bản nháp vs bản chính khi xem và khi chỉnh sửa).
 * Tính năng Content Approval của SharePoint (ví dụ về cột trạng thái phê duyệt trong danh sách).
 * Tài liệu hướng dẫn Maker-Checker (Trackier) – minh họa giao diện danh sách yêu cầu phê duyệt và quy trình phê duyệt thay đổi trước khi cập nhật vào dữ liệu chính.
+
+
+DANH SÁCH CÔNG VIỆC CẦN THỰC HIỆN
+1. PHÂN TÍCH VÀ THIẾT KẾ (1-2 ngày)
+1.1. Phân tích hiện trạng
+[ ] Đánh giá cấu trúc dữ liệu hiện tại: Xem xét model Role, các trường status, pendingAction
+[ ] Phân tích luồng nghiệp vụ: Hiểu rõ quy trình Maker-Checker hiện tại
+[ ] Xác định vấn đề: Tìm ra các điểm chưa phù hợp với chuẩn ngành
+1.2. Thiết kế cải tiến
+[ ] Thiết kế cấu trúc dữ liệu mới: Định nghĩa rõ ràng bản chính vs bản nháp
+[ ] Thiết kế giao diện: Wireframe cho tab "Yêu cầu phê duyệt" và modal so sánh
+[ ] Thiết kế API: Định nghĩa các endpoint mới cho quản lý bản nháp
+2. BACKEND API (2-3 ngày)
+2.1. Cập nhật API hiện tại
+[x] Sửa API getRoles: Thêm filter để tách riêng bản chính và bản nháp
+[x] Thêm API getPendingRequests: Lấy danh sách yêu cầu chờ duyệt
+[x] Cập nhật API createRole: Hỗ trợ tạo bản nháp với status Draft
+[x] Thêm API compareRole: So sánh bản chính và bản nháp
+2.2. API mới
+[x] API getRoleComparison: So sánh chi tiết giữa bản chính và bản nháp
+[ ] API getDraftByRole: Lấy bản nháp của một vai trò cụ thể
+[ ] API lockRoleForEdit: Khóa vai trò khi đang có bản nháp chờ duyệt
+3. FRONTEND - CẬP NHẬT COMPONENT (3-4 ngày)
+3.1. Cập nhật RoleComponent
+[ ] Thêm tab navigation: "Tất cả vai trò" và "Yêu cầu phê duyệt"
+[ ] Thêm state management: Quản lý activeTab, pendingItems
+[ ] Cập nhật getItems(): Hỗ trợ filter theo loại (approved vs pending)
+[ ] Thêm getPendingRequests(): Lấy danh sách yêu cầu chờ duyệt
+3.2. Cập nhật giao diện danh sách
+[ ] Thêm tab navigation trong HTML
+[ ] Cập nhật bảng hiển thị: Thêm cột "Thay đổi chờ duyệt" cho bản chính
+[ ] Thêm badge/icon: Hiển thị trạng thái có bản nháp
+[ ] Cập nhật action buttons: Phù hợp với từng tab
+3.3. Modal so sánh bản chính và bản nháp
+[ ] Tạo template mới: Modal hiển thị song song 2 cột
+[ ] Thêm logic so sánh: Highlight các trường thay đổi
+[ ] Cập nhật action buttons: Phê duyệt/Từ chối với lý do
+4. FRONTEND - CẬP NHẬT SERVICE (1-2 ngày)
+4.1. Cập nhật RoleService
+[ ] Thêm getPendingRequests(): Lấy danh sách yêu cầu chờ duyệt
+[ ] Thêm getRoleComparison(): So sánh bản chính và bản nháp
+[ ] Cập nhật createRole(): Hỗ trợ tạo bản nháp
+[ ] Thêm lockRoleForEdit(): Kiểm tra và khóa vai trò
+4.2. Thêm models/interfaces
+[ ] Tạo RoleModel: Interface cho vai trò
+[ ] Tạo PendingRequestModel: Interface cho yêu cầu chờ duyệt
+[ ] Tạo RoleComparisonModel: Interface cho so sánh
+5. CẬP NHẬT GIAO DIỆN HTML (2-3 ngày)
+5.1. Thêm tab navigation
+Apply to role.compone...
+5.2. Cập nhật bảng hiển thị
+[ ] Thêm cột "Thay đổi chờ duyệt" cho tab "Tất cả vai trò"
+[ ] Tạo bảng riêng cho tab "Yêu cầu phê duyệt"
+[ ] Cập nhật action buttons theo từng tab
+5.3. Modal so sánh
+[ ] Tạo template comparisonModal: Hiển thị song song bản chính và bản nháp
+[ ] Highlight các trường thay đổi
+[ ] Thêm form lý do từ chối
+6. LOGIC NGHIỆP VỤ (2-3 ngày)
+6.1. Quản lý trạng thái
+[ ] Thêm activeTab state: Quản lý tab đang active
+[ ] Thêm pendingItems: Danh sách yêu cầu chờ duyệt
+[ ] Thêm pendingCount: Số lượng yêu cầu chờ duyệt
+6.2. Logic hiển thị
+[ ] switchTab(): Chuyển đổi giữa các tab
+[ ] getItemsByTab(): Lấy dữ liệu theo tab
+[ ] hasPendingChanges(): Kiểm tra vai trò có bản nháp không
+6.3. Logic phê duyệt
+[ ] openComparisonModal(): Mở modal so sánh
+[ ] approveWithComparison(): Phê duyệt với so sánh
+[ ] rejectWithReason(): Từ chối với lý do
+7. TESTING VÀ TỐI ƯU (1-2 ngày)
+7.1. Unit testing
+[ ] Test RoleService: Các method mới
+[ ] Test RoleComponent: Logic chuyển tab, so sánh
+[ ] Test templates: Modal so sánh, tab navigation
+7.2. Integration testing
+[ ] Test luồng tạo bản nháp: Tạo → Lưu nháp → Gửi duyệt
+[ ] Test luồng phê duyệt: Xem so sánh → Phê duyệt/Từ chối
+[ ] Test hiển thị danh sách: Tab approved vs pending
+7.3. UI/UX testing
+[ ] Test responsive: Giao diện trên mobile
+[ ] Test accessibility: Keyboard navigation, screen reader
+[ ] Test performance: Loading time, memory usage
+8. DOCUMENTATION (0.5 ngày)
+8.1. Code documentation
+[ ] Comment code: Giải thích logic phức tạp
+[ ] Update README: Hướng dẫn sử dụng tính năng mới
+[ ] API documentation: Mô tả các endpoint mới
+8.2. User documentation
+[ ] User guide: Hướng dẫn sử dụng cho người dùng cuối
+[ ] Admin guide: Hướng dẫn cho người quản trị
+ƯU TIÊN THỰC HIỆN
+Phase 1 (Tuần 1): Backend và Service
+Cập nhật API getRoles với filter
+Thêm API getPendingRequests
+Cập nhật RoleService
+Thêm models/interfaces
+Phase 2 (Tuần 2): Frontend Core
+Thêm tab navigation
+Cập nhật RoleComponent logic
+Tạo modal so sánh
+Cập nhật giao diện danh sách
+Phase 3 (Tuần 3): Testing và Polish
+Unit testing
+Integration testing
+UI/UX testing
+Documentation
+Bạn muốn bắt đầu với phần nào trước? Mình có thể hỗ trợ chi tiết cho từng phase.
