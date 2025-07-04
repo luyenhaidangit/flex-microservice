@@ -12,7 +12,7 @@
 
         public string RequestedBy { get; set; } = default!;
 
-        public DateTime RequestedDate { get; set; }
+        public DateTime? RequestedDate { get; set; }
 
         public string? ApprovedBy { get; set; }
 

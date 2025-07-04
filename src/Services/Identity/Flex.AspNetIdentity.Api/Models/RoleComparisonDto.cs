@@ -5,7 +5,7 @@ namespace Flex.AspNetIdentity.Api.Models
         public long RequestId { get; set; }
         public string RequestType { get; set; } = default!; // CREATE / UPDATE / DELETE
         public string RequestedBy { get; set; } = default!;
-        public DateTime RequestedDate { get; set; }
+        public DateTime? RequestedDate { get; set; }
         
         // Bản chính hiện tại (nếu có)
         public RoleDto? CurrentVersion { get; set; }
