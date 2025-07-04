@@ -91,9 +91,9 @@ Trong các hệ thống tài chính – chứng khoán, việc tách bạch bả
 DANH SÁCH CÔNG VIỆC CẦN THỰC HIỆN
 1. PHÂN TÍCH VÀ THIẾT KẾ (1-2 ngày)
 1.1. Phân tích hiện trạng
-[ ] Đánh giá cấu trúc dữ liệu hiện tại: Xem xét model Role, các trường status, pendingAction
-[ ] Phân tích luồng nghiệp vụ: Hiểu rõ quy trình Maker-Checker hiện tại
-[ ] Xác định vấn đề: Tìm ra các điểm chưa phù hợp với chuẩn ngành
+[x] Đánh giá cấu trúc dữ liệu hiện tại: Xem xét model Role, các trường status, pendingAction
+[x] Phân tích luồng nghiệp vụ: Hiểu rõ quy trình Maker-Checker hiện tại
+[x] Xác định vấn đề: Tìm ra các điểm chưa phù hợp với chuẩn ngành
 1.2. Thiết kế cải tiến
 [ ] Thiết kế cấu trúc dữ liệu mới: Định nghĩa rõ ràng bản chính vs bản nháp
 [ ] Thiết kế giao diện: Wireframe cho tab "Yêu cầu phê duyệt" và modal so sánh
@@ -247,3 +247,39 @@ Documentation
 - Kinh nghiệm thiết kế CMS với chức năng nháp/xuất bản
 - Content Approval của SharePoint
 - Tài liệu Maker-Checker (Trackier)
+
+### 3. **Checklist công việc tổng hợp**
+
+#### Backend
+- [x] Đánh giá cấu trúc dữ liệu hiện tại (Role, status, version, liên kết nháp, audit trail)
+- [x] Phân tích luồng nghiệp vụ Maker-Checker
+- [x] Xác định vấn đề: concurrency, consistency, chuẩn hóa action
+- [x] Sửa API getRoles: Thêm filter bản chính/nháp
+- [x] Thêm API getPendingRequests
+- [x] Cập nhật API createRole: Hỗ trợ tạo nháp
+- [x] Thêm API compareRole/getRoleComparison
+- [ ] API getDraftByRole
+- [ ] API lockRoleForEdit
+
+#### Frontend
+- [ ] Thêm tab navigation: "Tất cả vai trò" / "Yêu cầu phê duyệt"
+- [ ] State management: activeTab, pendingItems
+- [ ] Hiển thị trạng thái nháp/pending trong bảng
+- [ ] Modal so sánh bản chính/nháp, highlight thay đổi
+- [ ] Action buttons: Phê duyệt/Từ chối với lý do
+
+#### Testing
+- [ ] Unit test RoleService, RoleComponent
+- [ ] Test luồng tạo nháp, gửi duyệt, phê duyệt/từ chối
+- [ ] Test hiển thị danh sách, tab, modal so sánh
+
+#### Documentation
+- [ ] Comment code, cập nhật README, mô tả API
+- [ ] User guide, admin guide
+
+---
+
+**Nhận xét tổng quan:**
+- Các task backend cốt lõi đã hoàn thành, đáp ứng nghiệp vụ maker-checker và quản lý nháp/phê duyệt.
+- Cần tập trung hoàn thiện frontend (tab, modal, hiển thị trạng thái) và bổ sung test, tài liệu hướng dẫn.
+- Lưu ý concurrency, consistency, chuẩn hóa action khi mở rộng hoặc tích hợp thêm nghiệp vụ mới.
