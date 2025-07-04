@@ -1,7 +1,6 @@
-Cảm ơn bạn đã cung cấp chi tiết. Mình sẽ tìm hiểu cách các hệ thống quản trị nội bộ trong lĩnh vực chứng khoán xử lý luồng hiển thị danh sách đối tượng có bản chính và bản nháp (nhiều bản nháp từ nhiều người), đặc biệt trong trường hợp có quy trình duyệt. Mình cũng sẽ xem xét cách phân quyền và hiển thị thường thấy.
+# Tổng quan về quản lý bản chính và bản nháp trong hệ thống quản trị nội bộ chứng khoán
 
-Mình sẽ quay lại sớm với thông tin tổng hợp từ các hệ thống phổ biến và thông lệ thực tế.
-
+Trong các hệ thống quản trị nội bộ lĩnh vực chứng khoán, việc xử lý luồng hiển thị danh sách đối tượng có bản chính và bản nháp (có thể có nhiều bản nháp từ nhiều người) là một yêu cầu phổ biến, đặc biệt khi áp dụng quy trình duyệt (maker-checker). Tài liệu này trình bày các phương pháp thực tế về phân quyền, hiển thị, và quản lý dữ liệu bản chính/bản nháp trong các hệ thống này.
 
 # Quản Lý Bản Nháp vs Bản Chính và Cách Hiển Thị Danh Sách
 
@@ -68,7 +67,7 @@ Trong các hệ thống tài chính – chứng khoán, việc tách bạch bả
 * Tính năng Content Approval của SharePoint (ví dụ về cột trạng thái phê duyệt trong danh sách).
 * Tài liệu hướng dẫn Maker-Checker (Trackier) – minh họa giao diện danh sách yêu cầu phê duyệt và quy trình phê duyệt thay đổi trước khi cập nhật vào dữ liệu chính.
 
-
+### 3. **Danh sách công việc**
 DANH SÁCH CÔNG VIỆC CẦN THỰC HIỆN
 1. PHÂN TÍCH VÀ THIẾT KẾ (1-2 ngày)
 1.1. Phân tích hiện trạng
@@ -175,7 +174,6 @@ Unit testing
 Integration testing
 UI/UX testing
 Documentation
-Bạn muốn bắt đầu với phần nào trước? Mình có thể hỗ trợ chi tiết cho từng phase.
 
 # Thiết kế Database cho Quản Lý Bản Nháp & Phê Duyệt Vai Trò
 
