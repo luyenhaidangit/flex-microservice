@@ -176,3 +176,37 @@ Integration testing
 UI/UX testing
 Documentation
 Bạn muốn bắt đầu với phần nào trước? Mình có thể hỗ trợ chi tiết cho từng phase.
+
+# Thiết kế Database cho Quản Lý Bản Nháp & Phê Duyệt Vai Trò
+
+**Các bảng chính:**
+
+- **ROLES**
+  - Quản lý vai trò, hỗ trợ trạng thái nháp/phê duyệt.
+  - Trường chính:
+    - `STATUS`: DRAFT, PENDING, APPROVED, REJECTED
+    - `VERSION`: versioning
+    - `PARENT_ID`: liên kết bản nháp với bản chính
+    - `MAKER_ID`, `CHECKER_ID`: người tạo/người duyệt
+    - `REQUEST_ID`: liên kết với bảng yêu cầu
+
+- **ROLE_REQUESTS**
+  - Lưu các yêu cầu tạo/sửa/xóa vai trò (maker-checker workflow)
+  - Trường chính:
+    - `ACTION`: CREATE, UPDATE, DELETE
+    - `STATUS`: DRAFT, PENDING, APPROVED, REJECTED, CANCELLED
+    - `REQUESTED_DATA`: JSON dữ liệu đề xuất
+    - `MAKER_ID`, `CHECKER_ID`: người tạo/người duyệt
+
+- **ROLE_AUDIT_TRAIL**
+  - Lưu vết mọi thay đổi vai trò (audit trail)
+  - Trường chính:
+    - `ROLE_ID`, `REQUEST_ID`
+    - `ACTION`: CREATE, UPDATE, DELETE, APPROVE, REJECT...
+    - `OLD_VALUES`, `NEW_VALUES`: JSON trước/sau thay đổi
+    - `CHANGED_BY`, `CHANGED_AT`: ai, khi nào
+
+**Tóm tắt:**
+- Mỗi thay đổi vai trò đều tạo bản ghi ở `ROLE_REQUESTS` (có dữ liệu nháp).
+- Khi duyệt, cập nhật vào `ROLES` và ghi lại lịch sử ở `ROLE_AUDIT_TRAIL`.
+- Hỗ trợ nhiều trạng thái, version, liên kết nháp với bản chính, truy vết đầy đủ.
