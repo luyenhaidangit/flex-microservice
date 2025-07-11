@@ -21,10 +21,9 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPagingBranchesAsync([FromQuery] GetRolesPagingRequest request)
+        public async Task<IActionResult> GetPagingRolesAsync([FromQuery] GetRolesPagingRequest request)
         {
             var result = await _roleService.GetRolePagedAsync(request);
-
             return Ok(Result.Success(result));
         }
 
@@ -121,17 +120,13 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success());
         }
 
-        // ===== API MỚI =====
-
-        /// <summary>
-        /// Lấy danh sách yêu cầu chờ duyệt (Pending/Draft)
-        /// </summary>
-        [HttpGet("pending-requests")]
-        public async Task<IActionResult> GetPendingRequests([FromQuery] PendingRequestsPagingRequest request)
-        {
-            var result = await _roleService.GetPendingRequestsAsync(request);
-            return Ok(Result.Success(result));
-        }
+        // ===== XÓA API LẤY DANH SÁCH YÊU CẦU CHỜ DUYỆT (pending-requests) =====
+        // [HttpGet("pending-requests")]
+        // public async Task<IActionResult> GetPendingRequests([FromQuery] PendingRequestsPagingRequest request)
+        // {
+        //     var result = await _roleService.GetPendingRequestsAsync(request);
+        //     return Ok(Result.Success(result));
+        // }
 
         /// <summary>
         /// So sánh bản chính và bản nháp
