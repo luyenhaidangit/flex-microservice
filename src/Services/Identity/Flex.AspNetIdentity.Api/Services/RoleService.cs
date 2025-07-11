@@ -36,7 +36,7 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             // ===== Xử lý tham số phân trang & tìm kiếm =====
             var keyword = request?.Keyword?.Trim();
-            var status = request?.Status?.ToUpper() ?? "APPROVED";
+            var status = request?.Status?.ToUpper() ?? StatusConstant.Approved;
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
@@ -47,7 +47,7 @@ namespace Flex.AspNetIdentity.Api.Services
                          EF.Functions.Like(x.Description, $"%{keyword}%"))
                 .AsNoTracking();
 
-            if (status == "APPROVED")
+            if (status == StatusConstant.Approved)
             {
                 // Chỉ lấy từ bảng chính
                 var filteredRoleQuery = roleQuery.AsQueryable();
