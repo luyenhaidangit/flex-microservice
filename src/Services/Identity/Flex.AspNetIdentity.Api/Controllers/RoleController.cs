@@ -20,10 +20,28 @@ namespace Flex.AspNetIdentity.Api.Controllers
             _roleService = roleService;
         }
 
+        /// <summary>
+        /// Lấy danh sách phân trang các vai trò (roles), bao gồm cả các yêu cầu tạo mới đang chờ duyệt.
+        /// </summary>
+        /// <param name="request">Thông tin phân trang và tìm kiếm</param>
+        /// <returns>Danh sách vai trò phân trang</returns>
         [HttpGet]
         public async Task<IActionResult> GetPagingRolesAsync([FromQuery] GetRolesPagingRequest request)
         {
             var result = await _roleService.GetRolePagedAsync(request);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// Lấy thông tin chi tiết request để hiển thị trong modal
+        /// Trả về oldData và newData để so sánh
+        /// </summary>
+        [HttpGet("role-requests/{requestId}")]
+        public async Task<IActionResult> GetRoleRequestDetail(long requestId)
+        {
+            var result = await _roleService.GetRoleRequestDetailAsync(requestId);
+            if (result == null)
+                return NotFound(Result.Failure("Request not found"));
             return Ok(Result.Success(result));
         }
 
@@ -150,19 +168,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             if (draft == null)
                 return NotFound(Result.Failure("No draft or pending request found for this role."));
             return Ok(Result.Success(draft));
-        }
-
-        /// <summary>
-        /// Lấy thông tin chi tiết request để hiển thị trong modal
-        /// Trả về oldData và newData để so sánh
-        /// </summary>
-        [HttpGet("role-requests/{requestId}")]
-        public async Task<IActionResult> GetRoleRequestDetail(long requestId)
-        {
-            var result = await _roleService.GetRoleRequestDetailAsync(requestId);
-            if (result == null)
-                return NotFound(Result.Failure("Request not found"));
-            return Ok(Result.Success(result));
         }
     }
 }
