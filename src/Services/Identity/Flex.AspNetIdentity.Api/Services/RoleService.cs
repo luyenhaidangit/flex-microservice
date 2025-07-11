@@ -141,7 +141,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 case RequestTypeConstant.Create:
                     // Chỉ có newData
                     var createData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<CreateRoleDto>(request.RequestedData);
-
+                    
                     if (createData != null)
                     {
                         result.NewData = new RoleDetailDataDto
@@ -149,7 +149,7 @@ namespace Flex.AspNetIdentity.Api.Services
                             RoleCode = createData.Code,
                             RoleName = createData.Name,
                             Description = createData.Description,
-                            Permissions = null
+                            Permissions = createData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
                         };
                     }
                     break;
@@ -190,9 +190,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
                 case RequestTypeConstant.Delete:
                     // Chỉ có oldData (thông tin sẽ bị xóa)
-                    var deleteData = string.IsNullOrEmpty(request.RequestedData)
-                        ? null
-                        : JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
+                    var deleteData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
 
                     if (deleteData != null)
                     {
@@ -230,6 +228,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = pendingRequest.Code,
                     IsActive = pendingRequest.IsActive,
                     Description = pendingRequest.Description,
+                    Claims = null, // Claims sẽ được lấy từ RequestedData khi cần
                     HasPendingRequest = true,
                     PendingRequestId = pendingRequest.Id,
                     RequestType = pendingRequest.Action,
@@ -247,6 +246,9 @@ namespace Flex.AspNetIdentity.Api.Services
             if (role == null)
                 return null;
 
+            // Lấy claims của role
+            var claims = await _roleManager.GetClaimsAsync(role);
+
             return new RoleDto
             {
                 Id = role.Id,
@@ -254,6 +256,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 IsActive = role.IsActive,
                 Description = role.Description,
+                Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
                 HasPendingRequest = pendingRequest != null,
                 PendingRequestId = pendingRequest?.Id,
                 RequestType = pendingRequest?.Action,
@@ -280,6 +283,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = pendingRequest.Code,
                     IsActive = pendingRequest.IsActive,
                     Description = pendingRequest.Description,
+                    Claims = null, // Claims sẽ được lấy từ RequestedData khi cần
                     HasPendingRequest = true,
                     PendingRequestId = pendingRequest.Id,
                     RequestType = pendingRequest.Action,
@@ -303,6 +307,9 @@ namespace Flex.AspNetIdentity.Api.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
+            // Lấy claims của role
+            var claims = await _roleManager.GetClaimsAsync(role);
+
             return new RoleDto
             {
                 Id = role.Id,
@@ -310,6 +317,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 IsActive = role.IsActive,
                 Description = role.Description,
+                Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
                 HasPendingRequest = relatedPendingRequest != null,
                 PendingRequestId = relatedPendingRequest?.Id,
                 RequestType = relatedPendingRequest?.Action,
@@ -506,6 +514,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 Name = role.Name,
                 Description = role.Description,
+                Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList()
             };
             var request = new RoleRequest
             {

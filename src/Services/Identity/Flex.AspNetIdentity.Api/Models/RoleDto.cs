@@ -7,6 +7,7 @@
         public string Code { get; set; } = default!;
         public string Description { get; set; } = default!;
         public bool? IsActive { get; set; }
+        public List<ClaimDto>? Claims { get; set; }
         public bool HasPendingRequest { get; set; }
         public long? PendingRequestId { get; set; }
         public string? RequestType { get; set; }
