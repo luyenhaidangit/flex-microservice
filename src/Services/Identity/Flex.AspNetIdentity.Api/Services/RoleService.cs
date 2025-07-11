@@ -47,7 +47,7 @@ namespace Flex.AspNetIdentity.Api.Services
                          EF.Functions.Like(x.Description, $"%{keyword}%"))
                 .AsNoTracking();
 
-            if (status == StatusConstant.Approved)
+            if (status == RequestStatusConstant.Authorised)
             {
                 // Chỉ lấy từ bảng chính
                 var filteredRoleQuery = roleQuery.AsQueryable();
@@ -69,11 +69,11 @@ namespace Flex.AspNetIdentity.Api.Services
                     .ToListAsync();
                 return PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
             }
-            else
+            else if (status == RequestStatusConstant.Unauthorised)
             {
                 // ===== Truy vấn các yêu cầu đang chờ duyệt hoặc nháp (PENDING hoặc DRAFT) =====
                 var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery()
-                    .Where(r => r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft)
+                    .Where(r => r.Status == RequestStatusConstant.Unauthorised)
                     .WhereIf(!string.IsNullOrEmpty(keyword),
                         r => EF.Functions.Like(r.Code, $"%{keyword}%") ||
                              EF.Functions.Like(r.Description, $"%{keyword}%"))
@@ -85,8 +85,8 @@ namespace Flex.AspNetIdentity.Api.Services
                     .Select(r => new RolePagingDto
                     {
                         Id = null,
-                        Name = r.Name,
                         Code = r.Code,
+                        Name = r.Name,
                         IsActive = r.IsActive,
                         Description = r.Description,
                         Status = r.Status,
@@ -97,53 +97,23 @@ namespace Flex.AspNetIdentity.Api.Services
                         ApprovedDate = null
                     });
 
-                // ===== Gộp ,format data và phân trang =====
-                var rolesWithOverlayQuery = roleQuery
-                    .GroupJoin(proposedBranchQuery,
-                        role => role.Id,
-                        req => req.EntityId,
-                        (role, reqs) => new { role, req = reqs.FirstOrDefault() })
-                    .Select(x => new RolePagingDto
-                    {
-                        Id = x.role.Id,
-                        Name = x.role.Name,
-                        Code = x.role.Code,
-                        IsActive = x.role.IsActive,
-                        Description = x.role.Description,
-                        Status = x.req == null ? StatusConstant.Approved : x.req.Status,
-                        RequestType = x.req == null ? null : x.req.Action,
-                        RequestedBy = x.req == null ? null : x.req.CreatedBy,
-                        RequestedDate = x.req == null ? null : x.req.CreatedDate,
-                        ApprovedBy = x.req != null && x.role != null ? x.req.CheckerId : null,
-                        ApprovedDate = x.req != null && x.role != null ? x.req.ApproveDate : (DateTime?)null,
-                    });
 
-                var combinedQuery = rolesWithOverlayQuery.Concat(pendingCreatesQuery);
-                // ===== ÁP DỤNG FILTER STATUS =====
-                if (!string.IsNullOrEmpty(request?.Status) && request.Status.ToUpper() != "ALL")
-                {
-                    combinedQuery = request.Status.ToUpper() switch
-                    {
-                        "APPROVED" => combinedQuery.Where(x => x.Status == StatusConstant.Approved),
-                        "PENDING" => combinedQuery.Where(x => x.Status == RequestStatusConstant.Unauthorised),
-                        "DRAFT" => combinedQuery.Where(x => x.Status == RequestStatusConstant.Draft),
-                        _ => combinedQuery
-                    };
-                }
                 // ===== SORT =====
-                combinedQuery = combinedQuery
+                pendingCreatesQuery = pendingCreatesQuery
                     .OrderBy(dto => dto.Status == RequestStatusConstant.Draft ? 0 : dto.Status == RequestStatusConstant.Unauthorised ? 1 : 2)
                     .ThenByDescending(dto => (dto.Status == RequestStatusConstant.Draft || dto.Status == RequestStatusConstant.Unauthorised) ? dto.RequestedDate : null)
                     .ThenBy(dto => dto.Id);
 
-                var total = await combinedQuery.CountAsync();
-                var items = await combinedQuery
+                var total = await pendingCreatesQuery.CountAsync();
+                var items = await pendingCreatesQuery
                     .Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
 
                 return PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
             }
+
+            return null;
         }
 
         /// <summary>

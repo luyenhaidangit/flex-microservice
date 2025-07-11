@@ -9,7 +9,7 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
         public void Configure(EntityTypeBuilder<ProposedBranch> builder)
         {
             builder.ToTable("V_PROPOSED_BRANCH");
-            builder.HasNoKey(); // View không có PK
+            builder.HasNoKey();
 
             builder.Property(p => p.Code).HasColumnType("varchar2(255)");
             builder.Property(p => p.Name).HasColumnType("varchar2(256)");
