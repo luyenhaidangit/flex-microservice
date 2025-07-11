@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Linq;
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
@@ -114,6 +115,99 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Lấy thông tin chi tiết request để hiển thị trong modal
+        /// Trả về oldData và newData để so sánh
+        /// </summary>
+        public async Task<RoleRequestDetailDto?> GetRoleRequestDetailAsync(long requestId)
+        {
+            var request = await _roleRequestRepository.FindAll().FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null) return null;
+
+            var result = new RoleRequestDetailDto
+            {
+                RequestId = request.Id.ToString(),
+                Type = request.Action,
+                CreatedBy = request.MakerId,
+                CreatedDate = request.RequestedDate.ToString("yyyy-MM-dd")
+            };
+
+            // Xử lý theo loại request
+            switch (request.Action)
+            {
+                case RequestTypeConstant.Create:
+                    // Chỉ có newData
+                    var createData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<CreateRoleDto>(request.RequestedData);
+
+                    if (createData != null)
+                    {
+                        result.NewData = new RoleDetailDataDto
+                        {
+                            RoleCode = createData.Code,
+                            RoleName = createData.Name,
+                            Description = createData.Description,
+                            Permissions = null
+                        };
+                    }
+                    break;
+
+                case RequestTypeConstant.Update:
+                    // Có cả oldData và newData
+                    var updateData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<UpdateRoleDto>(request.RequestedData);
+
+                    if (updateData != null)
+                    {
+                        // Lấy thông tin cũ từ bảng chính
+                        var currentRole = await _roleManager.Roles
+                            .Where(r => r.Id == request.EntityId)
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync();
+
+                        if (currentRole != null)
+                        {
+                            var currentClaims = await _roleManager.GetClaimsAsync(currentRole);
+                            result.OldData = new RoleDetailDataDto
+                            {
+                                RoleCode = currentRole.Code,
+                                RoleName = currentRole.Name,
+                                Description = currentRole.Description,
+                                Permissions = currentClaims.Select(c => $"{c.Type}:{c.Value}").ToList()
+                            };
+                        }
+
+                        result.NewData = new RoleDetailDataDto
+                        {
+                            RoleCode = updateData.Code,
+                            RoleName = updateData.Name,
+                            Description = updateData.Description,
+                            Permissions = updateData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
+                        };
+                    }
+                    break;
+
+                case RequestTypeConstant.Delete:
+                    // Chỉ có oldData (thông tin sẽ bị xóa)
+                    var deleteData = string.IsNullOrEmpty(request.RequestedData)
+                        ? null
+                        : JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
+
+                    if (deleteData != null)
+                    {
+                        result.OldData = new RoleDetailDataDto
+                        {
+                            RoleCode = deleteData.Code,
+                            RoleName = deleteData.Name,
+                            Description = deleteData.Description,
+                            Permissions = deleteData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
+                        };
+                    }
+                    break;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -270,6 +364,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 ProposedData = proposedData
             };
         }
+
         //public async Task<string?> CompareRoleWithRequestAsync(long requestId)
         //{
         //    var request = await _roleRequestRepository

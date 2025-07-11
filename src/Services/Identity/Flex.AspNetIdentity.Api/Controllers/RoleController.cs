@@ -151,5 +151,18 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 return NotFound(Result.Failure("No draft or pending request found for this role."));
             return Ok(Result.Success(draft));
         }
+
+        /// <summary>
+        /// Lấy thông tin chi tiết request để hiển thị trong modal
+        /// Trả về oldData và newData để so sánh
+        /// </summary>
+        [HttpGet("role-requests/{requestId}")]
+        public async Task<IActionResult> GetRoleRequestDetail(long requestId)
+        {
+            var result = await _roleService.GetRoleRequestDetailAsync(requestId);
+            if (result == null)
+                return NotFound(Result.Failure("Request not found"));
+            return Ok(Result.Success(result));
+        }
     }
 }

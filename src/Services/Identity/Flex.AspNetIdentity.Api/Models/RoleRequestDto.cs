@@ -24,4 +24,28 @@
 
         public RoleDto? ProposedData { get; set; } // Dữ liệu role được đề xuất (deserialize từ JSON)
     }
+
+    /// <summary>
+    /// DTO cho API xem chi tiết request trong modal
+    /// </summary>
+    public class RoleRequestDetailDto
+    {
+        public string RequestId { get; set; } = default!;
+        public string Type { get; set; } = default!; // CREATE / UPDATE / DELETE
+        public string CreatedBy { get; set; } = default!;
+        public string CreatedDate { get; set; } = default!;
+        public RoleDetailDataDto? OldData { get; set; } // Dữ liệu cũ (cho UPDATE/DELETE)
+        public RoleDetailDataDto? NewData { get; set; } // Dữ liệu mới (cho CREATE/UPDATE)
+    }
+
+    /// <summary>
+    /// DTO cho dữ liệu role chi tiết trong modal
+    /// </summary>
+    public class RoleDetailDataDto
+    {
+        public string RoleCode { get; set; } = default!;
+        public string RoleName { get; set; } = default!;
+        public string Description { get; set; } = default!;
+        public List<string> Permissions { get; set; } = new List<string>();
+    }
 }

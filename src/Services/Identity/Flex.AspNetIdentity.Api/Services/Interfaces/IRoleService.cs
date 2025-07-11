@@ -11,6 +11,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<RoleDto?> GetRoleByCodeAsync(string code);
         Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId);
         Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId);
+        Task<RoleRequestDetailDto?> GetRoleRequestDetailAsync(long requestId);
         Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId);
         Task<string?> CompareRoleWithRequestAsync(long requestId); 
 
