@@ -10,6 +10,9 @@
         public string Status { get; set; }
         public string? RequestType { get; set; }
 
+        // Request ID for pending requests
+        public long? RequestId { get; set; }
+
         // Thông tin trace/audit
         public string? RequestedBy { get; set; }
         public DateTime? RequestedDate { get; set; }

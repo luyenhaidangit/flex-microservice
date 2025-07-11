@@ -80,8 +80,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     .AsNoTracking();
 
                 // ===== Tạo danh sách các yêu cầu tạo mới Role (PENDING CREATE) =====
-                var pendingCreatesQuery = proposedBranchQuery
-                    .Where(r => r.Action == RequestTypeConstant.Create)
+                var pendingQuery = proposedBranchQuery
                     .Select(r => new RolePagingDto
                     {
                         Id = null,
@@ -91,21 +90,21 @@ namespace Flex.AspNetIdentity.Api.Services
                         Description = r.Description,
                         Status = r.Status,
                         RequestType = r.Action,
+                        RequestId = r.Id,
                         RequestedBy = r.CreatedBy,
                         RequestedDate = r.CreatedDate,
                         ApprovedBy = null,
                         ApprovedDate = null
                     });
 
-
                 // ===== SORT =====
-                pendingCreatesQuery = pendingCreatesQuery
+                var sortedQuery = pendingQuery
                     .OrderBy(dto => dto.Status == RequestStatusConstant.Draft ? 0 : dto.Status == RequestStatusConstant.Unauthorised ? 1 : 2)
                     .ThenByDescending(dto => (dto.Status == RequestStatusConstant.Draft || dto.Status == RequestStatusConstant.Unauthorised) ? dto.RequestedDate : null)
                     .ThenBy(dto => dto.Id);
 
-                var total = await pendingCreatesQuery.CountAsync();
-                var items = await pendingCreatesQuery
+                var total = await sortedQuery.CountAsync();
+                var items = await sortedQuery
                     .Skip((pageIndex - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
