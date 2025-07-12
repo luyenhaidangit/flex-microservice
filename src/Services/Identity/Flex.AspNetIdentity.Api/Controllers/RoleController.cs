@@ -59,6 +59,12 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(result));
         }
 
+        
+        /// <summary>
+        /// Tạo mới một yêu cầu thêm vai trò (role) vào hệ thống.
+        /// </summary>
+        /// <param name="dto">Thông tin vai trò cần tạo mới</param>
+        /// <returns>Id của yêu cầu tạo mới vai trò</returns>
         [HttpPost("requests/create")]
         public async Task<IActionResult> CreateRoleRequest([FromBody] CreateRoleDto dto)
         {
