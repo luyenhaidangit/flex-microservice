@@ -32,8 +32,8 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<long> CreateDeleteRoleRequestAsync(long roleId, string requestedBy);
 
         // Approve
-        Task ApproveRoleRequestAsync(long requestId, string? comment = null);
-        Task RejectRoleRequestAsync(long requestId, string reason);
+        Task ApproveRoleRequestAsync(long requestId, string? comment = null, string? approvedBy = null);
+        Task RejectRoleRequestAsync(long requestId, string reason, string rejectedBy);
         Task CancelRoleRequestAsync(long requestId, string currentUser); // Maker huỷ trước khi duyệt
 
         // ===== Lịch sử duyệt / audit =====

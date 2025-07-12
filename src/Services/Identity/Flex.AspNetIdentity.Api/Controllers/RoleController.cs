@@ -92,14 +92,16 @@ namespace Flex.AspNetIdentity.Api.Controllers
         [HttpPost("requests/{requestId}/approve")]
         public async Task<IActionResult> ApproveRoleRequest(long requestId, [FromBody] string? comment)
         {
-            await _roleService.ApproveRoleRequestAsync(requestId, comment);
+            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
+            await _roleService.ApproveRoleRequestAsync(requestId, comment, username);
             return Ok(Result.Success());
         }
 
         [HttpPost("requests/{requestId}/reject")]
         public async Task<IActionResult> RejectRoleRequest(long requestId, [FromBody] string reason)
         {
-            await _roleService.RejectRoleRequestAsync(requestId, reason);
+            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
+            await _roleService.RejectRoleRequestAsync(requestId, reason, username);
             return Ok(Result.Success());
         }
 

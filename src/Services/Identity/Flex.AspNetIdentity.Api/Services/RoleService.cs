@@ -575,7 +575,7 @@ namespace Flex.AspNetIdentity.Api.Services
             await _roleRequestRepository.CreateAsync(request);
             return request.Id;
         }
-        public async Task ApproveRoleRequestAsync(long requestId, string? comment = null)
+        public async Task ApproveRoleRequestAsync(long requestId, string? comment = null, string? approvedBy = null)
         {
             var request = await _roleRequestRepository
                 .FindAll()
@@ -584,7 +584,7 @@ namespace Flex.AspNetIdentity.Api.Services
             if (request == null)
                 throw new Exception("Pending role request not found.");
 
-            var approvedBy = "system";
+            var approver = approvedBy ?? "system";
 
             // Xử lý theo loại yêu cầu
             if (request.Action == RequestTypeConstant.Create)
@@ -616,7 +616,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
                 //role.Name = dto.Name;
                 //role.Description = dto.Description;
-                //role.LastModifiedBy = approvedBy;
+                //role.LastModifiedBy = approver;
                 //role.LastModifiedDate = DateTime.UtcNow;
 
                 await _roleManager.UpdateAsync(role);
@@ -641,14 +641,14 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // Cập nhật trạng thái yêu cầu
-            //request.Status = RequestStatusConstant.Approved;
-            //request.ApprovedBy = approvedBy;
-            //request.ApprovedDate = DateTime.UtcNow;
-            //request.Comment = comment;
+            request.Status = RequestStatusConstant.Authorised;
+            request.CheckerId = approver;
+            request.ApproveDate = DateTime.UtcNow;
+            request.Comments = comment;
 
             await _roleRequestRepository.UpdateAsync(request);
         }
-        public async Task RejectRoleRequestAsync(long requestId, string reason)
+        public async Task RejectRoleRequestAsync(long requestId, string reason, string rejectedBy)
         {
             var request = await _roleRequestRepository
                 .FindAll()
@@ -657,10 +657,11 @@ namespace Flex.AspNetIdentity.Api.Services
             if (request == null)
                 throw new Exception("Pending request not found.");
 
+            // Cập nhật trạng thái và thông tin từ chối
             request.Status = RequestStatusConstant.Rejected;
-            //request.ApprovedBy = _currentUser?.UserName ?? "system";
-            //request.ApprovedDate = DateTime.UtcNow;
-            //request.RejectReason = reason;
+            request.CheckerId = rejectedBy;
+            request.ApproveDate = DateTime.UtcNow;
+            request.Comments = reason;
 
             await _roleRequestRepository.UpdateAsync(request);
         }
@@ -677,7 +678,9 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new Exception("You can only cancel your own draft request.");
 
             request.Status = RequestStatusConstant.Cancelled;
+            request.CheckerId = currentUser;
             request.ApproveDate = DateTime.UtcNow;
+            request.Comments = "Cancelled by maker.";
 
             await _roleRequestRepository.UpdateAsync(request);
         }
