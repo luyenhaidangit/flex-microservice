@@ -455,6 +455,26 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto, string requestedBy)
         {
             _logger.LogInformation($"[CreateAddRoleRequestAsync] dto.Status: {dto.Status}, dto.Description: {dto.Description}");
+            
+            //  Validation
+            // 1. Kiểm tra xem role code đã tồn tại trong bảng chính chưa
+            var existingRole = await _roleManager.Roles
+                .FirstOrDefaultAsync(r => r.Code == dto.Code);
+            if (existingRole != null)
+            {
+                throw new Exception($"Role with code '{dto.Code}' already exists.");
+            }
+          
+            // 2. Kiểm tra xem đã có pending request nào với code này chưa
+            var existingPendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
+                .Where(r => r.Code == dto.Code && r.Status == RequestStatusConstant.Unauthorised)
+                .FirstOrDefaultAsync();
+            if (existingPendingRequest != null)
+            {
+                throw new Exception($"A pending request with code '{dto.Code}' already exists.");
+            }
+
+            // Process
             var requestedJson = JsonSerializer.Serialize(dto);
             var request = new RoleRequest
             {
@@ -468,6 +488,8 @@ namespace Flex.AspNetIdentity.Api.Services
                 RequestedData = requestedJson
             };
             await _roleRequestRepository.CreateAsync(request);
+            // ===== END: PROCESS =====
+
             return request.Id;
         }
         public async Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto, string requestedBy)
@@ -475,12 +497,39 @@ namespace Flex.AspNetIdentity.Api.Services
             var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
             if (role == null)
                 throw new Exception("Role not found");
+                
+            // ===== VALIDATION: Kiểm tra trùng lặp code =====
+            
+            // 1. Kiểm tra xem đã có pending update request nào cho role này chưa
             var existingRequest = await _roleRequestRepository.FindAll()
                 .AnyAsync(r => r.EntityId == roleId &&
                                r.Status == RequestStatusConstant.Unauthorised &&
                                r.Action == RequestTypeConstant.Update);
             if (existingRequest)
                 throw new Exception("A pending update request already exists for this role.");
+            
+            // 2. Kiểm tra xem code mới có trùng với role khác không (nếu code thay đổi)
+            if (dto.Code != role.Code)
+            {
+                var existingRoleWithNewCode = await _roleManager.Roles
+                    .FirstOrDefaultAsync(r => r.Code == dto.Code && r.Id != roleId);
+                if (existingRoleWithNewCode != null)
+                {
+                    throw new Exception($"Role with code '{dto.Code}' already exists.");
+                }
+                
+                // 3. Kiểm tra xem code mới có trùng với pending request nào khác không
+                var existingPendingRequestWithNewCode = await _roleRequestRepository.GetBranchCombinedQuery()
+                    .Where(r => r.Code == dto.Code && 
+                               (r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft) &&
+                               r.Action == RequestTypeConstant.Create)
+                    .FirstOrDefaultAsync();
+                if (existingPendingRequestWithNewCode != null)
+                {
+                    throw new Exception($"A pending request with code '{dto.Code}' already exists.");
+                }
+            }
+            
             var requestedJson = JsonSerializer.Serialize(dto);
             var request = new RoleRequest
             {
