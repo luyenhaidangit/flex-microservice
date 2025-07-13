@@ -16,6 +16,9 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
             builder.Property(r => r.Code).HasColumnName("CODE");
             builder.Property(r => r.Description).HasColumnName("DESCRIPTION");
             builder.Property(r => r.IsActive).HasColumnName("IS_ACTIVE");
+            builder.Property(x => x.NormalizedName)
+                .HasColumnName("NORMALIZED_NAME")
+                .HasColumnType("varchar2(256)");
 
             // Ignore NormalizedName and ConcurrencyStamp if not present in DB
             builder.Ignore(r => r.NormalizedName);

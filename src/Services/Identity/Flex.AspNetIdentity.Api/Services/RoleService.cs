@@ -592,7 +592,11 @@ namespace Flex.AspNetIdentity.Api.Services
                 var dto = JsonSerializer.Deserialize<CreateRoleDto>(request.RequestedData);
                 if (dto == null) throw new Exception("Invalid request data");
 
-                var newRole = new Role("", "");
+                var newRole = new Role(dto.Name, dto.Code)
+                {
+                    Description = dto.Description,
+                    IsActive = dto.IsActive
+                };
 
                 await _roleManager.CreateAsync(newRole);
 

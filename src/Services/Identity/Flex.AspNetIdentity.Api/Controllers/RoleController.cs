@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Flex.AspNetIdentity.Api.Models.Requests;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
@@ -90,18 +91,18 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         [HttpPost("requests/{requestId}/approve")]
-        public async Task<IActionResult> ApproveRoleRequest(long requestId, [FromBody] string? comment)
+        public async Task<IActionResult> ApproveRoleRequest(long requestId)
         {
             var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
-            await _roleService.ApproveRoleRequestAsync(requestId, comment, username);
+            await _roleService.ApproveRoleRequestAsync(requestId, null, username);
             return Ok(Result.Success());
         }
 
         [HttpPost("requests/{requestId}/reject")]
-        public async Task<IActionResult> RejectRoleRequest(long requestId, [FromBody] string reason)
+        public async Task<IActionResult> RejectRoleRequest(long requestId, [FromBody] RejectRoleRequestDto dto)
         {
             var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
-            await _roleService.RejectRoleRequestAsync(requestId, reason, username);
+            await _roleService.RejectRoleRequestAsync(requestId, dto?.Reason, username);
             return Ok(Result.Success());
         }
 
