@@ -8,9 +8,7 @@ namespace Flex.AspNetIdentity.Api.Models
         
         /// <summary>
         /// Filter theo trạng thái: "Approved", "Pending", "Draft", "All"
-        /// </summary>
-        public string? Status { get; set; }
-        
+        /// </summary>        
         protected override Dictionary<string, string> OrderByMappings => new()
         {
         };
