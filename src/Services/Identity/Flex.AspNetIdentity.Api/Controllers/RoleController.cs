@@ -18,12 +18,22 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Get all roles with pagination
+        /// Get all approved roles with pagination
         /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> GetPagingRolesAsync([FromQuery] GetRolesPagingRequest request)
+        [HttpGet("approved")]
+        public async Task<IActionResult> GetPagingApprovedRolesAsync([FromQuery] GetRolesPagingRequest request)
         {
-            var result = await _roleService.GetRolePagedAsync(request);
+            var result = await _roleService.GetApprovedRolesPagedAsync(request);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// Get all pending roles with pagination
+        /// </summary>
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPagingPendingRolesAsync([FromQuery] GetRolesPagingRequest request)
+        {
+            var result = await _roleService.GetPendingRolesPagedAsync(request);
             return Ok(Result.Success(result));
         }
 
@@ -144,25 +154,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success());
         }
 
-        /// <summary>
-        /// Get all approved roles with pagination
-        /// </summary>
-        [HttpGet("approved")]
-        public async Task<IActionResult> GetPagingApprovedRolesAsync([FromQuery] GetRolesPagingRequest request)
-        {
-            var result = await _roleService.GetApprovedRolesPagedAsync(request);
-            return Ok(Result.Success(result));
-        }
-
-        /// <summary>
-        /// Get all pending roles with pagination
-        /// </summary>
-        [HttpGet("pending")]
-        public async Task<IActionResult> GetPagingPendingRolesAsync([FromQuery] GetRolesPagingRequest request)
-        {
-            var result = await _roleService.GetPendingRolesPagedAsync(request);
-            return Ok(Result.Success(result));
-        }
+        
 
         // ===== XÓA API LẤY DANH SÁCH YÊU CẦU CHỜ DUYỆT (pending-requests) =====
         // [HttpGet("pending-requests")]

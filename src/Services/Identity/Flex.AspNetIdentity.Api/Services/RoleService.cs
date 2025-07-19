@@ -17,15 +17,13 @@ namespace Flex.AspNetIdentity.Api.Services
     {
         private readonly ILogger<RoleService> _logger;
         private readonly RoleManager<Role> _roleManager;
-        private readonly UserManager<User> _userManager;
         private readonly IRoleRequestRepository _roleRequestRepository;
 
-        public RoleService(ILogger<RoleService> logger, IRoleRequestRepository roleRequestRepository, RoleManager<Role> roleManager, UserManager<User> userManager)
+        public RoleService(ILogger<RoleService> logger, IRoleRequestRepository roleRequestRepository, RoleManager<Role> roleManager)
         {
             _logger = logger;
             _roleRequestRepository = roleRequestRepository;
             _roleManager = roleManager;
-            _userManager = userManager;
         }
         #region Query
 
@@ -722,11 +720,6 @@ namespace Flex.AspNetIdentity.Api.Services
             await _roleManager.RemoveClaimAsync(role, new Claim(claim.Type, claim.Value));
         }
         public Task UpdateAsync(long roleId, UpdateRoleDto dto)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<PagedResult<RolePagingDto>> GetRolePagedAsync()
         {
             throw new NotImplementedException();
         }
