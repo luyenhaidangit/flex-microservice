@@ -34,7 +34,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<PagedResult<RolePagingDto>> GetRolePagedAsync(GetRolesPagingRequest request)
         {
-            // ===== Xử lý tham số phân trang & tìm kiếm =====
+            // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim();
             var status = request?.Status?.ToUpper() ?? StatusConstant.Approved;
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);

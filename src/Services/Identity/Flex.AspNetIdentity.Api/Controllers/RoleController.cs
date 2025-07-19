@@ -30,6 +30,16 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
+        /// Get role by id
+        /// </summary>
+        [HttpGet("{id:long}")]
+        public async Task<IActionResult> GetRoleById(long id)
+        {
+            var result = await _roleService.GetRoleByIdAsync(id);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
         /// Lấy thông tin chi tiết request để hiển thị trong modal
         /// Trả về oldData và newData để so sánh
         /// </summary>
@@ -39,13 +49,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             var result = await _roleService.GetRoleRequestDetailAsync(requestId);
             if (result == null)
                 return NotFound(Result.Failure("Request not found"));
-            return Ok(Result.Success(result));
-        }
-
-        [HttpGet("{id:long}")]
-        public async Task<IActionResult> GetRoleById(long id)
-        {
-            var result = await _roleService.GetRoleByIdAsync(id);
             return Ok(Result.Success(result));
         }
 
