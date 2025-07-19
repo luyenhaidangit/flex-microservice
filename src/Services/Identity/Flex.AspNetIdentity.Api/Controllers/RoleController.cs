@@ -1,18 +1,16 @@
-﻿using Flex.Shared.SeedWork;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Flex.AspNetIdentity.Api.Services.Interfaces;
-using Flex.AspNetIdentity.Api.Models;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Flex.Shared.SeedWork;
+using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Models.Requests;
+using Flex.AspNetIdentity.Api.Services.Interfaces;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
     [Route("api/roles")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class RoleController : ControllerBase
     {
         private IRoleService _roleService;
@@ -22,10 +20,8 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Lấy danh sách phân trang các vai trò (roles), bao gồm cả các yêu cầu tạo mới đang chờ duyệt.
+        /// Get all roles with pagination
         /// </summary>
-        /// <param name="request">Thông tin phân trang và tìm kiếm</param>
-        /// <returns>Danh sách vai trò phân trang</returns>
         [HttpGet]
         public async Task<IActionResult> GetPagingRolesAsync([FromQuery] GetRolesPagingRequest request)
         {
