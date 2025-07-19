@@ -98,10 +98,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     ApprovedDate = null
                 });
 
-            var sortedQuery = pendingQuery
-                .OrderBy(dto => dto.Status == RequestStatusConstant.Draft ? 0 : dto.Status == RequestStatusConstant.Unauthorised ? 1 : 2)
-                .ThenByDescending(dto => (dto.Status == RequestStatusConstant.Draft || dto.Status == RequestStatusConstant.Unauthorised) ? dto.RequestedDate : null)
-                .ThenBy(dto => dto.Id);
+            var sortedQuery = pendingQuery.OrderByDescending(dto => dto.RequestedDate).ThenBy(dto => dto.Id);
 
             var total = await sortedQuery.CountAsync();
             var items = await sortedQuery
@@ -208,9 +205,9 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<RoleDto?> GetRoleByIdAsync(long id)
         {
-            // 1. Ưu tiên tìm request nháp hoặc chờ duyệt theo EntityId
+            // Chỉ tìm request chờ duyệt (không lấy nháp)
             var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.EntityId == id && (r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft))
+                .Where(r => r.EntityId == id && r.Status == RequestStatusConstant.Unauthorised)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
@@ -252,20 +249,20 @@ namespace Flex.AspNetIdentity.Api.Services
                 IsActive = role.IsActive,
                 Description = role.Description,
                 Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
-                HasPendingRequest = pendingRequest != null,
-                PendingRequestId = pendingRequest?.Id,
-                RequestType = pendingRequest?.Action,
-                RequestedBy = pendingRequest?.CreatedBy,
-                RequestedAt = pendingRequest?.CreatedDate,
-                Status = pendingRequest?.Status ?? StatusConstant.Approved,
+                HasPendingRequest = false,
+                PendingRequestId = null,
+                RequestType = null,
+                RequestedBy = null,
+                RequestedAt = null,
+                Status = StatusConstant.Approved,
             };
         }
 
         public async Task<RoleDto?> GetRoleByCodeAsync(string code)
         {
-            // 1. Ưu tiên tìm request nháp hoặc chờ duyệt theo code
+            // Chỉ tìm request chờ duyệt (không lấy nháp)
             var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Code == code && (r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft))
+                .Where(r => r.Code == code && r.Status == RequestStatusConstant.Unauthorised)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
@@ -296,12 +293,6 @@ namespace Flex.AspNetIdentity.Api.Services
             if (role == null)
                 return null;
 
-            // Kiểm tra xem có pending request nào liên quan không (ví dụ update)
-            var relatedPendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.EntityId == role.Id && (r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft))
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
             // Lấy claims của role
             var claims = await _roleManager.GetClaimsAsync(role);
 
@@ -313,12 +304,12 @@ namespace Flex.AspNetIdentity.Api.Services
                 IsActive = role.IsActive,
                 Description = role.Description,
                 Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
-                HasPendingRequest = relatedPendingRequest != null,
-                PendingRequestId = relatedPendingRequest?.Id,
-                RequestType = relatedPendingRequest?.Action,
-                RequestedBy = relatedPendingRequest?.CreatedBy,
-                RequestedAt = relatedPendingRequest?.CreatedDate,
-                Status = relatedPendingRequest?.Status ?? StatusConstant.Approved,
+                HasPendingRequest = false,
+                PendingRequestId = null,
+                RequestType = null,
+                RequestedBy = null,
+                RequestedAt = null,
+                Status = StatusConstant.Approved,
             };
         }
 
@@ -476,9 +467,7 @@ namespace Flex.AspNetIdentity.Api.Services
             var request = new RoleRequest
             {
                 Action = RequestTypeConstant.Create,
-                Status = (dto.Status != null && dto.Status.Equals("Draft", StringComparison.OrdinalIgnoreCase))
-                    ? RequestStatusConstant.Draft
-                    : RequestStatusConstant.Unauthorised,
+                Status = RequestStatusConstant.Unauthorised,
                 EntityId = 0,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
