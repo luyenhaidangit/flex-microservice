@@ -1,7 +1,5 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Flex.Shared.SeedWork;
 using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Models.Requests;
@@ -144,6 +142,26 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 return NotFound(Result.Failure(message: "Draft create request not found for this code or you are not the creator."));
             await _roleService.CancelRoleRequestAsync(0, username);
             return Ok(Result.Success());
+        }
+
+        /// <summary>
+        /// Get all approved roles with pagination
+        /// </summary>
+        [HttpGet("approved")]
+        public async Task<IActionResult> GetPagingApprovedRolesAsync([FromQuery] GetRolesPagingRequest request)
+        {
+            var result = await _roleService.GetApprovedRolesPagedAsync(request);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// Get all pending roles with pagination
+        /// </summary>
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPagingPendingRolesAsync([FromQuery] GetRolesPagingRequest request)
+        {
+            var result = await _roleService.GetPendingRolesPagedAsync(request);
+            return Ok(Result.Success(result));
         }
 
         // ===== XÓA API LẤY DANH SÁCH YÊU CẦU CHỜ DUYỆT (pending-requests) =====
