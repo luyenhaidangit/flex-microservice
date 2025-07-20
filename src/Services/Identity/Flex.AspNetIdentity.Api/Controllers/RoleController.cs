@@ -40,7 +40,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// <summary>
         /// Get approved role by code
         /// </summary>
-        [HttpGet("{code}")]
+        [HttpGet("approved/{code}")]
         public async Task<IActionResult> GetApprovedRoleByCode(string code)
         {
             var result = await _roleService.GetApprovedRoleByCodeAsync(code);
