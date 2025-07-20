@@ -17,6 +17,30 @@ namespace Flex.AspNetIdentity.Api.Entities
         [Column("IS_ACTIVE")]
         public bool? IsActive { get; set; } = true;
 
+        [Column("CREATED_AT")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Column("LAST_UPDATED")]
+        public DateTime? LastUpdated { get; set; }
+
+        [Column("STATUS")]
+        public string Status { get; set; } = "APPROVED";
+
+        [Column("VERSION")]
+        public int Version { get; set; } = 1;
+
+        [Column("PARENT_ID")]
+        public long? ParentId { get; set; }
+
+        [Column("MAKER_ID")]
+        public string? MakerId { get; set; }
+
+        [Column("CHECKER_ID")]
+        public string? CheckerId { get; set; }
+
+        [Column("REQUEST_ID")]
+        public long? RequestId { get; set; }
+
         public Role()
         {
         }

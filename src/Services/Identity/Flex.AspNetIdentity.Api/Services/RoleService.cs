@@ -58,6 +58,10 @@ namespace Flex.AspNetIdentity.Api.Services
                     IsActive = x.IsActive,
                     Description = x.Description,
                     Status = StatusConstant.Approved,
+                    RequestedBy = x.MakerId,
+                    RequestedDate = x.CreatedAt,
+                    ApprovedBy = x.CheckerId,
+                    ApprovedDate = x.LastUpdated
                 })
                 .ToListAsync();
 
