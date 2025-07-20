@@ -201,11 +201,11 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Lấy thông tin chi tiết Role theo Id, kèm theo trạng thái yêu cầu đang chờ (nếu có).
         /// </summary>
-        public async Task<RoleDto?> GetRoleByIdAsync(long id)
+        public async Task<RoleDto?> GetApprovedRoleByCodeAsync(string code)
         {
             // Chỉ tìm request chờ duyệt (không lấy nháp)
             var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.EntityId == id && r.Status == RequestStatusConstant.Unauthorised)
+                .Where(r => r.Code == code && r.Status == RequestStatusConstant.Unauthorised)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
@@ -231,7 +231,7 @@ namespace Flex.AspNetIdentity.Api.Services
             // 2. Nếu không có request, tìm ở bảng chính
             var role = await _roleManager.Roles
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == id);
+                .FirstOrDefaultAsync(r => r.Code == code);
 
             if (role == null)
                 return null;

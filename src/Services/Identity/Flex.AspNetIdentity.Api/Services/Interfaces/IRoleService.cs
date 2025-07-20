@@ -8,8 +8,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         // Query
         Task<PagedResult<RoleApprovedListItemDto>> GetApprovedRolesPagedAsync(GetRolesPagingRequest request);
         Task<PagedResult<RolePagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request);
-        Task<RoleDto?> GetRoleByIdAsync(long id);
-        Task<RoleDto?> GetRoleByCodeAsync(string code);
+        Task<RoleDto?> GetApprovedRoleByCodeAsync(string code);
         Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId);
         Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId);
         Task<RoleRequestDetailDto?> GetRoleRequestDetailAsync(long requestId);

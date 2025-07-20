@@ -38,12 +38,12 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Get role by id
+        /// Get approved role by code
         /// </summary>
-        [HttpGet("{id:long}")]
-        public async Task<IActionResult> GetRoleById(long id)
+        [HttpGet("{code}")]
+        public async Task<IActionResult> GetApprovedRoleByCode(string code)
         {
-            var result = await _roleService.GetRoleByIdAsync(id);
+            var result = await _roleService.GetApprovedRoleByCodeAsync(code);
             return Ok(Result.Success(result));
         }
 
@@ -57,13 +57,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             var result = await _roleService.GetRoleRequestDetailAsync(requestId);
             if (result == null)
                 return NotFound(Result.Failure("Request not found"));
-            return Ok(Result.Success(result));
-        }
-
-        [HttpGet("{code}")]
-        public async Task<IActionResult> GetRoleByCode(string code)
-        {
-            var result = await _roleService.GetRoleByCodeAsync(code);
             return Ok(Result.Success(result));
         }
 
