@@ -1,5 +1,4 @@
-﻿using Flex.Infrastructure.Extensions;
-using Flex.EntityFrameworkCore.Oracle;
+﻿using Flex.EntityFrameworkCore.Oracle;
 using Flex.AspNetIdentity.Api.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Flex.AspNetIdentity.Api.Entities;
@@ -14,6 +13,7 @@ using Flex.AspNetIdentity.Api.Repositories;
 using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common.Repositories;
 using Flex.Infrastructure.Common;
+using Flex.Shared.Extensions;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {

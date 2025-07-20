@@ -30,7 +30,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Get all approved roles with pagination
         /// </summary>
-        public async Task<PagedResult<RolePagingDto>> GetApprovedRolesPagedAsync(GetRolesPagingRequest request)
+        public async Task<PagedResult<RoleApprovedListItemDto>> GetApprovedRolesPagedAsync(GetRolesPagingRequest request)
         {
             // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim();
@@ -50,23 +50,17 @@ namespace Flex.AspNetIdentity.Api.Services
                 .OrderBy(x => x.Id)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
-                .Select(x => new RolePagingDto
+                .Select(x => new RoleApprovedListItemDto
                 {
-                    Id = x.Id,
-                    Name = x.Name,
                     Code = x.Code,
-                    IsActive = x.IsActive,
+                    Name = x.Name,
                     Description = x.Description,
-                    Status = StatusConstant.Approved,
-                    RequestedBy = x.MakerId,
-                    RequestedDate = x.CreatedAt,
-                    ApprovedBy = x.CheckerId,
-                    ApprovedDate = x.LastUpdated
+                    IsActive = x.IsActive
                 })
                 .ToListAsync();
 
             // ===== Return result =====
-            return PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
+            return PagedResult<RoleApprovedListItemDto>.Create(pageIndex, pageSize, total, items);
         }
 
         /// <summary>

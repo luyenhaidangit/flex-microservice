@@ -1,5 +1,4 @@
-﻿using Flex.Infrastructure.Extensions;
-using Serilog;
+﻿using Serilog;
 
 namespace Flex.IdentityServer.Api.Extensions
 {

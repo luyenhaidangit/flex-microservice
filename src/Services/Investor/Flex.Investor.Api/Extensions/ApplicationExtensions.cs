@@ -1,4 +1,4 @@
-﻿using Flex.Infrastructure.Extensions;
+﻿using Flex.Infrastructure.Middlewares;
 using Serilog;
 
 namespace Flex.Investor.Api.Extensions
@@ -16,7 +16,7 @@ namespace Flex.Investor.Api.Extensions
             // Logging
             app.UseSerilogRequestLogging();
 
-            app.UseApplicationMiddleware();
+            app.UseMiddleware<ErrorWrappingMiddleware>();
 
             app.UseHttpsRedirection();
 

@@ -19,4 +19,12 @@
         public string? ApprovedBy { get; set; }
         public DateTime? ApprovedDate { get; set; }
     }
+
+    public class RoleApprovedListItemDto
+    {
+        public string Code { get; set; } = default!;
+        public string Name { get; set; } = default!;
+        public string? Description { get; set; }
+        public bool? IsActive { get; set; }
+    }
 }
