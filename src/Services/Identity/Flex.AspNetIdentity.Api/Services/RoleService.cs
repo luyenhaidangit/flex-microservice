@@ -33,16 +33,17 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<PagedResult<RoleApprovedListItemDto>> GetApprovedRolesPagedAsync(GetRolesPagingRequest request)
         {
             // ===== Process request parameters =====
-            var keyword = request?.Keyword?.Trim();
+            var keyword = request?.Keyword?.Trim().ToLower();
+            var status = request?.IsActive?.Trim().ToUpper() == "Y" ? true : false;
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
             // ===== Build query =====
             var roleQuery = _roleManager.Roles
                 .WhereIf(!string.IsNullOrEmpty(keyword),
-                    x => EF.Functions.Like(x.Code, $"%{keyword}%") ||
-                         EF.Functions.Like(x.Description, $"%{keyword}%"))
-                .AsNoTracking();
+                    x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
+                         EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
+                .WhereIf(!string.IsNullOrEmpty(request.IsActive),x => x.IsActive == status);
 
             // ===== Execute query =====
             var total = await roleQuery.CountAsync();
@@ -76,8 +77,9 @@ namespace Flex.AspNetIdentity.Api.Services
                 .Where(r => r.Status == RequestStatusConstant.Unauthorised)
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     r => EF.Functions.Like(r.Code, $"%{keyword}%") ||
-                         EF.Functions.Like(r.Description, $"%{keyword}%"))
-                .AsNoTracking();
+                         EF.Functions.Like(r.Description, $"%{keyword}%"));
+            
+            proposedBranchQuery = proposedBranchQuery.AsNoTracking();
 
             var pendingQuery = proposedBranchQuery
                 .Select(r => new RolePagingDto
