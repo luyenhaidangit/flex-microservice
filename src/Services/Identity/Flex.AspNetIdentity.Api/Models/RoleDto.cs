@@ -8,15 +8,6 @@
         public string Description { get; set; } = default!;
         public bool? IsActive { get; set; }
         public List<ClaimDto>? Claims { get; set; }
-        public bool HasPendingRequest { get; set; }
-        public long? PendingRequestId { get; set; }
-        public string? RequestType { get; set; }
-        public string? RequestedBy { get; set; }
-        public DateTime? RequestedAt { get; set; }
-
-        // Thông tin trace/audit
-        public string? ApprovedBy { get; set; }
-        public DateTime? ApprovedDate { get; set; }
         public string? Status { get; set; }
     }
 }

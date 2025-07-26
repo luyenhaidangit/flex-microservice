@@ -221,11 +221,6 @@ namespace Flex.AspNetIdentity.Api.Services
                     IsActive = pendingRequest.IsActive,
                     Description = pendingRequest.Description,
                     Claims = null, // Claims sẽ được lấy từ RequestedData khi cần
-                    HasPendingRequest = true,
-                    PendingRequestId = pendingRequest.Id,
-                    RequestType = pendingRequest.Action,
-                    RequestedBy = pendingRequest.CreatedBy,
-                    RequestedAt = pendingRequest.CreatedDate,
                     Status = pendingRequest.Status,
                 };
             }
@@ -249,11 +244,6 @@ namespace Flex.AspNetIdentity.Api.Services
                 IsActive = role.IsActive,
                 Description = role.Description,
                 Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
-                HasPendingRequest = false,
-                PendingRequestId = null,
-                RequestType = null,
-                RequestedBy = null,
-                RequestedAt = null,
                 Status = StatusConstant.Approved,
             };
         }
@@ -276,11 +266,6 @@ namespace Flex.AspNetIdentity.Api.Services
                     IsActive = pendingRequest.IsActive,
                     Description = pendingRequest.Description,
                     Claims = null, // Claims sẽ được lấy từ RequestedData khi cần
-                    HasPendingRequest = true,
-                    PendingRequestId = pendingRequest.Id,
-                    RequestType = pendingRequest.Action,
-                    RequestedBy = pendingRequest.CreatedBy,
-                    RequestedAt = pendingRequest.CreatedDate,
                     Status = pendingRequest.Status,
                 };
             }
@@ -304,11 +289,6 @@ namespace Flex.AspNetIdentity.Api.Services
                 IsActive = role.IsActive,
                 Description = role.Description,
                 Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
-                HasPendingRequest = false,
-                PendingRequestId = null,
-                RequestType = null,
-                RequestedBy = null,
-                RequestedAt = null,
                 Status = StatusConstant.Approved,
             };
         }
