@@ -28,6 +28,26 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
+        /// Get approved role by code
+        /// </summary>
+        [HttpGet("approved/{code}")]
+        public async Task<IActionResult> GetApprovedRoleByCode(string code)
+        {
+            var result = await _roleService.GetApprovedRoleByCodeAsync(code);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// Get approved role history by code
+        /// </summary>
+        [HttpGet("approved/{roleCode}/history")]
+        public async Task<IActionResult> GetRoleChangeHistory(string roleCode)
+        {
+            var result = await _roleService.GetRoleChangeHistoryAsync(roleCode);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
         /// Get all pending roles with pagination
         /// </summary>
         [HttpGet("pending")]
@@ -37,15 +57,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(result));
         }
 
-        /// <summary>
-        /// Get approved role by code
-        /// </summary>
-        [HttpGet("approved/{code}")]
-        public async Task<IActionResult> GetApprovedRoleByCode(string code)
-        {
-            var result = await _roleService.GetApprovedRoleByCodeAsync(code);
-            return Ok(Result.Success(result));
-        }
+        
 
         /// <summary>
         /// Lấy thông tin chi tiết request để hiển thị trong modal
@@ -179,6 +191,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             if (draft == null)
                 return NotFound(Result.Failure("No draft or pending request found for this role."));
             return Ok(Result.Success(draft));
-        }
+        }         
     }
 }
