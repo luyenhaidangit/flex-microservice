@@ -43,7 +43,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         [HttpGet("approved/{code}/history")]
         public async Task<IActionResult> GetApprovedRoleChangeHistory(string code)
         {
-            var result = await _roleService.GetApprovedRoleChangeHistory(code);
+            var result = await _roleService.GetApprovedRoleChangeHistoryAsync(code);
             return Ok(Result.Success(result));
         }
 

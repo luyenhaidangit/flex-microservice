@@ -97,7 +97,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Get approved role history by code.
         /// </summary>
-        public async Task<List<RoleChangeHistoryDto>> GetApprovedRoleChangeHistory(string roleCode)
+        public async Task<List<RoleChangeHistoryDto>> GetApprovedRoleChangeHistoryAsync(string roleCode)
         {
             // Find role with code
             var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleCode);
@@ -107,7 +107,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new Exception($"Role with code '{roleCode}' not exists.");
             }
 
-            // Get role history by role Id
+            // Get role histories by role Id
             var roleId = role.Id;
 
             var requests = await _roleRequestRepository.FindAll()
@@ -136,8 +136,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 ApproverTime = req.ApproveDate,
                 Status = req.Status,
                 Description = req.Comments,
-                //Changes = GetChanges(req),   // Không query DB trong này
-                //RawData = GetRawData(req)    // Không query DB trong này
+                Changes = req.RequestedData
             }).ToList();
 
             return historyItems;
@@ -907,131 +906,6 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             return comparison;
-        }
-        private string GetStatusBefore(RoleRequest request)
-        {
-            // Logic để xác định status trước đó
-            switch (request.Action)
-            {
-                case RequestTypeConstant.Create:
-                    return "DRAFT";
-                case RequestTypeConstant.Update:
-                    return "APPROVED";
-                case RequestTypeConstant.Delete:
-                    return "APPROVED";
-                default:
-                    return "UNKNOWN";
-            }
-        }
-
-        private string GetStatusLabel(string status)
-        {
-            return status switch
-            {
-                "DRAFT" => "Nháp",
-                "PENDING" => "Chờ duyệt",
-                "UNAUTHORISED" => "Chờ duyệt",
-                "APPROVED" => "Đã duyệt",
-                "AUTHORISED" => "Đã duyệt",
-                "REJECTED" => "Từ chối",
-                "CANCELLED" => "Đã hủy",
-                _ => status
-            };
-        }
-
-        private string GetDescription(RoleRequest request)
-        {
-            return request.Action switch
-            {
-                RequestTypeConstant.Create => "Tạo mới vai trò",
-                RequestTypeConstant.Update => "Cập nhật thông tin vai trò",
-                RequestTypeConstant.Delete => "Xóa vai trò",
-                _ => "Thay đổi vai trò"
-            };
-        }
-
-        private Dictionary<string, object> GetChanges(RoleRequest request)
-        {
-            var changes = new Dictionary<string, object>();
-
-            if (string.IsNullOrEmpty(request.RequestedData))
-                return changes;
-
-            try
-            {
-                var roleData = JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
-                if (roleData != null)
-                {
-                    changes["roleName"] = roleData.Name;
-                    changes["description"] = roleData.Description;
-                    changes["isActive"] = roleData?.IsActive ?? false;
-                }
-            }
-            catch
-            {
-                // Ignore deserialization errors
-            }
-
-            return changes;
-        }
-
-        private RawDataDto GetRawData(RoleRequest request, Role currentRole)
-        {
-            var rawData = new RawDataDto();
-
-            // Before data
-            rawData.Before = new Dictionary<string, object>
-            {
-                ["status"] = GetStatusBefore(request),
-                ["roleName"] = currentRole.Name,
-                ["description"] = currentRole.Description,
-                ["isActive"] = currentRole.IsActive
-            };
-
-            // After data
-            if (!string.IsNullOrEmpty(request.RequestedData))
-            {
-                try
-                {
-                    var roleData = JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
-                    if (roleData != null)
-                    {
-                        rawData.After = new Dictionary<string, object>
-                        {
-                            ["status"] = request.Status,
-                            ["roleName"] = roleData.Name,
-                            ["description"] = roleData.Description,
-                            ["isActive"] = roleData?.IsActive ?? false
-                        };
-                    }
-                    else
-                    {
-                        rawData.After = rawData.Before;
-                    }
-                }
-                catch
-                {
-                    rawData.After = rawData.Before;
-                }
-            }
-            else
-            {
-                rawData.After = rawData.Before;
-            }
-
-            return rawData;
-        }
-
-        private string GetUserFullName(string userName)
-        {
-            // Mock data - trong thực tế sẽ lấy từ User service
-            return userName switch
-            {
-                "admin_maker" => "Nguyễn Văn A",
-                "admin_checker" => "Trần Thị B",
-                "system_admin" => "Lê Văn C",
-                _ => userName
-            };
         }
     }
 }
