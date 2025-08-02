@@ -48,6 +48,17 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
+        /// Create a new role creation request.
+        /// </summary>
+        [HttpPost("requests/create")]
+        public async Task<IActionResult> CreateRoleRequest([FromBody] CreateRoleDto dto)
+        {
+            var username = User.FindFirstValue(Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
+            var id = await _roleService.CreateRoleRequestAsync(dto, username);
+            return Ok(Result.Success(id));
+        }
+
+        /// <summary>
         /// Get all pending roles with pagination
         /// </summary>
         [HttpGet("pending")]
@@ -68,20 +79,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             if (result == null)
                 return NotFound(Result.Failure("Request not found"));
             return Ok(Result.Success(result));
-        }
-
-        
-        /// <summary>
-        /// Tạo mới một yêu cầu thêm vai trò (role) vào hệ thống.
-        /// </summary>
-        /// <param name="dto">Thông tin vai trò cần tạo mới</param>
-        /// <returns>Id của yêu cầu tạo mới vai trò</returns>
-        [HttpPost("requests/create")]
-        public async Task<IActionResult> CreateRoleRequest([FromBody] CreateRoleDto dto)
-        {
-            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
-            var id = await _roleService.CreateAddRoleRequestAsync(dto, username);
-            return Ok(Result.Success(id));
         }
 
         [HttpPost("{roleId}/requests/update")]

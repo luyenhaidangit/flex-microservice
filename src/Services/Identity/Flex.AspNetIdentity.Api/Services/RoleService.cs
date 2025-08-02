@@ -99,7 +99,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<List<RoleChangeHistoryDto>> GetApprovedRoleChangeHistoryAsync(string roleCode)
         {
-            // Find role with code
+            // ===== Find role with code =====
             var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleCode);
 
             if (role == null)
@@ -107,7 +107,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new Exception($"Role with code '{roleCode}' not exists.");
             }
 
-            // Get role histories by role Id
+            // ===== Get role histories by role Id =====
             var roleId = role.Id;
 
             var requests = await _roleRequestRepository.FindAll()
@@ -381,20 +381,18 @@ namespace Flex.AspNetIdentity.Api.Services
         #endregion
 
         #region Command
-        public async Task<long> CreateAddRoleRequestAsync(CreateRoleDto dto, string requestedBy)
+        public async Task<long> CreateRoleRequestAsync(CreateRoleDto dto, string requestedBy)
         {
-            _logger.LogInformation($"[CreateAddRoleRequestAsync] dto.Status: {dto.Status}, dto.Description: {dto.Description}");
-            
-            //  Validation
-            // 1. Kiểm tra xem role code đã tồn tại trong bảng chính chưa
+            // ===== Validation =====
+            // ===== Check role code is exits =====
             var existingRole = await _roleManager.Roles
                 .FirstOrDefaultAsync(r => r.Code == dto.Code);
             if (existingRole != null)
             {
                 throw new Exception($"Role with code '{dto.Code}' already exists.");
             }
-          
-            // 2. Kiểm tra xem đã có pending request nào với code này chưa
+
+            // ===== Check role request unauthorised is exits =====
             var existingPendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
                 .Where(r => r.Code == dto.Code && r.Status == RequestStatusConstant.Unauthorised)
                 .FirstOrDefaultAsync();
@@ -403,7 +401,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new Exception($"A pending request with code '{dto.Code}' already exists.");
             }
 
-            // Process
+            // ===== Process =====
             var requestedJson = JsonSerializer.Serialize(dto);
             var request = new RoleRequest
             {
@@ -412,10 +410,10 @@ namespace Flex.AspNetIdentity.Api.Services
                 EntityId = 0,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
+                Comments = dto.Description,
                 RequestedData = requestedJson
             };
             await _roleRequestRepository.CreateAsync(request);
-            // ===== END: PROCESS =====
 
             return request.Id;
         }

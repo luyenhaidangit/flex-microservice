@@ -18,7 +18,5 @@ namespace Flex.AspNetIdentity.Api.Models
         public bool IsActive { get; set; } = true;
 
         public List<ClaimDto>? Claims { get; set; }
-
-        public string? Status { get; set; } // Draft hoặc Pending
     }
 }
