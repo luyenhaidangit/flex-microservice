@@ -2,7 +2,7 @@
 
 namespace Flex.AspNetIdentity.Api.Models
 {
-    public class CreateRoleDto
+    public class CreateRoleRequestDto
     {
         [Required]
         [StringLength(100)]

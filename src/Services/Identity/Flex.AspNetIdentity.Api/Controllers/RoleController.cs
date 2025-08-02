@@ -51,10 +51,9 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// Create a new role creation request.
         /// </summary>
         [HttpPost("requests/create")]
-        public async Task<IActionResult> CreateRoleRequest([FromBody] CreateRoleDto dto)
+        public async Task<IActionResult> CreateRoleRequest([FromBody] CreateRoleRequestDto request)
         {
-            var username = User.FindFirstValue(Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
-            var id = await _roleService.CreateRoleRequestAsync(dto, username);
+            var id = await _roleService.CreateRoleRequestAsync(request);
             return Ok(Result.Success(id));
         }
 

@@ -34,10 +34,9 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
-
             services.AddEndpointsApiExplorer();
-
             services.AddOpenApi();
+            services.AddHttpContextAccessor();
 
             services.ConfigureRouteOptions();
             services.ConfigureValidationErrorResponse();
@@ -97,6 +96,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             // Services
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUserService, UserService>();
 
             // Repositories
             services.AddScoped<IRoleRequestRepository, RoleRequestRepository>();

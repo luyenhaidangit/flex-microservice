@@ -18,12 +18,14 @@ namespace Flex.AspNetIdentity.Api.Services
         private readonly ILogger<RoleService> _logger;
         private readonly RoleManager<Role> _roleManager;
         private readonly IRoleRequestRepository _roleRequestRepository;
+        private readonly IUserService _userService;
 
-        public RoleService(ILogger<RoleService> logger, IRoleRequestRepository roleRequestRepository, RoleManager<Role> roleManager)
+        public RoleService(ILogger<RoleService> logger, IRoleRequestRepository roleRequestRepository, RoleManager<Role> roleManager, IUserService userService)
         {
             _logger = logger;
             _roleRequestRepository = roleRequestRepository;
             _roleManager = roleManager;
+            _userService = userService;
         }
         #region Query
 
@@ -210,7 +212,7 @@ namespace Flex.AspNetIdentity.Api.Services
             {
                 case RequestTypeConstant.Create:
                     // Chỉ có newData
-                    var createData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<CreateRoleDto>(request.RequestedData);
+                    var createData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<CreateRoleRequestDto>(request.RequestedData);
                     
                     if (createData != null)
                     {
@@ -381,7 +383,7 @@ namespace Flex.AspNetIdentity.Api.Services
         #endregion
 
         #region Command
-        public async Task<long> CreateRoleRequestAsync(CreateRoleDto dto, string requestedBy)
+        public async Task<long> CreateRoleRequestAsync(CreateRoleRequestDto dto)
         {
             // ===== Validation =====
             // ===== Check role code is exits =====
@@ -402,6 +404,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // ===== Process =====
+            var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
             var requestedJson = JsonSerializer.Serialize(dto);
             var request = new RoleRequest
             {
@@ -514,7 +517,7 @@ namespace Flex.AspNetIdentity.Api.Services
             // Xử lý theo loại yêu cầu
             if (request.Action == RequestTypeConstant.Create)
             {
-                var dto = JsonSerializer.Deserialize<CreateRoleDto>(request.RequestedData);
+                var dto = JsonSerializer.Deserialize<CreateRoleRequestDto>(request.RequestedData);
                 if (dto == null) throw new Exception("Invalid request data");
 
                 var newRole = new Role(dto.Name, dto.Code)
@@ -624,7 +627,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 await _roleManager.AddClaimAsync(role, new Claim(claim.Type, claim.Value));
             }
         }
-        public Task<long> CreateAsync(CreateRoleDto dto)
+        public Task<long> CreateAsync(CreateRoleRequestDto dto)
         {
             throw new NotImplementedException();
         }
