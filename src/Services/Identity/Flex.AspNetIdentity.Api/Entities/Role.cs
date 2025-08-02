@@ -15,7 +15,7 @@ namespace Flex.AspNetIdentity.Api.Entities
         public string? Description { get; set; } = string.Empty;
 
         [Column("IS_ACTIVE")]
-        public bool? IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = true;
 
         [Column("CREATED_AT")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -25,12 +25,6 @@ namespace Flex.AspNetIdentity.Api.Entities
 
         [Column("STATUS")]
         public string Status { get; set; } = "APPROVED";
-
-        [Column("VERSION")]
-        public int Version { get; set; } = 1;
-
-        [Column("PARENT_ID")]
-        public long? ParentId { get; set; }
 
         [Column("MAKER_ID")]
         public string? MakerId { get; set; }

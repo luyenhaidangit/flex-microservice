@@ -18,7 +18,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Get all approved roles with pagination
+        /// Get all approved roles with pagination.
         /// </summary>
         [HttpGet("approved")]
         public async Task<IActionResult> GetPagingApprovedRolesAsync([FromQuery] GetRolesPagingRequest request)
@@ -28,7 +28,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Get approved role by code
+        /// Get approved role by code.
         /// </summary>
         [HttpGet("approved/{code}")]
         public async Task<IActionResult> GetApprovedRoleByCode(string code)
@@ -56,8 +56,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             var result = await _roleService.GetPendingRolesPagedAsync(request);
             return Ok(Result.Success(result));
         }
-
-        
 
         /// <summary>
         /// Lấy thông tin chi tiết request để hiển thị trong modal

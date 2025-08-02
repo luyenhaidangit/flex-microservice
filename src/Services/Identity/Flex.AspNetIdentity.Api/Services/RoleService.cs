@@ -65,6 +65,36 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         /// <summary>
+        /// Get approved role by code.
+        /// </summary>
+        public async Task<RoleDto> GetApprovedRoleByCodeAsync(string code)
+        {
+            // ===== Find role by code =====
+            var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == code);
+
+            if (role == null)
+            {
+                throw new Exception($"Role with code '{code}' not exists.");
+            }
+
+            // ===== If role exists, get its claims =====
+            var claims = await _roleManager.GetClaimsAsync(role);
+
+            var result = new RoleDto
+            {
+                Id = role.Id,
+                Name = role.Name ?? string.Empty,
+                Code = role.Code,
+                IsActive = role.IsActive,
+                Description = role.Description,
+                Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
+                Status = StatusConstant.Approved,
+            };
+
+            return result;
+        }
+
+        /// <summary>
         /// Lấy danh sách role chờ duyệt (PENDING/UNA)
         /// </summary>
         public async Task<PagedResult<RolePagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request)
@@ -243,99 +273,6 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Lấy thông tin chi tiết Role theo Id, kèm theo trạng thái yêu cầu đang chờ (nếu có).
-        /// </summary>
-        public async Task<RoleDto?> GetApprovedRoleByCodeAsync(string code)
-        {
-            // Chỉ tìm request chờ duyệt (không lấy nháp)
-            var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Code == code && r.Status == RequestStatusConstant.Unauthorised)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
-            if (pendingRequest != null)
-            {
-                return new RoleDto
-                {
-                    Id = pendingRequest.EntityId,
-                    Name = pendingRequest.Name,
-                    Code = pendingRequest.Code,
-                    IsActive = pendingRequest.IsActive,
-                    Description = pendingRequest.Description,
-                    Claims = null, // Claims sẽ được lấy từ RequestedData khi cần
-                    Status = pendingRequest.Status,
-                };
-            }
-
-            // 2. Nếu không có request, tìm ở bảng chính
-            var role = await _roleManager.Roles
-                .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Code == code);
-
-            if (role == null)
-                return null;
-
-            // Lấy claims của role
-            var claims = await _roleManager.GetClaimsAsync(role);
-
-            return new RoleDto
-            {
-                Id = role.Id,
-                Name = role.Name,
-                Code = role.Code,
-                IsActive = role.IsActive,
-                Description = role.Description,
-                Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
-                Status = StatusConstant.Approved,
-            };
-        }
-
-        public async Task<RoleDto?> GetRoleByCodeAsync(string code)
-        {
-            // Chỉ tìm request chờ duyệt (không lấy nháp)
-            var pendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Code == code && r.Status == RequestStatusConstant.Unauthorised)
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
-            if (pendingRequest != null)
-            {
-                return new RoleDto
-                {
-                    Id = pendingRequest.EntityId,
-                    Name = pendingRequest.Name,
-                    Code = pendingRequest.Code,
-                    IsActive = pendingRequest.IsActive,
-                    Description = pendingRequest.Description,
-                    Claims = null, // Claims sẽ được lấy từ RequestedData khi cần
-                    Status = pendingRequest.Status,
-                };
-            }
-
-            // 2. Nếu không có request, tìm ở bảng chính
-            var role = await _roleManager.Roles
-                .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Code == code);
-
-            if (role == null)
-                return null;
-
-            // Lấy claims của role
-            var claims = await _roleManager.GetClaimsAsync(role);
-
-            return new RoleDto
-            {
-                Id = role.Id,
-                Name = role.Name,
-                Code = role.Code,
-                IsActive = role.IsActive,
-                Description = role.Description,
-                Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
-                Status = StatusConstant.Approved,
-            };
         }
 
         public async Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId)
@@ -1047,7 +984,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 {
                     changes["roleName"] = roleData.Name;
                     changes["description"] = roleData.Description;
-                    changes["isActive"] = roleData.IsActive ?? false;
+                    changes["isActive"] = roleData?.IsActive ?? false;
                 }
             }
             catch
@@ -1084,7 +1021,7 @@ namespace Flex.AspNetIdentity.Api.Services
                             ["status"] = request.Status,
                             ["roleName"] = roleData.Name,
                             ["description"] = roleData.Description,
-                            ["isActive"] = roleData.IsActive ?? false
+                            ["isActive"] = roleData?.IsActive ?? false
                         };
                     }
                     else
