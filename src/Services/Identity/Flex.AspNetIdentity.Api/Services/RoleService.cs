@@ -413,7 +413,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 EntityId = 0,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
-                Comments = dto.Description,
+                Comments = "Yêu cầu thêm mới vai trò.",
                 RequestedData = requestedJson
             };
             await _roleRequestRepository.CreateAsync(request);
@@ -466,7 +466,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 EntityId = roleId,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
-                RequestedData = requestedJson
+                RequestedData = requestedJson,
             };
             await _roleRequestRepository.CreateAsync(request);
             return request.Id;
