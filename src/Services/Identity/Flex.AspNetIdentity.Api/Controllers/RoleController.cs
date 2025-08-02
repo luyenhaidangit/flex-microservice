@@ -21,7 +21,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// Get all approved roles with pagination.
         /// </summary>
         [HttpGet("approved")]
-        public async Task<IActionResult> GetPagingApprovedRolesAsync([FromQuery] GetRolesPagingRequest request)
+        public async Task<IActionResult> GetPagingApprovedRoles([FromQuery] GetRolesPagingRequest request)
         {
             var result = await _roleService.GetApprovedRolesPagedAsync(request);
             return Ok(Result.Success(result));
@@ -38,12 +38,12 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Get approved role history by code
+        /// Get approved role history by code.
         /// </summary>
-        [HttpGet("approved/{roleCode}/history")]
-        public async Task<IActionResult> GetRoleChangeHistory(string roleCode)
+        [HttpGet("approved/{code}/history")]
+        public async Task<IActionResult> GetApprovedRoleChangeHistory(string code)
         {
-            var result = await _roleService.GetRoleChangeHistoryAsync(roleCode);
+            var result = await _roleService.GetApprovedRoleChangeHistory(code);
             return Ok(Result.Success(result));
         }
 

@@ -1,15 +1,15 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
-using Flex.Shared.SeedWork;
-using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.Infrastructure.EF;
 using Flex.Shared.Constants.Common;
+using Flex.Shared.SeedWork;
+using Flex.Shared.SeedWork.Workflow.Constants;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -28,7 +28,7 @@ namespace Flex.AspNetIdentity.Api.Services
         #region Query
 
         /// <summary>
-        /// Get all approved roles with pagination
+        /// Get all approved roles with pagination.
         /// </summary>
         public async Task<PagedResult<RoleApprovedListItemDto>> GetApprovedRolesPagedAsync(GetRolesPagingRequest request)
         {
@@ -95,6 +95,55 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         /// <summary>
+        /// Get approved role history by code.
+        /// </summary>
+        public async Task<List<RoleChangeHistoryDto>> GetApprovedRoleChangeHistory(string roleCode)
+        {
+            // Find role with code
+            var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleCode);
+
+            if (role == null)
+            {
+                throw new Exception($"Role with code '{roleCode}' not exists.");
+            }
+
+            // Get role history by role Id
+            var roleId = role.Id;
+
+            var requests = await _roleRequestRepository.FindAll()
+                .Where(r => r.EntityId == roleId).AsNoTracking()
+                .OrderByDescending(r => r.RequestedDate)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.MakerId,
+                    r.RequestedDate,
+                    r.CheckerId,
+                    r.ApproveDate,
+                    r.Status,
+                    r.Comments,
+                    r.RequestedData
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            var historyItems = requests.Select((req, idx) => new RoleChangeHistoryDto
+            {
+                Id = req.Id,
+                MakerBy = req.MakerId,
+                MakerTime = req.RequestedDate,
+                ApproverBy = req.CheckerId,
+                ApproverTime = req.ApproveDate,
+                Status = req.Status,
+                Description = req.Comments,
+                //Changes = GetChanges(req),   // Không query DB trong này
+                //RawData = GetRawData(req)    // Không query DB trong này
+            }).ToList();
+
+            return historyItems;
+        }
+
+        /// <summary>
         /// Lấy danh sách role chờ duyệt (PENDING/UNA)
         /// </summary>
         public async Task<PagedResult<RolePagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request)
@@ -137,51 +186,6 @@ namespace Flex.AspNetIdentity.Api.Services
                 .ToListAsync();
 
             return PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
-        }
-
-        /// <summary>
-        /// Lấy lịch sử thay đổi của một vai trò theo format frontend yêu cầu
-        /// </summary>
-        public async Task<List<RoleChangeHistoryDto>> GetRoleChangeHistoryAsync(string roleCode)
-        {
-            // Filter role with code
-            var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleCode);
-
-            if (role == null)
-            {
-                throw new Exception($"Role with code '{roleCode}' not exists.");
-            }
-
-            // Get role history by role Id
-            var roleId = role.Id;
-
-            var requests = await _roleRequestRepository.FindAll()
-                .Where(r => r.EntityId == roleId).AsNoTracking()
-                .OrderByDescending(r => r.RequestedDate)
-                .ToListAsync();
-
-            var historyItems = new List<RoleChangeHistoryDto>();
-
-            foreach (var req in requests)
-            {
-                var historyItem = new RoleChangeHistoryDto
-                {
-                    Id = req.Id,
-                    MakerBy = req.MakerId,
-                    MakerTime = req.RequestedDate,
-                    ApproverBy = req.CheckerId,
-                    ApproverTime = req.ApproveDate,
-                    StatusAfter = req.Status,
-                    StatusBefore = GetStatusBefore(req),
-                    Description = req.Comments,
-                    Changes = GetChanges(req),
-                    RawData = GetRawData(req, role)
-                };
-
-                historyItems.Add(historyItem);
-            }
-
-            return historyItems;
         }
 
         /// <summary>
@@ -273,30 +277,6 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             return result;
-        }
-
-        public async Task<IEnumerable<RoleChangeLogDto>> GetRoleChangeHistoryAsync(long roleId)
-        {
-            var requests = await _roleRequestRepository
-                .FindAll() // giả định bạn có phương thức này hoặc dùng _dbContext.RoleRequests
-                .Where(r => r.EntityId == roleId) // hoặc r.RoleId tùy tên cột
-                .OrderByDescending(r => r.RequestedDate)
-                .Select(r => new RoleChangeLogDto
-                {
-                    RequestId = r.Id,
-                    RequestType = r.Action,
-                    Status = r.Status,
-                    RequestedBy = r.MakerId,
-                    RequestedDate = r.RequestedDate,
-                    ApprovedBy = r.CheckerId,
-                    ApprovedDate = r.ApproveDate,
-                    RejectReason = r.Comments,
-                    Comment = r.Comments,
-                    SnapshotJson = r.RequestedData // thường là JSON của Role
-                })
-                .ToListAsync();
-
-            return requests;
         }
         public async Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId)
         {
