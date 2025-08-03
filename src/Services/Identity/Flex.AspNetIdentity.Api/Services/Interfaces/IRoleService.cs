@@ -10,6 +10,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<RoleDto> GetApprovedRoleByCodeAsync(string code);
         Task<List<RoleChangeHistoryDto>> GetApprovedRoleChangeHistoryAsync(string code);
         Task<long> CreateRoleRequestAsync(CreateRoleRequestDto request);
+        Task<long> CreateUpdateRoleRequestAsync(string code, UpdateRoleRequestDto dto);
         Task<PagedResult<RolePagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request);
         Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId);
         Task<RoleRequestDetailDto?> GetRoleRequestDetailAsync(long requestId);
@@ -28,8 +29,6 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<RoleComparisonDto?> GetRoleComparisonAsync(long requestId);
 
         // Request
-        
-        Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto, string requestedBy);
         Task<long> CreateDeleteRoleRequestAsync(long roleId, string requestedBy);
 
         // Approve

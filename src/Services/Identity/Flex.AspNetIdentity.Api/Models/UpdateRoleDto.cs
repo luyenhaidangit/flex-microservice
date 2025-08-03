@@ -2,15 +2,11 @@
 
 namespace Flex.AspNetIdentity.Api.Models
 {
-    public class UpdateRoleDto
+    public class UpdateRoleRequestDto
     {
         [Required]
         [StringLength(100)]
         public string Name { get; set; } = default!;
-
-        [Required]
-        [StringLength(50)]
-        public string Code { get; set; } = default!;
 
         [StringLength(500)]
         public string? Description { get; set; }

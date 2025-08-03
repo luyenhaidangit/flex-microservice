@@ -228,7 +228,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
                 case RequestTypeConstant.Update:
                     // Có cả oldData và newData
-                    var updateData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<UpdateRoleDto>(request.RequestedData);
+                    var updateData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<UpdateRoleRequestDto>(request.RequestedData);
 
                     if (updateData != null)
                     {
@@ -252,7 +252,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
                         result.NewData = new RoleDetailDataDto
                         {
-                            RoleCode = updateData.Code,
+                            RoleCode = "",
                             RoleName = updateData.Name,
                             Description = updateData.Description,
                             Permissions = updateData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
@@ -383,6 +383,9 @@ namespace Flex.AspNetIdentity.Api.Services
         #endregion
 
         #region Command
+        /// <summary>
+        /// Create role request.
+        /// </summary>
         public async Task<long> CreateRoleRequestAsync(CreateRoleRequestDto dto)
         {
             // ===== Validation =====
@@ -420,55 +423,57 @@ namespace Flex.AspNetIdentity.Api.Services
 
             return request.Id;
         }
-        public async Task<long> CreateUpdateRoleRequestAsync(long roleId, UpdateRoleDto dto, string requestedBy)
+
+        /// <summary>
+        /// Create update role request.
+        /// </summary>
+        public async Task<long> CreateUpdateRoleRequestAsync(string code, UpdateRoleRequestDto dto)
         {
-            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
+            // ===== Validation =====
+            // ===== Check role code is exits =====
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Code == code);
             if (role == null)
-                throw new Exception("Role not found");
-                
-            // ===== VALIDATION: Kiểm tra trùng lặp code =====
-            
-            // 1. Kiểm tra xem đã có pending update request nào cho role này chưa
-            var existingRequest = await _roleRequestRepository.FindAll()
-                .AnyAsync(r => r.EntityId == roleId &&
-                               r.Status == RequestStatusConstant.Unauthorised &&
-                               r.Action == RequestTypeConstant.Update);
-            if (existingRequest)
-                throw new Exception("A pending update request already exists for this role.");
-            
-            // 2. Kiểm tra xem code mới có trùng với role khác không (nếu code thay đổi)
-            if (dto.Code != role.Code)
             {
-                var existingRoleWithNewCode = await _roleManager.Roles
-                    .FirstOrDefaultAsync(r => r.Code == dto.Code && r.Id != roleId);
-                if (existingRoleWithNewCode != null)
-                {
-                    throw new Exception($"Role with code '{dto.Code}' already exists.");
-                }
-                
-                // 3. Kiểm tra xem code mới có trùng với pending request nào khác không
-                var existingPendingRequestWithNewCode = await _roleRequestRepository.GetBranchCombinedQuery()
-                    .Where(r => r.Code == dto.Code && 
-                               (r.Status == RequestStatusConstant.Unauthorised || r.Status == RequestStatusConstant.Draft) &&
-                               r.Action == RequestTypeConstant.Create)
-                    .FirstOrDefaultAsync();
-                if (existingPendingRequestWithNewCode != null)
-                {
-                    throw new Exception($"A pending request with code '{dto.Code}' already exists.");
-                }
+                throw new Exception($"Role with code '{code}' does not exist.");
             }
-            
+
+            // ===== Check role request is exits =====
+            if (role.Status == RequestStatusConstant.Unauthorised)
+            {
+                throw new Exception("A pending update request already exists for this role.");
+            }
+
+            // ===== Process =====
+            // ===== Create update role request =====
+            var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
             var requestedJson = JsonSerializer.Serialize(dto);
             var request = new RoleRequest
             {
                 Action = RequestTypeConstant.Update,
                 Status = RequestStatusConstant.Unauthorised,
-                EntityId = roleId,
+                EntityId = role.Id,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
                 RequestedData = requestedJson,
             };
-            await _roleRequestRepository.CreateAsync(request);
+            // ===== Update status process role =====
+            role.Status = RequestStatusConstant.Unauthorised;
+
+            // ===== Transaction =====
+            await using var transaction = await _roleRequestRepository.BeginTransactionAsync();
+            try
+            {
+                await _roleRequestRepository.CreateAsync(request);
+                await _roleManager.UpdateAsync(role);
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw new Exception("Failed to create update role request.");
+            }
+
             return request.Id;
         }
         public async Task<long> CreateDeleteRoleRequestAsync(long roleId, string requestedBy)
@@ -501,6 +506,11 @@ namespace Flex.AspNetIdentity.Api.Services
                 RequestedData = JsonSerializer.Serialize(currentSnapshot)
             };
             await _roleRequestRepository.CreateAsync(request);
+
+            // Update role status to UNA (Unauthorised) to indicate pending deletion
+            role.Status = RequestStatusConstant.Unauthorised;
+            await _roleManager.UpdateAsync(role);
+
             return request.Id;
         }
         public async Task ApproveRoleRequestAsync(long requestId, string? comment = null, string? approvedBy = null)
@@ -540,7 +550,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
             else if (request.Action == RequestTypeConstant.Update)
             {
-                var dto = JsonSerializer.Deserialize<UpdateRoleDto>(request.RequestedData);
+                var dto = JsonSerializer.Deserialize<UpdateRoleRequestDto>(request.RequestedData);
                 if (dto == null) throw new Exception("Invalid request data");
 
                 var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
@@ -551,6 +561,8 @@ namespace Flex.AspNetIdentity.Api.Services
                 //role.LastModifiedBy = approver;
                 //role.LastModifiedDate = DateTime.UtcNow;
 
+                // Update role status to AUT (Authorised) when update is approved
+                role.Status = RequestStatusConstant.Authorised;
                 await _roleManager.UpdateAsync(role);
 
                 //if (dto.Claims != null)
@@ -589,6 +601,17 @@ namespace Flex.AspNetIdentity.Api.Services
             if (request == null)
                 throw new Exception("Pending request not found.");
 
+            // If this is an update or delete request, revert the role status back to APPROVED
+            if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) && request.EntityId > 0)
+            {
+                var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+                if (role != null)
+                {
+                    role.Status = StatusConstant.Approved; // Revert to approved status
+                    await _roleManager.UpdateAsync(role);
+                }
+            }
+
             // Cập nhật trạng thái và thông tin từ chối
             request.Status = RequestStatusConstant.Rejected;
             request.CheckerId = rejectedBy;
@@ -608,6 +631,17 @@ namespace Flex.AspNetIdentity.Api.Services
 
             if (request.MakerId != currentUser)
                 throw new Exception("You can only cancel your own draft request.");
+
+            // If this is an update or delete request, revert the role status back to APPROVED
+            if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) && request.EntityId > 0)
+            {
+                var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+                if (role != null)
+                {
+                    role.Status = StatusConstant.Approved; // Revert to approved status
+                    await _roleManager.UpdateAsync(role);
+                }
+            }
 
             request.Status = RequestStatusConstant.Cancelled;
             request.CheckerId = currentUser;
@@ -650,7 +684,7 @@ namespace Flex.AspNetIdentity.Api.Services
                        ?? throw new Exception("Role not found");
             await _roleManager.RemoveClaimAsync(role, new Claim(claim.Type, claim.Value));
         }
-        public Task UpdateAsync(long roleId, UpdateRoleDto dto)
+        public Task UpdateAsync(long roleId, UpdateRoleRequestDto dto)
         {
             throw new NotImplementedException();
         }

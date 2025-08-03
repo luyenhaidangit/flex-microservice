@@ -58,6 +58,16 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
+        /// Create update role request.
+        /// </summary>
+        [HttpPost("approved/{code}/update")]
+        public async Task<IActionResult> CreateUpdateRoleRequest(string code, [FromBody] UpdateRoleRequestDto dto)
+        {
+            var id = await _roleService.CreateUpdateRoleRequestAsync(code, dto);
+            return Ok(Result.Success(id));
+        }
+
+        /// <summary>
         /// Get all pending roles with pagination
         /// </summary>
         [HttpGet("pending")]
@@ -78,14 +88,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             if (result == null)
                 return NotFound(Result.Failure("Request not found"));
             return Ok(Result.Success(result));
-        }
-
-        [HttpPost("{roleId}/requests/update")]
-        public async Task<IActionResult> CreateUpdateRoleRequest(long roleId, [FromBody] UpdateRoleDto dto)
-        {
-            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
-            var id = await _roleService.CreateUpdateRoleRequestAsync(roleId, dto, username);
-            return Ok(Result.Success(id));
         }
 
         [HttpPost("{roleId}/requests/delete")]
