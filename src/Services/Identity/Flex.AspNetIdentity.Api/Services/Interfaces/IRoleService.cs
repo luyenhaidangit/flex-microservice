@@ -11,6 +11,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<List<RoleChangeHistoryDto>> GetApprovedRoleChangeHistoryAsync(string code);
         Task<long> CreateRoleRequestAsync(CreateRoleRequestDto request);
         Task<long> CreateUpdateRoleRequestAsync(string code, UpdateRoleRequestDto dto);
+        Task<long> CreateDeleteRoleRequestAsync(string code, DeleteRoleRequestDto request);
         Task<PagedResult<RolePagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request);
         Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId);
         Task<RoleRequestDetailDto?> GetRoleRequestDetailAsync(long requestId);
@@ -27,10 +28,6 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         /// So sánh bản chính và bản nháp
         /// </summary>
         Task<RoleComparisonDto?> GetRoleComparisonAsync(long requestId);
-
-        // Request
-        Task<long> CreateDeleteRoleRequestAsync(long roleId, string requestedBy);
-
         // Approve
         Task ApproveRoleRequestAsync(long requestId, string? comment = null, string? approvedBy = null);
         Task RejectRoleRequestAsync(long requestId, string reason, string rejectedBy);

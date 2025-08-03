@@ -477,17 +477,28 @@ namespace Flex.AspNetIdentity.Api.Services
 
             return request.Id;
         }
-        public async Task<long> CreateDeleteRoleRequestAsync(long roleId, string requestedBy)
+
+        /// <summary>
+        /// Create delete role request.
+        /// </summary>
+        public async Task<long> CreateDeleteRoleRequestAsync(string code, DeleteRoleRequestDto dto)
         {
-            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
+            // ===== Validation =====
+            // ===== Check role code is exits =====
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Code == code);
             if (role == null)
-                throw new Exception("Role not found.");
-            var hasPendingDelete = await _roleRequestRepository.FindAll()
-                .AnyAsync(r => r.EntityId == roleId &&
-                               r.Status == RequestStatusConstant.Unauthorised &&
-                               r.Action == RequestTypeConstant.Delete);
-            if (hasPendingDelete)
-                throw new Exception("A pending delete request already exists for this role.");
+            {
+                throw new Exception($"Role with code '{code}' does not exist.");
+            }
+
+            // ===== Check role request is exits =====
+            if (role.Status == RequestStatusConstant.Unauthorised)
+            {
+                throw new Exception("A pending update request already exists for this role.");
+            }
+
+            // ===== Process =====
+            // ===== Create delete role request =====
             var claims = await _roleManager.GetClaimsAsync(role);
             var currentSnapshot = new RoleDto
             {
@@ -497,19 +508,35 @@ namespace Flex.AspNetIdentity.Api.Services
                 Description = role.Description,
                 Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList()
             };
+            var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
             var request = new RoleRequest
             {
                 Action = RequestTypeConstant.Delete,
                 Status = RequestStatusConstant.Unauthorised,
-                EntityId = roleId,
+                EntityId = role.Id,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
-                RequestedData = JsonSerializer.Serialize(currentSnapshot)
+                RequestedData = JsonSerializer.Serialize(currentSnapshot),
+                Comments = dto.Comment ?? "Yêu cầu xóa vai trò."
             };
-            await _roleRequestRepository.CreateAsync(request);
 
-            // Update role status to UNA (Unauthorised) to indicate pending deletion
+            // ===== Update status process role =====
             role.Status = RequestStatusConstant.Unauthorised;
+
+            // ===== Transaction =====
+            await using var transaction = await _roleRequestRepository.BeginTransactionAsync();
+            try
+            {
+                await _roleRequestRepository.CreateAsync(request);
+                await _roleManager.UpdateAsync(role);
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw new Exception("Failed to create update role request.");
+            }
             await _roleManager.UpdateAsync(role);
 
             return request.Id;

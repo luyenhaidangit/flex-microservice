@@ -68,6 +68,16 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
+        /// Create delete role request.
+        /// </summary>
+        [HttpPost("approved/{code}/delete")]
+        public async Task<IActionResult> CreateDeleteRoleRequest(string code, [FromBody] DeleteRoleRequestDto dto)
+        {
+            var id = await _roleService.CreateDeleteRoleRequestAsync(code, dto);
+            return Ok(Result.Success(id));
+        }
+
+        /// <summary>
         /// Get all pending roles with pagination
         /// </summary>
         [HttpGet("pending")]
@@ -88,14 +98,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             if (result == null)
                 return NotFound(Result.Failure("Request not found"));
             return Ok(Result.Success(result));
-        }
-
-        [HttpPost("{roleId}/requests/delete")]
-        public async Task<IActionResult> CreateDeleteRoleRequest(long roleId)
-        {
-            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
-            var id = await _roleService.CreateDeleteRoleRequestAsync(roleId, username);
-            return Ok(Result.Success(id));
         }
 
         [HttpPost("requests/{requestId}/approve")]
