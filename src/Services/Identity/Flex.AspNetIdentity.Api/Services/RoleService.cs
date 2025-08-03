@@ -455,6 +455,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
                 RequestedData = requestedJson,
+                Comments = dto.Comment ?? "Yêu cầu cập nhật vai trò."
             };
             // ===== Update status process role =====
             role.Status = RequestStatusConstant.Unauthorised;
