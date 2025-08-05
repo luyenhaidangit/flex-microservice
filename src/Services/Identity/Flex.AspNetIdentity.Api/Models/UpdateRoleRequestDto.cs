@@ -6,6 +6,10 @@ namespace Flex.AspNetIdentity.Api.Models
     {
         [Required]
         [StringLength(100)]
+        public string? Code { get; set; } = default!;
+
+        [Required]
+        [StringLength(100)]
         public string Name { get; set; } = default!;
 
         [StringLength(500)]

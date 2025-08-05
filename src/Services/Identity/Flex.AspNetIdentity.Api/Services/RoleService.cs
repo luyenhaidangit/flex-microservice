@@ -145,7 +145,7 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         /// <summary>
-        /// Lấy danh sách role chờ duyệt (PENDING/UNA)
+        /// Get all pending roles with pagination.
         /// </summary>
         public async Task<PagedResult<RolePagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request)
         {
@@ -446,6 +446,7 @@ namespace Flex.AspNetIdentity.Api.Services
             // ===== Process =====
             // ===== Create update role request =====
             var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
+            dto.Code = code;
             var requestedJson = JsonSerializer.Serialize(dto);
             var request = new RoleRequest
             {
@@ -814,7 +815,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 .Take(pageSize)
                 .Select(r => new RoleRequestDto
                 {
-                    RequestId = r.Id,
+                    RequestId = r.Id ?? 0,
                     RoleId = r.EntityId,
                     RequestType = r.Action,
                     Status = r.Status,

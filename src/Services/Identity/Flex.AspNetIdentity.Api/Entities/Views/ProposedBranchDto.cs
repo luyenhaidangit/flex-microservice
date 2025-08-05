@@ -8,22 +8,22 @@ namespace Flex.AspNetIdentity.Api.Entities.Views
     public class ProposedBranch
     {
         [Column("ID")]
-        public int Id { get; set; }
+        public long? Id { get; set; }
 
         [Column("ENTITY_ID")]
         public long? EntityId { get; set; }
 
         [Column("CODE")]
-        public string Code { get; set; } = null!;
+        public string? Code { get; set; } = null!;
 
         [Column("NAME")]
-        public string Name { get; set; } = null!;
+        public string? Name { get; set; } = null!;
 
         [Column("ACTION")]
         public string? Action { get; set; }
 
         [Column("STATUS")]
-        public string Status { get; set; } = null!;
+        public string? Status { get; set; } = null!;
 
         [Column("IS_ACTIVE")]
         public bool? IsActive { get; set; } = true;
