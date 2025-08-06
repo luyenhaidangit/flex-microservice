@@ -131,28 +131,8 @@ namespace Flex.AspNetIdentity.Api.Controllers
         [HttpPost("pending/{requestId}/reject")]
         public async Task<IActionResult> RejectPendingRoleRequest(long requestId, [FromBody] RejectRoleRequestDto? dto = null)
         {
-            try
-            {
-                // ===== Validation =====
-                if (requestId <= 0)
-                {
-                    return BadRequest(Result.Failure("RequestId must be greater than 0."));
-                }
-
-                // ===== Process rejection =====
-                var result = await _roleService.RejectPendingRoleRequestAsync(requestId, dto?.Reason);
-                
-                // ===== Return result =====
-                return Ok(Result.Success(result));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(Result.Failure(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, Result.Failure($"Failed to reject role request: {ex.Message}"));
-            }
+            var result = await _roleService.RejectPendingRoleRequestAsync(requestId, dto?.Reason);
+            return Ok(Result.Success(result));
         }
     }
 }
