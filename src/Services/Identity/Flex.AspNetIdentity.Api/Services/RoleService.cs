@@ -150,17 +150,20 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<PagedResult<RolePagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request)
         {
             // ===== Process request parameters =====
-            var keyword = request?.Keyword?.Trim();
+            var keyword = request?.Keyword?.Trim().ToLower();
+            var requestType = request?.Type?.Trim().ToUpper();
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
+            // ===== Build query =====
             var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery()
                 .Where(r => r.Status == RequestStatusConstant.Unauthorised)
                 .WhereIf(!string.IsNullOrEmpty(keyword),
-                    r => EF.Functions.Like(r.Code, $"%{keyword}%") ||
-                         EF.Functions.Like(r.Description, $"%{keyword}%"));
-            
-            proposedBranchQuery = proposedBranchQuery.AsNoTracking();
+                    r => EF.Functions.Like(r.Code.ToLower(), $"%{keyword}%") ||
+                         EF.Functions.Like(r.Description.ToLower(), $"%{keyword}%"))
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != "ALL",
+                    r => r.Action == requestType)
+                .AsNoTracking();
 
             var pendingQuery = proposedBranchQuery
                 .Select(r => new RolePagingDto
@@ -179,14 +182,16 @@ namespace Flex.AspNetIdentity.Api.Services
                     ApprovedDate = null
                 });
 
-            var sortedQuery = pendingQuery.OrderByDescending(dto => dto.RequestedDate).ThenBy(dto => dto.Id);
-
-            var total = await sortedQuery.CountAsync();
-            var items = await sortedQuery
+            // ===== Execute query =====
+            var total = await pendingQuery.CountAsync();
+            var items = await pendingQuery
+                .OrderByDescending(dto => dto.RequestedDate)
+                .ThenBy(dto => dto.Id)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
+            // ===== Return result =====
             return PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
         }
 
