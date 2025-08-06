@@ -13,8 +13,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<long> CreateUpdateRoleRequestAsync(string code, UpdateRoleRequestDto dto);
         Task<long> CreateDeleteRoleRequestAsync(string code, DeleteRoleRequestDto request);
         Task<PagedResult<RolePendingPagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request);
-        Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId);
-        Task<RoleRequestDetailDto?> GetRoleRequestDetailAsync(long requestId);
+        Task<RoleRequestDetailDto> GetPendingRoleByIdAsync(long requestId);
         Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId);
         Task<string?> CompareRoleWithRequestAsync(long requestId); 
 

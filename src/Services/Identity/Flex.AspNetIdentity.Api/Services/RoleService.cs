@@ -191,15 +191,22 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         /// <summary>
-        /// Lấy thông tin chi tiết request để hiển thị trong modal
-        /// Trả về oldData và newData để so sánh
+        /// Get pending role request detail by request ID.
         /// </summary>
-        public async Task<RoleRequestDetailDto?> GetRoleRequestDetailAsync(long requestId)
+        public async Task<RoleRequestDetailDto> GetPendingRoleByIdAsync(long requestId)
         {
-            var request = await _roleRequestRepository.FindAll().FirstOrDefaultAsync(r => r.Id == requestId);
+            // ===== Validation =====
+            // ===== Get request data =====
+            var request = await _roleRequestRepository.FindAll()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == requestId);
 
-            if (request == null) return null;
+            if (request == null)
+            {
+                throw new Exception($"Role request with ID '{requestId}' not found.");
+            }
 
+            // ===== Build base result =====
             var result = new RoleRequestDetailDto
             {
                 RequestId = request.Id.ToString(),
@@ -208,77 +215,94 @@ namespace Flex.AspNetIdentity.Api.Services
                 CreatedDate = request.RequestedDate.ToString("yyyy-MM-dd")
             };
 
-            // Xử lý theo loại request
+            // ===== Process by request type =====
             switch (request.Action)
             {
                 case RequestTypeConstant.Create:
-                    // Chỉ có newData
-                    var createData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<CreateRoleRequestDto>(request.RequestedData);
-                    
-                    if (createData != null)
-                    {
-                        result.NewData = new RoleDetailDataDto
-                        {
-                            RoleCode = createData.Code,
-                            RoleName = createData.Name,
-                            Description = createData.Description,
-                            Permissions = createData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
-                        };
-                    }
+                    ProcessCreateRequestData(request, result);
                     break;
 
                 case RequestTypeConstant.Update:
-                    // Có cả oldData và newData
-                    var updateData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<UpdateRoleRequestDto>(request.RequestedData);
-
-                    if (updateData != null)
-                    {
-                        // Lấy thông tin cũ từ bảng chính
-                        var currentRole = await _roleManager.Roles
-                            .Where(r => r.Id == request.EntityId)
-                            .AsNoTracking()
-                            .FirstOrDefaultAsync();
-
-                        if (currentRole != null)
-                        {
-                            var currentClaims = await _roleManager.GetClaimsAsync(currentRole);
-                            result.OldData = new RoleDetailDataDto
-                            {
-                                RoleCode = currentRole.Code,
-                                RoleName = currentRole.Name,
-                                Description = currentRole.Description,
-                                Permissions = currentClaims.Select(c => $"{c.Type}:{c.Value}").ToList()
-                            };
-                        }
-
-                        result.NewData = new RoleDetailDataDto
-                        {
-                            RoleCode = "",
-                            RoleName = updateData.Name,
-                            Description = updateData.Description,
-                            Permissions = updateData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
-                        };
-                    }
+                    await ProcessUpdateRequestData(request, result);
                     break;
 
                 case RequestTypeConstant.Delete:
-                    // Chỉ có oldData (thông tin sẽ bị xóa)
-                    var deleteData = string.IsNullOrEmpty(request.RequestedData) ? null : JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
-
-                    if (deleteData != null)
-                    {
-                        result.OldData = new RoleDetailDataDto
-                        {
-                            RoleCode = deleteData.Code,
-                            RoleName = deleteData.Name,
-                            Description = deleteData.Description,
-                            Permissions = deleteData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
-                        };
-                    }
+                    ProcessDeleteRequestData(request, result);
                     break;
+
+                default:
+                    throw new Exception($"Unsupported request type: {request.Action}");
             }
 
+            // ===== Return result =====
             return result;
+        }
+
+        private static void ProcessCreateRequestData(RoleRequest request, RoleRequestDetailDto result)
+        {
+            if (string.IsNullOrEmpty(request.RequestedData)) return;
+
+            var createData = JsonSerializer.Deserialize<CreateRoleRequestDto>(request.RequestedData);
+            if (createData == null) return;
+
+            result.NewData = new RoleDetailDataDto
+            {
+                RoleCode = createData.Code,
+                RoleName = createData.Name,
+                Description = createData.Description,
+                Permissions = createData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
+            };
+        }
+
+        private async Task ProcessUpdateRequestData(RoleRequest request, RoleRequestDetailDto result)
+        {
+            if (string.IsNullOrEmpty(request.RequestedData)) return;
+
+            var updateData = JsonSerializer.Deserialize<UpdateRoleRequestDto>(request.RequestedData);
+            if (updateData == null) return;
+
+            // ===== Get current role data =====
+            var currentRole = await _roleManager.Roles
+                .Where(r => r.Id == request.EntityId)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (currentRole != null)
+            {
+                var currentClaims = await _roleManager.GetClaimsAsync(currentRole);
+                result.OldData = new RoleDetailDataDto
+                {
+                    RoleCode = currentRole.Code,
+                    RoleName = currentRole.Name,
+                    Description = currentRole.Description,
+                    Permissions = currentClaims.Select(c => $"{c.Type}:{c.Value}").ToList()
+                };
+            }
+
+            // ===== Set proposed data =====
+            result.NewData = new RoleDetailDataDto
+            {
+                RoleCode = updateData.Code ?? string.Empty,
+                RoleName = updateData.Name,
+                Description = updateData.Description,
+                Permissions = updateData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
+            };
+        }
+
+        private static void ProcessDeleteRequestData(RoleRequest request, RoleRequestDetailDto result)
+        {
+            if (string.IsNullOrEmpty(request.RequestedData)) return;
+
+            var deleteData = JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
+            if (deleteData == null) return;
+
+            result.OldData = new RoleDetailDataDto
+            {
+                RoleCode = deleteData.Code,
+                RoleName = deleteData.Name,
+                Description = deleteData.Description,
+                Permissions = deleteData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
+            };
         }
         public async Task<RoleRequestDto?> GetRoleRequestByIdAsync(long requestId)
         {

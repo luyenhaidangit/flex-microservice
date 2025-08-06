@@ -88,15 +88,12 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Lấy thông tin chi tiết request để hiển thị trong modal
-        /// Trả về oldData và newData để so sánh
+        /// Get role request pending detail.
         /// </summary>
-        [HttpGet("role-requests/{requestId}")]
-        public async Task<IActionResult> GetRoleRequestDetail(long requestId)
+        [HttpGet("pending/{requestId}")]
+        public async Task<IActionResult> GetPendingRoleById(long requestId)
         {
-            var result = await _roleService.GetRoleRequestDetailAsync(requestId);
-            if (result == null)
-                return NotFound(Result.Failure("Request not found"));
+            var result = await _roleService.GetPendingRoleByIdAsync(requestId);
             return Ok(Result.Success(result));
         }
 
