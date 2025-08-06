@@ -147,7 +147,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Get all pending roles with pagination.
         /// </summary>
-        public async Task<PagedResult<RolePagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request)
+        public async Task<PagedResult<RolePendingPagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request)
         {
             // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim().ToLower();
@@ -166,33 +166,28 @@ namespace Flex.AspNetIdentity.Api.Services
                 .AsNoTracking();
 
             var pendingQuery = proposedBranchQuery
-                .Select(r => new RolePagingDto
+                .Select(r => new RolePendingPagingDto
                 {
-                    Id = null,
                     Code = r.Code,
                     Name = r.Name,
-                    IsActive = r.IsActive,
                     Description = r.Description,
-                    Status = r.Status,
                     RequestType = r.Action,
-                    RequestId = r.Id,
                     RequestedBy = r.CreatedBy,
                     RequestedDate = r.CreatedDate,
-                    ApprovedBy = null,
-                    ApprovedDate = null
+                    RequestId = r.Id
                 });
 
             // ===== Execute query =====
             var total = await pendingQuery.CountAsync();
             var items = await pendingQuery
                 .OrderByDescending(dto => dto.RequestedDate)
-                .ThenBy(dto => dto.Id)
+                .ThenBy(dto => dto.RequestId)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
             // ===== Return result =====
-            return PagedResult<RolePagingDto>.Create(pageIndex, pageSize, total, items);
+            return PagedResult<RolePendingPagingDto>.Create(pageIndex, pageSize, total, items);
         }
 
         /// <summary>
