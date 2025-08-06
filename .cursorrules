@@ -176,3 +176,72 @@ development: |
   - Follow RESTful API conventions
   - Use async/await patterns
   - Implement proper dependency injection
+
+# ----------------
+# PAGING PATTERNS
+# ----------------
+paging_patterns: |
+  ## Standard Paging Method Structure
+  ```csharp
+  /// <summary>
+  /// Get all [EntityName] with pagination.
+  /// </summary>
+  public async Task<PagedResult<[EntityName]ListItemDto>> Get[EntityName]PagedAsync(Get[EntityName]PagingRequest request)
+  {
+      // ===== Process request parameters =====
+      var keyword = request?.Keyword?.Trim().ToLower();
+      var status = request?.IsActive?.Trim().ToUpper() == "Y" ? true : false;
+      int pageIndex = Math.Max(1, request.PageIndex ?? 1);
+      int pageSize = Math.Max(1, request.PageSize ?? 10);
+
+      // ===== Build query =====
+      var query = _context.[EntityName]s
+          .WhereIf(!string.IsNullOrEmpty(keyword),
+              x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
+                   EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
+          .WhereIf(!string.IsNullOrEmpty(request.IsActive), x => x.IsActive == status);
+
+      // ===== Execute query =====
+      var total = await query.CountAsync();
+      var items = await query
+          .OrderBy(x => x.Id)
+          .Skip((pageIndex - 1) * pageSize)
+          .Take(pageSize)
+          .Select(x => new [EntityName]ListItemDto
+          {
+              Code = x.Code,
+              Name = x.Name,
+              Description = x.Description,
+              IsActive = x.IsActive
+          })
+          .ToListAsync();
+
+      // ===== Return result =====
+      return PagedResult<[EntityName]ListItemDto>.Create(pageIndex, pageSize, total, items);
+  }
+  ```
+
+  ## Paging Rules & Conventions
+  - **Method Naming**: Get[EntityName]PagedAsync hoặc Get[EntityName]ApprovedPagedAsync
+  - **Parameter Validation**: Luôn validate và set default values cho pageIndex, pageSize
+  - **Keyword Search**: Sử dụng EF.Functions.Like cho case-insensitive search
+  - **Status Filter**: Convert string "Y"/"N" thành boolean
+  - **Query Structure**: 
+    - Process parameters → Build query → Execute query → Return result
+  - **Comments**: Sử dụng comment blocks với "=====" để phân chia rõ ràng
+  - **Ordering**: Mặc định OrderBy(x => x.Id) trừ khi có yêu cầu khác
+  - **Projection**: Sử dụng Select để map sang DTO trước khi ToListAsync()
+  - **Return Type**: Luôn sử dụng PagedResult<T>.Create()
+
+  ## Approved vs Regular Paging
+  - **Regular Paging**: Get[EntityName]PagedAsync - lấy tất cả records
+  - **Approved Paging**: Get[EntityName]ApprovedPagedAsync - chỉ lấy approved records
+  - **Logic Difference**: Chỉ khác ở điều kiện WHERE (IsApproved = true)
+  - **Structure**: Giống hệt nhau về style, chỉ khác logic filter
+
+  ## Common Patterns
+  - **Keyword Search**: Code, Name, Description fields
+  - **Status Filter**: IsActive, IsApproved, IsDeleted fields
+  - **Date Range**: CreatedDate, UpdatedDate với FromDate/ToDate
+  - **User Filter**: CreatedBy, UpdatedBy với user ID
+  - **Category Filter**: CategoryId, TypeId với dropdown values
