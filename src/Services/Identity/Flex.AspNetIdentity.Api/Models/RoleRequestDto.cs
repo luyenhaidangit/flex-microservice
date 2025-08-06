@@ -48,4 +48,34 @@
         public string Description { get; set; } = default!;
         public List<string> Permissions { get; set; } = new List<string>();
     }
+
+    /// <summary>
+    /// DTO for approving role request
+    /// </summary>
+    public class ApproveRoleRequestDto
+    {
+        public string? Comment { get; set; }
+    }
+
+    /// <summary>
+    /// DTO for rejecting role request
+    /// </summary>
+    public class RejectRoleRequestDto
+    {
+        public string? Reason { get; set; }
+    }
+
+    /// <summary>
+    /// DTO for role approval result
+    /// </summary>
+    public class RoleApprovalResultDto
+    {
+        public long RequestId { get; set; }
+        public string RequestType { get; set; } = default!;
+        public string Status { get; set; } = default!;
+        public string ApprovedBy { get; set; } = default!;
+        public DateTime ApprovedDate { get; set; }
+        public string? Comment { get; set; }
+        public long? CreatedRoleId { get; set; } // For CREATE requests
+    }
 }

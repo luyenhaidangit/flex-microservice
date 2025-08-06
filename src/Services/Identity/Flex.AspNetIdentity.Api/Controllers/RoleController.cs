@@ -97,21 +97,23 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(result));
         }
 
-        [HttpPost("requests/{requestId}/approve")]
-        public async Task<IActionResult> ApproveRoleRequest(long requestId)
+        /// <summary>
+        /// Approve pending role request by ID.
+        /// </summary>
+        [HttpPost("pending/{requestId}/approve")]
+        public async Task<IActionResult> ApprovePendingRoleRequest(long requestId, [FromBody] ApproveRoleRequestDto? dto = null)
         {
-            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
-            await _roleService.ApproveRoleRequestAsync(requestId, null, username);
-            return Ok(Result.Success());
+            var result = await _roleService.ApprovePendingRoleRequestAsync(requestId, dto?.Comment);
+            return Ok(Result.Success(result));
         }
 
-        [HttpPost("requests/{requestId}/reject")]
-        public async Task<IActionResult> RejectRoleRequest(long requestId, [FromBody] RejectRoleRequestDto dto)
-        {
-            var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
-            await _roleService.RejectRoleRequestAsync(requestId, dto?.Reason, username);
-            return Ok(Result.Success());
-        }
+        //[HttpPost("requests/{requestId}/reject")]
+        //public async Task<IActionResult> RejectRoleRequest(long requestId, [FromBody] RejectRoleRequestDto dto)
+        //{
+        //    var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
+        //    await _roleService.RejectRoleRequestAsync(requestId, dto?.Reason, username);
+        //    return Ok(Result.Success());
+        //}
 
         [HttpPost("requests/{requestId}/cancel")]
         public async Task<IActionResult> CancelRoleRequest(long requestId)

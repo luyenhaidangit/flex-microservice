@@ -567,82 +567,180 @@ namespace Flex.AspNetIdentity.Api.Services
 
             return request.Id;
         }
-        public async Task ApproveRoleRequestAsync(long requestId, string? comment = null, string? approvedBy = null)
+
+        /// <summary>
+        /// Approve pending role request with comprehensive validation and transaction handling.
+        /// </summary>
+        public async Task<RoleApprovalResultDto> ApprovePendingRoleRequestAsync(long requestId, string? comment = null)
         {
+            // ===== Validation =====
+
+            // ===== Get request data =====
             var request = await _roleRequestRepository
                 .FindAll()
+                .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
 
             if (request == null)
-                throw new Exception("Pending role request not found.");
-
-            var approver = approvedBy ?? "system";
-
-            // Xử lý theo loại yêu cầu
-            if (request.Action == RequestTypeConstant.Create)
             {
-                var dto = JsonSerializer.Deserialize<CreateRoleRequestDto>(request.RequestedData);
-                if (dto == null) throw new Exception("Invalid request data");
+                throw new Exception($"Pending role request with ID '{requestId}' not found.");
+            }
 
-                var newRole = new Role(dto.Name, dto.Code)
+            // ===== Process approval with transaction =====
+            var approver = _userService.GetCurrentUsername() ?? "anonymous";
+            await using var transaction = await _roleRequestRepository.BeginTransactionAsync();
+            try
+            {
+                long? createdRoleId = null;
+
+                // ===== Process by request type =====
+                switch (request.Action)
                 {
-                    Description = dto.Description,
-                    IsActive = dto.IsActive
-                };
+                    case RequestTypeConstant.Create:
+                        createdRoleId = await ProcessCreateApproval(request, approver);
+                        break;
 
-                await _roleManager.CreateAsync(newRole);
+                    case RequestTypeConstant.Update:
+                        await ProcessUpdateApproval(request, approver);
+                        break;
 
-                if (dto.Claims != null)
-                {
-                    //foreach (var claim in dto.Claims)
-                    //{
-                    //    await _roleManager.AddClaimAsync(newRole, new System.Security.Claims.Claim(claim.Type, claim.Value));
-                    //}
+                    case RequestTypeConstant.Delete:
+                        await ProcessDeleteApproval(request, approver);
+                        break;
+
+                    default:
+                        throw new Exception($"Unsupported request type: {request.Action}");
                 }
 
-                request.EntityId = newRole.Id;
+                // ===== Update request status =====
+                await UpdateRequestStatus(request, approver, comment);
+
+                await transaction.CommitAsync();
+
+                // ===== Return result =====
+                return new RoleApprovalResultDto
+                {
+                    RequestId = request.Id,
+                    RequestType = request.Action,
+                    Status = RequestStatusConstant.Authorised,
+                    ApprovedBy = approver,
+                    ApprovedDate = DateTime.UtcNow,
+                    Comment = comment,
+                    CreatedRoleId = createdRoleId
+                };
             }
-            else if (request.Action == RequestTypeConstant.Update)
+            catch
             {
-                var dto = JsonSerializer.Deserialize<UpdateRoleRequestDto>(request.RequestedData);
-                if (dto == null) throw new Exception("Invalid request data");
-
-                var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
-                if (role == null) throw new Exception("Original role not found");
-
-                //role.Name = dto.Name;
-                //role.Description = dto.Description;
-                //role.LastModifiedBy = approver;
-                //role.LastModifiedDate = DateTime.UtcNow;
-
-                // Update role status to AUT (Authorised) when update is approved
-                role.Status = RequestStatusConstant.Authorised;
-                await _roleManager.UpdateAsync(role);
-
-                //if (dto.Claims != null)
-                //{
-                //    var existingClaims = await _roleManager.GetClaimsAsync(role);
-
-                //    foreach (var c in existingClaims)
-                //        await _roleManager.RemoveClaimAsync(role, c);
-
-                //    //foreach (var claim in dto.Claims)
-                //    //    await _roleManager.AddClaimAsync(role, new System.Security.Claims.Claim(claim.Type, claim.Value));
-                //}
+                await transaction.RollbackAsync();
+                throw new Exception($"Failed to approve role request ID '{requestId}'.");
             }
-            else if (request.Action == RequestTypeConstant.Delete)
+        }
+
+        private async Task<long> ProcessCreateApproval(RoleRequest request, string approver)
+        {
+            if (string.IsNullOrEmpty(request.RequestedData))
             {
-                var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
-                if (role == null) throw new Exception("Role not found");
-
-                await _roleManager.DeleteAsync(role);
+                throw new Exception("Request data is empty for CREATE request.");
             }
 
-            // Cập nhật trạng thái yêu cầu
+            var dto = JsonSerializer.Deserialize<CreateRoleRequestDto>(request.RequestedData);
+            if (dto == null)
+            {
+                throw new Exception("Invalid CREATE request data format.");
+            }
+
+            // ===== Create new role =====
+            var newRole = new Role(dto.Name, dto.Code)
+            {
+                Description = dto.Description,
+                IsActive = dto.IsActive,
+                Status = RequestStatusConstant.Authorised
+            };
+
+            await _roleManager.CreateAsync(newRole);
+
+            // ===== Add claims if any =====
+            if (dto.Claims != null && dto.Claims.Any())
+            {
+                foreach (var claim in dto.Claims)
+                {
+                    await _roleManager.AddClaimAsync(newRole, new Claim(claim.Type, claim.Value));
+                }
+            }
+
+            // ===== Update request with created role ID =====
+            request.EntityId = newRole.Id;
+
+            return newRole.Id;
+        }
+
+        private async Task ProcessUpdateApproval(RoleRequest request, string approver)
+        {
+            if (string.IsNullOrEmpty(request.RequestedData))
+            {
+                throw new Exception("Request data is empty for UPDATE request.");
+            }
+
+            var dto = JsonSerializer.Deserialize<UpdateRoleRequestDto>(request.RequestedData);
+            if (dto == null)
+            {
+                throw new Exception("Invalid UPDATE request data format.");
+            }
+
+            // ===== Get existing role =====
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+            if (role == null)
+            {
+                throw new Exception($"Original role with ID '{request.EntityId}' not found.");
+            }
+
+            // ===== Update role properties =====
+            role.Name = dto.Name;
+            role.Description = dto.Description;
+            role.IsActive = dto.IsActive;
+            role.Status = RequestStatusConstant.Authorised;
+
+            await _roleManager.UpdateAsync(role);
+
+            // ===== Update claims =====
+            if (dto.Claims != null)
+            {
+                var existingClaims = await _roleManager.GetClaimsAsync(role);
+                
+                // Remove existing claims
+                foreach (var existingClaim in existingClaims)
+                {
+                    await _roleManager.RemoveClaimAsync(role, existingClaim);
+                }
+
+                // Add new claims
+                foreach (var claim in dto.Claims)
+                {
+                    await _roleManager.AddClaimAsync(role, new Claim(claim.Type, claim.Value));
+                }
+            }
+        }
+
+        private async Task ProcessDeleteApproval(RoleRequest request, string approver)
+        {
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+            if (role == null)
+            {
+                throw new Exception($"Role with ID '{request.EntityId}' not found for deletion.");
+            }
+
+            await _roleManager.DeleteAsync(role);
+        }
+
+        /// <summary>
+        /// Update request status after approval.
+        /// </summary>
+        private async Task UpdateRequestStatus(RoleRequest request, string approver, string? comment)
+        {
             request.Status = RequestStatusConstant.Authorised;
             request.CheckerId = approver;
             request.ApproveDate = DateTime.UtcNow;
-            request.Comments = comment;
+            request.Comments = comment ?? "Approved";
 
             await _roleRequestRepository.UpdateAsync(request);
         }

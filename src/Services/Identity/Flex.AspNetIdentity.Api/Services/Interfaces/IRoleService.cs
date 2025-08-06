@@ -14,6 +14,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<long> CreateDeleteRoleRequestAsync(string code, DeleteRoleRequestDto request);
         Task<PagedResult<RolePendingPagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request);
         Task<RoleRequestDetailDto> GetPendingRoleByIdAsync(long requestId);
+        Task<RoleApprovalResultDto> ApprovePendingRoleRequestAsync(long requestId, string? comment = null);
         Task<List<RoleImpactDto>> GetRoleRequestImpactAsync(long requestId);
         Task<string?> CompareRoleWithRequestAsync(long requestId); 
 
@@ -28,7 +29,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         /// </summary>
         Task<RoleComparisonDto?> GetRoleComparisonAsync(long requestId);
         // Approve
-        Task ApproveRoleRequestAsync(long requestId, string? comment = null, string? approvedBy = null);
+        
         Task RejectRoleRequestAsync(long requestId, string reason, string rejectedBy);
         Task CancelRoleRequestAsync(long requestId, string currentUser); // Maker huỷ trước khi duyệt
 
