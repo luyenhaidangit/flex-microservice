@@ -1,0 +1,63 @@
+# ================================
+# Cursor Rules for .NET + Angular + Microservices
+# ================================
+version: 1
+
+# ----------------
+# GENERAL CONTEXT
+# ----------------
+context:
+  description: |
+    Flex Environment là hệ thống phát triển theo kiến trúc microservices, sử dụng Docker Compose để quản lý các dịch vụ cơ sở dữ liệu (Redis, SQL Server), hạ tầng (Portainer), và các service khác. Mục tiêu là tạo môi trường phát triển linh hoạt, dễ mở rộng, dễ quản lý.
+  conventions: |
+    - Tên dịch vụ viết thường, phân tách bằng dấu gạch dưới hoặc liền (ví dụ: redisdb, sqlserverdb)
+    - Tên volumes kết thúc bằng _data (ví dụ: redisdb_data)
+    - Sử dụng biến môi trường cho các thông tin nhạy cảm (password, user, v.v.)
+    - Images phải chỉ định version cụ thể (không sử dụng latest hoặc không tag)
+    - Sử dụng override file để cấu hình local/dev (ports, volumes, env)
+
+# ----------------
+# BACKEND RULES
+# ----------------
+backend:
+  preferred_framework: "Có thể sử dụng .NET cho backend, Angular cho frontend (nếu có), các service độc lập triển khai theo microservice)"
+  naming_conventions: |
+    - Tên container: trùng với tên service, viết thường (ví dụ: redisdb)
+    - Biến môi trường: viết hoa, phân tách bằng dấu gạch dưới (ví dụ: MSSQL_SA_PASSWORD)
+  architecture: |
+    - Microservices: mỗi service/database là một container riêng biệt
+    - Database tách biệt: Redis, SQL Server, (có thể mở rộng MongoDB, Oracle...)
+    - Hạ tầng quản lý: Portainer để quản lý containers
+  patterns: |
+    - Sử dụng docker-compose để orchestration
+    - Sử dụng volumes để persist dữ liệu
+    - Sử dụng environment variables cho cấu hình động
+
+# ----------------
+# DEVOPS RULES
+# ----------------
+devops:
+  deployment: |
+    - Sử dụng docker-compose để deploy toàn bộ môi trường
+    - Sử dụng docker-compose.override.yml cho cấu hình local/dev
+    - Port mapping rõ ràng, tránh trùng lặp
+  ci_cd: |
+    - (Khuyến nghị) Thiết lập pipeline CI/CD để tự động build, test, deploy các service
+    - (Khuyến nghị) Sử dụng secrets management cho thông tin nhạy cảm
+
+# ----------------
+# TESTING RULES
+# ----------------
+testing: |
+  - (Khuyến nghị) Viết unit test cho từng service
+  - (Khuyến nghị) Có thể sử dụng integration test với các database container
+
+# ----------------
+# FILE & FOLDER STRUCTURE
+# ----------------
+file_structure: |
+  - docker-compose.yml: chỉ lưu image kèm version/tag cho từng service (không lưu container_name, ports, environment, volumes, command, ...)
+  - docker-compose.override.yml: cấu hình bổ sung cho môi trường local/dev (container_name, ports, environment, volumes, command, ...)
+  - restart.sh: script hỗ trợ khởi động lại toàn bộ môi trường
+  - volumes đặt tên theo convention: <service>_data
+  - Mỗi service/backend nên có thư mục riêng (nếu mở rộng)

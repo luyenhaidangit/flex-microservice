@@ -149,6 +149,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<PagedResult<RolePagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request)
         {
+            // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim();
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
             int pageSize = Math.Max(1, request.PageSize ?? 10);
