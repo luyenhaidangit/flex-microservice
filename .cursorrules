@@ -1,37 +1,118 @@
 # ================================
-# Cursor Rules for .NET + Angular + Microservices
+# Cursor Rules for Flex Microservice - .NET 9 + Microservices
 # ================================
-version: 1
+version: 2
 
 # ----------------
 # GENERAL CONTEXT
 # ----------------
 context:
   description: |
-    Flex Environment là hệ thống phát triển theo kiến trúc microservices, sử dụng Docker Compose để quản lý các dịch vụ cơ sở dữ liệu (Redis, SQL Server), hạ tầng (Portainer), và các service khác. Mục tiêu là tạo môi trường phát triển linh hoạt, dễ mở rộng, dễ quản lý.
+    Flex Microservice là hệ thống quản lý chứng khoán theo kiến trúc microservices, sử dụng .NET 9, 
+    được thiết kế để xử lý giao dịch chứng khoán real-time, quản lý danh mục đầu tư, streaming dữ liệu thị trường. 
+    Hệ thống bao gồm các service độc lập: Securities, Investor, Identity, Ordering, Inventory, System, Basket, 
+    và các building blocks chung như Infrastructure, Shared, Contracts.
   conventions: |
-    - Tên dịch vụ viết thường, phân tách bằng dấu gạch dưới hoặc liền (ví dụ: redisdb, sqlserverdb)
-    - Tên volumes kết thúc bằng _data (ví dụ: redisdb_data)
-    - Sử dụng biến môi trường cho các thông tin nhạy cảm (password, user, v.v.)
-    - Images phải chỉ định version cụ thể (không sử dụng latest hoặc không tag)
-    - Sử dụng override file để cấu hình local/dev (ports, volumes, env)
+    - Tên service viết PascalCase với prefix "Flex." (ví dụ: Flex.Securities.Api)
+    - Tên container viết thường, phân tách bằng dấu gạch (ví dụ: securities-api)
+    - Tên volumes kết thúc bằng _data (ví dụ: securities_data)
+    - Sử dụng biến môi trường cho thông tin nhạy cảm (connection strings, passwords)
+    - Images phải chỉ định version cụ thể (.NET 9.0)
+    - Sử dụng docker-compose.override.yml cho cấu hình local/dev
 
 # ----------------
 # BACKEND RULES
 # ----------------
 backend:
-  preferred_framework: "Có thể sử dụng .NET cho backend, Angular cho frontend (nếu có), các service độc lập triển khai theo microservice)"
-  naming_conventions: |
-    - Tên container: trùng với tên service, viết thường (ví dụ: redisdb)
-    - Biến môi trường: viết hoa, phân tách bằng dấu gạch dưới (ví dụ: MSSQL_SA_PASSWORD)
+  framework: ".NET 9.0 (latest LTS)"
   architecture: |
-    - Microservices: mỗi service/database là một container riêng biệt
-    - Database tách biệt: Redis, SQL Server, (có thể mở rộng MongoDB, Oracle...)
-    - Hạ tầng quản lý: Portainer để quản lý containers
+    - Microservices: mỗi service là một container riêng biệt
+    - Building Blocks: Infrastructure, Shared, Contracts, EventBus.Messages
+    - Modules: Security, Redis, SeriLog, Swashbuckle, EntityFrameworkCore
+    - Services: Securities, Investor, Identity, Ordering, Inventory, System, Basket, Job
+    - API Gateway: Ocelot cho routing và load balancing
+  naming_conventions: |
+    - Tên container: trùng với tên service, viết thường (ví dụ: securities-api)
+    - Biến môi trường: viết hoa, phân tách bằng dấu gạch dưới (ví dụ: DEFAULT_CONNECTION)
+    - Tên project: Flex.{ServiceName}.{Layer} (ví dụ: Flex.Securities.Api)
   patterns: |
     - Sử dụng docker-compose để orchestration
     - Sử dụng volumes để persist dữ liệu
     - Sử dụng environment variables cho cấu hình động
+    - Entity Framework Core với Oracle database
+    - Redis cho caching
+    - SeriLog cho logging
+    - Swagger cho API documentation
+
+# ----------------
+# SERVICES STRUCTURE
+# ----------------
+services:
+  securities: |
+    - Flex.Securities.Api: API chính cho quản lý chứng khoán
+    - Port: 5000 (Docker), 7001 (Development)
+    - Database: Oracle với Entity Framework Core
+    - Features: Trade processing, portfolio management, market data
+  investor: |
+    - Flex.Investor.Api: API quản lý nhà đầu tư
+    - Port: 7003 (Development)
+    - Features: Investor profiles, account management
+  identity: |
+    - Flex.IdentityServer.Api: Identity Server với Duende
+    - Flex.AspNetIdentity.Api: ASP.NET Core Identity
+    - Port: 7002 (IdentityServer), 7102 (AspNetIdentity)
+    - Features: Authentication, authorization, user management
+  ordering: |
+    - Flex.Ordering.Api: API quản lý đơn hàng
+    - Flex.Ordering.Domain: Domain layer
+    - Flex.Ordering.Application: Application layer
+    - Flex.Ordering.Infrastructure: Infrastructure layer
+    - Port: 7004 (Development)
+    - Features: Order processing, workflow management
+  inventory: |
+    - Flex.Inventory.Api: API quản lý kho
+    - Flex.Inventory.Grpc: gRPC service
+    - Port: 7005 (API), 7006 (gRPC)
+    - Features: Stock management, inventory tracking
+  system: |
+    - Flex.System.Api: API quản lý hệ thống
+    - Port: 7007 (Development)
+    - Features: System configuration, health checks
+  basket: |
+    - Flex.Basket.Api: API giỏ hàng
+    - Port: 7008 (Development)
+    - Features: Shopping cart functionality
+  job: |
+    - Flex.EmailJob.Api: Background job service
+    - Port: 7009 (Development)
+    - Features: Email processing, scheduled tasks
+
+# ----------------
+# BUILDING BLOCKS
+# ----------------
+building_blocks: |
+  - Flex.Infrastructure: Common infrastructure components
+  - Flex.Shared: Shared DTOs, enums, constants
+  - Flex.Contracts: Domain contracts and interfaces
+  - Flex.EventBus.Messages: Event bus message definitions
+  - Flex.Shared.Authorization: Authorization constants and permissions
+  - Flex.Grpc.Protos: gRPC protocol buffer definitions
+  - Flex.Common.Logging: Common logging components
+
+# ----------------
+# MODULES
+# ----------------
+modules: |
+  - Flex.Security: JWT authentication, token management
+  - Flex.Redis: Redis caching and session management
+  - Flex.SeriLog: Structured logging with Serilog
+  - Flex.Swashbuckle: Swagger/OpenAPI documentation
+  - Flex.EntityFrameworkCore: Entity Framework Core extensions
+  - Flex.EntityFrameworkCore.Oracle: Oracle database provider
+  - Flex.Hangfire: Background job processing
+  - Flex.MediaR: CQRS pattern implementation
+  - Flex.DependencyInjection: DI container configuration
+  - Flex.Data: Database connection management
 
 # ----------------
 # DEVOPS RULES
@@ -41,23 +122,57 @@ devops:
     - Sử dụng docker-compose để deploy toàn bộ môi trường
     - Sử dụng docker-compose.override.yml cho cấu hình local/dev
     - Port mapping rõ ràng, tránh trùng lặp
+    - Sử dụng Jenkins pipeline cho CI/CD
+    - Terraform cho infrastructure provisioning
   ci_cd: |
-    - (Khuyến nghị) Thiết lập pipeline CI/CD để tự động build, test, deploy các service
-    - (Khuyến nghị) Sử dụng secrets management cho thông tin nhạy cảm
+    - Jenkins pipeline cho build, test, deploy
+    - Docker images với .NET 9.0 runtime
+    - Automated testing với unit tests
+    - Secrets management cho thông tin nhạy cảm
 
 # ----------------
 # TESTING RULES
 # ----------------
 testing: |
-  - (Khuyến nghị) Viết unit test cho từng service
-  - (Khuyến nghị) Có thể sử dụng integration test với các database container
+  - Viết unit test cho từng service
+  - Integration test với database containers
+  - API testing với Swagger/OpenAPI
+  - Performance testing cho high-load scenarios
 
 # ----------------
 # FILE & FOLDER STRUCTURE
 # ----------------
 file_structure: |
-  - docker-compose.yml: chỉ lưu image kèm version/tag cho từng service (không lưu container_name, ports, environment, volumes, command, ...)
-  - docker-compose.override.yml: cấu hình bổ sung cho môi trường local/dev (container_name, ports, environment, volumes, command, ...)
-  - restart.sh: script hỗ trợ khởi động lại toàn bộ môi trường
+  - docker-compose.yml: chỉ lưu image kèm version/tag cho từng service
+  - docker-compose.override.yml: cấu hình bổ sung cho môi trường local/dev
+  - src/Services/: chứa các microservices
+  - src/BuildingBlocks/: chứa các shared components
+  - src/Modules/: chứa các reusable modules
+  - src/ApiGateways/: chứa API Gateway
+  - src/WebApps/: chứa web applications
   - volumes đặt tên theo convention: <service>_data
-  - Mỗi service/backend nên có thư mục riêng (nếu mở rộng)
+  - Mỗi service có cấu trúc: Api, Domain, Application, Infrastructure (nếu cần)
+
+# ----------------
+# DATABASE & INFRASTRUCTURE
+# ----------------
+infrastructure: |
+  - Database: Oracle với Entity Framework Core
+  - Cache: Redis cho session và caching
+  - Message Broker: RabbitMQ (được đề cập trong docs)
+  - API Gateway: Ocelot cho routing
+  - Monitoring: Health checks và logging
+  - Security: JWT tokens, Identity Server
+
+# ----------------
+# DEVELOPMENT GUIDELINES
+# ----------------
+development: |
+  - Sử dụng .NET 9.0 SDK
+  - Follow CQRS pattern với MediatR
+  - Implement proper logging với Serilog
+  - Use AutoMapper cho object mapping
+  - Implement proper error handling và validation
+  - Follow RESTful API conventions
+  - Use async/await patterns
+  - Implement proper dependency injection
