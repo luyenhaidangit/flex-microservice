@@ -1,5 +1,21 @@
-﻿namespace Flex.AspNetIdentity.Api.Models
+﻿using Flex.Shared.SeedWork;
+
+namespace Flex.AspNetIdentity.Api.Models
 {
+    /// <summary>
+    /// DTO for paging roles
+    /// </summary>
+    public class GetRolesPagingRequest : PagingRequest
+    {
+        public string? Keyword { get; set; }
+        public string? IsActive { get; set; }
+        public string? Type { get; set; }
+
+        protected override Dictionary<string, string> OrderByMappings => new()
+        {
+        };
+    }
+
     /// <summary>
     /// DTO for paging approved roles
     /// </summary>
