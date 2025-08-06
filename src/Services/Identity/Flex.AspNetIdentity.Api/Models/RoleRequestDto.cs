@@ -27,16 +27,6 @@
     }
 
     /// <summary>
-    /// DTO for approving role request
-    /// </summary>
-    public class ApproveRoleRequestDto
-    {
-        public string? Comment { get; set; }
-    }
-
-
-
-    /// <summary>
     /// DTO for role approval result
     /// </summary>
     public class RoleApprovalResultDto

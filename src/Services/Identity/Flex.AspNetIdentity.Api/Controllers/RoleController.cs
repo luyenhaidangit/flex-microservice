@@ -1,8 +1,6 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Flex.Shared.SeedWork;
 using Flex.AspNetIdentity.Api.Models;
-using Flex.AspNetIdentity.Api.Models.Requests;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 
 namespace Flex.AspNetIdentity.Api.Controllers
@@ -114,7 +112,5 @@ namespace Flex.AspNetIdentity.Api.Controllers
         //    await _roleService.RejectRoleRequestAsync(requestId, dto?.Reason, username);
         //    return Ok(Result.Success());
         //}
-
-         
     }
 }
