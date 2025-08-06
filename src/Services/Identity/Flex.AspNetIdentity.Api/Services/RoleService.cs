@@ -641,6 +641,94 @@ namespace Flex.AspNetIdentity.Api.Services
 
             await _roleRequestRepository.UpdateAsync(request);
         }
+
+        /// <summary>
+        /// Reject pending role request with comprehensive validation and transaction handling.
+        /// </summary>
+        public async Task<RoleApprovalResultDto> RejectPendingRoleRequestAsync(long requestId, string? reason = null)
+        {
+            // ===== Validation =====
+            if (requestId <= 0)
+            {
+                throw new ArgumentException("RequestId must be greater than 0.", nameof(requestId));
+            }
+
+            var rejecter = _userService.GetCurrentUsername() ?? "system";
+            if (string.IsNullOrWhiteSpace(rejecter))
+            {
+                throw new ArgumentException("Rejecter cannot be empty.");
+            }
+
+            // ===== Get request data =====
+            var request = await _roleRequestRepository
+                .FindAll()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+
+            if (request == null)
+            {
+                throw new Exception($"Pending role request with ID '{requestId}' not found.");
+            }
+
+            // ===== Process rejection with transaction =====
+            await using var transaction = await _roleRequestRepository.BeginTransactionAsync();
+            try
+            {
+                // ===== Revert role status if needed =====
+                await RevertRoleStatusIfNeeded(request);
+
+                // ===== Update request status =====
+                await UpdateRejectedRequestStatus(request, rejecter, reason);
+
+                await transaction.CommitAsync();
+
+                // ===== Return result =====
+                return new RoleApprovalResultDto
+                {
+                    RequestId = request.Id,
+                    RequestType = request.Action,
+                    Status = RequestStatusConstant.Rejected,
+                    ApprovedBy = rejecter,
+                    ApprovedDate = DateTime.UtcNow,
+                    Comment = reason ?? "Rejected"
+                };
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Failed to reject role request ID '{requestId}'.");
+            }
+        }
+
+        /// <summary>
+        /// Revert role status back to approved for UPDATE/DELETE requests.
+        /// </summary>
+        private async Task RevertRoleStatusIfNeeded(RoleRequest request)
+        {
+            if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) 
+                && request.EntityId > 0)
+            {
+                var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+                if (role != null)
+                {
+                    role.Status = StatusConstant.Approved; // Revert to approved status
+                    await _roleManager.UpdateAsync(role);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Update request status after rejection.
+        /// </summary>
+        private async Task UpdateRejectedRequestStatus(RoleRequest request, string rejecter, string? reason)
+        {
+            request.Status = RequestStatusConstant.Rejected;
+            request.CheckerId = rejecter;
+            request.ApproveDate = DateTime.UtcNow;
+            request.Comments = reason ?? "Rejected";
+
+            await _roleRequestRepository.UpdateAsync(request);
+        }
         #endregion
 
 

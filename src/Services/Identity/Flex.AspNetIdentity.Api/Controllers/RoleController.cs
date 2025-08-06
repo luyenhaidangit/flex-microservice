@@ -101,16 +101,58 @@ namespace Flex.AspNetIdentity.Api.Controllers
         [HttpPost("pending/{requestId}/approve")]
         public async Task<IActionResult> ApprovePendingRoleRequest(long requestId, [FromBody] ApproveRoleRequestDto? dto = null)
         {
-            var result = await _roleService.ApprovePendingRoleRequestAsync(requestId, dto?.Comment);
-            return Ok(Result.Success(result));
+            try
+            {
+                // ===== Validation =====
+                if (requestId <= 0)
+                {
+                    return BadRequest(Result.Failure("RequestId must be greater than 0."));
+                }
+
+                // ===== Process approval =====
+                var result = await _roleService.ApprovePendingRoleRequestAsync(requestId, dto?.Comment);
+                
+                // ===== Return result =====
+                return Ok(Result.Success(result));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(Result.Failure(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Result.Failure($"Failed to approve role request: {ex.Message}"));
+            }
         }
 
-        //[HttpPost("requests/{requestId}/reject")]
-        //public async Task<IActionResult> RejectRoleRequest(long requestId, [FromBody] RejectRoleRequestDto dto)
-        //{
-        //    var username = User.FindFirstValue(Flex.Security.ClaimTypes.Sub) ?? User?.Identity?.Name ?? "anonymous";
-        //    await _roleService.RejectRoleRequestAsync(requestId, dto?.Reason, username);
-        //    return Ok(Result.Success());
-        //}
+        /// <summary>
+        /// Reject pending role request by ID.
+        /// </summary>
+        [HttpPost("pending/{requestId}/reject")]
+        public async Task<IActionResult> RejectPendingRoleRequest(long requestId, [FromBody] RejectRoleRequestDto? dto = null)
+        {
+            try
+            {
+                // ===== Validation =====
+                if (requestId <= 0)
+                {
+                    return BadRequest(Result.Failure("RequestId must be greater than 0."));
+                }
+
+                // ===== Process rejection =====
+                var result = await _roleService.RejectPendingRoleRequestAsync(requestId, dto?.Reason);
+                
+                // ===== Return result =====
+                return Ok(Result.Success(result));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(Result.Failure(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Result.Failure($"Failed to reject role request: {ex.Message}"));
+            }
+        }
     }
 }

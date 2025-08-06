@@ -14,5 +14,6 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<PagedResult<RolePendingPagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request);
         Task<RoleRequestDetailDto> GetPendingRoleByIdAsync(long requestId);
         Task<RoleApprovalResultDto> ApprovePendingRoleRequestAsync(long requestId, string? comment = null);
+        Task<RoleApprovalResultDto> RejectPendingRoleRequestAsync(long requestId, string? reason = null);
     }
 }
