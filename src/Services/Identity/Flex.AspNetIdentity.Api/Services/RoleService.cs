@@ -161,7 +161,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     r => EF.Functions.Like(r.Code.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(r.Description.ToLower(), $"%{keyword}%"))
-                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != "ALL",
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
                     r => r.Action == requestType)
                 .AsNoTracking();
 
@@ -801,13 +801,13 @@ namespace Flex.AspNetIdentity.Api.Services
                 .AsNoTracking();
 
             // Filter theo RequestType
-            if (!string.IsNullOrEmpty(request?.RequestType) && request.RequestType.ToUpper() != "ALL")
+            if (!string.IsNullOrEmpty(request?.RequestType) && request.RequestType.ToUpper() != StatusConstant.All)
             {
                 query = query.Where(r => r.Action == request.RequestType);
             }
 
             // Filter theo Status
-            if (!string.IsNullOrEmpty(request?.Status) && request.Status.ToUpper() != "ALL")
+            if (!string.IsNullOrEmpty(request?.Status) && request.Status.ToUpper() != StatusConstant.All)
             {
                 query = query.Where(r => r.Status == request.Status);
             }

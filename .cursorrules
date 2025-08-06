@@ -245,3 +245,15 @@ paging_patterns: |
   - **Date Range**: CreatedDate, UpdatedDate với FromDate/ToDate
   - **User Filter**: CreatedBy, UpdatedBy với user ID
   - **Category Filter**: CategoryId, TypeId với dropdown values
+
+  ## Constants & Magic Strings
+  - **ALWAYS CHECK EXISTING CONSTANTS**: Trước khi hardcode string values, tìm kiếm constants đã có
+  - **Common Constants**: 
+    - `StatusConstant.All` thay vì `"ALL"`
+    - `StatusConstant.Approved` thay vì `"APPROVED"`
+    - `RequestTypeConstant.All` thay vì `"ALL"` (cho request type filter)
+    - `RequestTypeConstant.Create/Update/Delete` thay vì `"CREATE"/"UPDATE"/"DELETE"`
+  - **Search Pattern**: `grep_search` với `"VALUE"` để tìm constants
+  - **Location**: Constants thường ở `src/BuildingBlocks/Flex.Shared/Constants/` hoặc `src/BuildingBlocks/Flex.Shared/SeedWork/Workflow/Constants/`
+  - **Naming**: Constants viết PascalCase với suffix "Constant" (ví dụ: StatusConstant, RequestTypeConstant)
+  - **Request Type Filtering**: Luôn sử dụng `RequestTypeConstant.All` để lọc tất cả loại request (C/R/U/D)
