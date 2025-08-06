@@ -37,7 +37,6 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         //Task<IEnumerable<ApprovalLogDto>> GetRoleRequestApprovalLogAsync(long requestId);
 
         // ===== (Optional) Claims hoặc phân quyền role =====
-        Task<IEnumerable<ClaimDto>> GetClaimsAsync(long roleId);
         Task AddClaimsAsync(long roleId, IEnumerable<ClaimDto> claims);
         Task RemoveClaimAsync(long roleId, ClaimDto claim);
 

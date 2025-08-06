@@ -123,13 +123,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success());
         }
 
-        [HttpGet("{roleId}/claims")]
-        public async Task<IActionResult> GetRoleClaims(long roleId)
-        {
-            var claims = await _roleService.GetClaimsAsync(roleId);
-            return Ok(Result.Success(claims));
-        }
-
         [HttpPost("{roleId}/claims")]
         public async Task<IActionResult> AddRoleClaims(long roleId, [FromBody] IEnumerable<ClaimDto> claims)
         {
