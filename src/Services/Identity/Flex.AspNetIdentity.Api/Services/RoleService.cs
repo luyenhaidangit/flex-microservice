@@ -730,7 +730,5 @@ namespace Flex.AspNetIdentity.Api.Services
             await _roleRequestRepository.UpdateAsync(request);
         }
         #endregion
-
-
     }
 }
