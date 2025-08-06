@@ -305,17 +305,6 @@ namespace Flex.AspNetIdentity.Api.Services
             };
         }
 
-
-
-        #endregion
-
-        #region Command 
-        #endregion
-
-        #region Flow 
-        #endregion
-
-        #region Domain Mapping 
         #endregion
 
         #region Command
@@ -643,9 +632,6 @@ namespace Flex.AspNetIdentity.Api.Services
             await _roleManager.DeleteAsync(role);
         }
 
-        /// <summary>
-        /// Update request status after approval.
-        /// </summary>
         private async Task UpdateRequestStatus(RoleRequest request, string approver, string? comment)
         {
             request.Status = RequestStatusConstant.Authorised;
