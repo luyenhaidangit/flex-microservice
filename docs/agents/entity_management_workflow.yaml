@@ -18,7 +18,6 @@ entity_management_workflow: |
       public string Code { get; set; } = default!;
       public string Name { get; set; } = default!;
       public string Description { get; set; } = default!;
-      public string Status { get; set; } = StatusConstant.Approved;
       public bool IsActive { get; set; } = true;
       
       // Additional business fields as needed
@@ -34,22 +33,12 @@ entity_management_workflow: |
   ```csharp
   public class [EntityName]Request : RequestBase<long>
   {
-      public string Action { get; set; } = default!; // CREATE, UPDATE, DELETE
-      public long EntityId { get; set; } // ID của entity gốc (0 cho CREATE)
-      public string EntityCode { get; set; } = default!; // Code của entity
-      public string Status { get; set; } = RequestStatusConstant.Unauthorised;
-      public string? CheckerId { get; set; }
-      public DateTime? ApproveDate { get; set; }
-      public string? Comments { get; set; }
-      
-      // Data fields (JSON serialized)
-      public string RequestData { get; set; } = default!;
-      public string? OriginalData { get; set; } // Cho UPDATE/DELETE
   }
   ```
 
   ## 🏗️ PERSISTENCE CONFIGURATIONS
   ### Main Entity Configuration
+  - Tên bảng và các trường viết chữ hoa
   ```csharp
   public class [EntityName]Configuration : IEntityTypeConfiguration<[EntityName]>
   {
