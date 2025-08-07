@@ -1,0 +1,106 @@
+version: 1
+
+# ================================
+# ENTITY MANAGEMENT WORKFLOW
+# ================================
+
+entity_management_workflow: |
+  ## 🔁 Entity Lifecycle Flow
+  Mỗi entity mới cần triển khai theo luồng chuẩn sau:
+
+  1. **Entity** (Entities/)
+  2. **Configuration** (Persistence/Configurations/)
+  3. **Repository & Interface** (Repositories/ & Repositories/Interfaces/)
+  4. **Service & Interface** (Services/ & Services/Interfaces/)
+  5. **DI Registration** (Extensions/ServiceCollectionExtensions.cs)
+  6. **Controller** (Controllers/)
+  7. **DTOs** (Models/)
+  8. **Request Workflow** (Optional: Approve/Reject)
+
+  ## 📦 Entity Rules
+  - Inherit từ `EntityBase<long>`
+  - Các trường phổ biến cần có: `Code`, `Name`, `Description`, `IsActive`
+
+  ## 🏗️ Configuration Rules
+  - `builder.ToTable("[EntityName]s")`
+  - Tên bảng ROLES, BRANCHES, ...
+  - `builder.HasKey(x => x.Id)`
+  - Trường `Code`, `Name`: bắt buộc, độ dài `50`, `200`
+  - `IsActive` có default value `false`
+
+  ## 🧠 Repository Interface
+  - I[EntityName]Repository:
+  - Kế thừa từ `IRepositoryBase<[EntityName], long, TDbContext>`
+
+  ## 🛠️ Repository Implementation
+  - Inherit từ `RepositoryBase<[EntityName], long, TDbContext>`, I[EntityName]Repository
+
+  ## 🧪 Service Interface
+  - CRUD + Approve/Reject:
+    - `CreateAsync`, `UpdateAsync`, `DeleteAsync`
+    - `ApproveAsync`, `RejectAsync`
+    - `GetByIdAsync`, `GetByCodeAsync`
+    - `GetPagedAsync`, `GetApprovedPagedAsync`
+
+  ## 🧱 Service Implementation
+  - Validate: `IsCodeExistsAsync`, `IsNameExistsAsync`
+  - Tạo entity → Gọi `Repository.AddAsync` → `UnitOfWork.SaveChangesAsync`
+  - Approve → Gán `ApprovedBy`, `ApprovedDate`
+
+  ## 📡 Controller
+  - `[ApiController]` + `Route("api/[controller]")`
+  - GET:
+    - `/`, `/approved`, `/code/{code}`, `/{id}`
+  - POST/PUT/DELETE:
+    - `POST /` → create
+    - `PUT /{id}` → update
+    - `DELETE /{id}` → soft delete
+    - `POST /{id}/approve` → approve
+    - `POST /{id}/reject` → reject
+
+  ## 📦 DTOs cần có
+  - `[EntityName]ListItemDto`
+  - `[EntityName]DetailDto`
+  - `Create[EntityName]Request`
+  - `Update[EntityName]Request`
+  - `Approve[EntityName]Request`
+  - `Reject[EntityName]Request`
+  - `Get[EntityName]PagingRequest`
+
+  ## 📌 PagingRequest Structure
+  ```csharp
+  public class Get[EntityName]PagingRequest : PagingRequest
+  {
+      public string? Keyword { get; set; }
+      public string? IsActive { get; set; }
+
+      protected override Dictionary<string, string> OrderByMappings => new()
+      {
+      };
+  }
+🔒 Constants cần dùng
+StatusConstant.Approved, StatusConstant.Pending
+
+RequestTypeConstant.Create, Update, Delete
+
+✅ Required Method Comments
+Luôn dùng // ===== Section ===== để chia đoạn rõ ràng
+
+Dùng /// <summary> cho Swagger XML Docs
+
+✅ Naming Convention
+Interface: I[EntityName]Service, I[EntityName]Repository
+
+Implementation: [EntityName]Service, [EntityName]Repository
+
+Request class: Create[EntityName]Request
+
+Controller: [EntityName]Controller
+
+Table: [EntityName]s
+
+✅ DI Registration
+Trong AddInfrastructureServices:
+
+services.AddScoped<I[EntityName]Repository, [EntityName]Repository>();
+services.AddScoped<I[EntityName]Service, [EntityName]Service>();

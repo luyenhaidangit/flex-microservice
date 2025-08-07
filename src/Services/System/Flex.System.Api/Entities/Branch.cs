@@ -1,5 +1,4 @@
 using Flex.Contracts.Domains;
-using Flex.Shared.Constants.Common;
 
 namespace Flex.System.Api.Entities
 {
@@ -8,7 +7,6 @@ namespace Flex.System.Api.Entities
         public string Code { get; set; } = default!;
         public string Name { get; set; } = default!;
         public string Description { get; set; } = default!;
-        public string Status { get; set; } = StatusConstant.Approved;
         public bool IsActive { get; set; } = true;
         
         // Additional fields for Branch management

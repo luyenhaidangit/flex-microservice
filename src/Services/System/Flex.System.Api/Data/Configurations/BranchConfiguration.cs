@@ -22,10 +22,6 @@ namespace Flex.System.Api.Data.Configurations
             builder.Property(x => x.Description)
                 .HasMaxLength(500);
                 
-            builder.Property(x => x.Status)
-                .IsRequired()
-                .HasMaxLength(20);
-                
             builder.Property(x => x.MemberCode)
                 .IsRequired()
                 .HasMaxLength(50);
