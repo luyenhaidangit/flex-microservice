@@ -354,10 +354,13 @@ entity_management_workflow: |
 
   ### Repository Implementation
   ```csharp
-  public class [EntityName]Repository : Repository<[EntityName]>, I[EntityName]Repository
+  public class [EntityName]Repository : RepositoryBase<[EntityName], long, TDbContext>, I[EntityName]Repository
   {
-      public [EntityName]Repository(DbContext context) : base(context)
+      private readonly TDbContext _context;
+      public [EntityName]Repository(TDbContext dbContext, IUnitOfWork<TDbContext> unitOfWork)
+          : base(dbContext, unitOfWork)
       {
+          _context = dbContext;
       }
 
       public async Task<PagedResult<[EntityName]ListItemDto>> Get[EntityName]PagedAsync(Get[EntityName]PagingRequest request)
@@ -855,10 +858,36 @@ complete_entity_workflow: |
   ## Complete Entity Management Flow
   Luồng tạo và quản lý đối tượng (Entity) theo pattern Role làm base, bao gồm đầy đủ approve/reject workflow:
 
+  ## IMPORTANT BASE CLASS RULES
+  - **Entity**: Luôn kế thừa từ `EntityBase<long>` (không phải `EntityBase`)
+  - **Request Entity**: Luôn kế thừa từ `RequestBase<long>` (không phải `EntityBase`)
+  - **Repository Interface**: Luôn kế thừa từ `IRepositoryBase<T, long, TDbContext>`
+  - **Repository Implementation**: Luôn kế thừa từ `RepositoryBase<T, long, TDbContext>`
+  - **Paging Request**: Phải implement `protected override Dictionary<string, string> OrderByMappings`
+
+  ### PAGING REQUEST TEMPLATE
+  ```csharp
+  public class Get[EntityName]PagingRequest : PagingRequest
+  {
+      public string? Keyword { get; set; }
+      public string? IsActive { get; set; }
+      public string? RequestType { get; set; }
+
+      protected override Dictionary<string, string> OrderByMappings => new()
+      {
+          { "code", "Code" },
+          { "name", "Name" },
+          { "description", "Description" },
+          { "status", "Status" },
+          { "createdDate", "CreatedDate" }
+      };
+  }
+  ```
+
   ### 1. ENTITY CREATION
   ```csharp
   // src/Services/Identity/Flex.AspNetIdentity.Api/Entities/[EntityName].cs
-  public class [EntityName] : EntityBase
+  public class [EntityName] : EntityBase<long>
   {
       public string Code { get; set; } = default!;
       public string Name { get; set; } = default!;
@@ -874,7 +903,7 @@ complete_entity_workflow: |
   ### 2. REQUEST ENTITY (cho workflow)
   ```csharp
   // src/Services/Identity/Flex.AspNetIdentity.Api/Entities/[EntityName]Request.cs
-  public class [EntityName]Request : EntityBase
+  public class [EntityName]Request : RequestBase<long>
   {
       public string Action { get; set; } = default!; // CREATE, UPDATE, DELETE
       public long EntityId { get; set; } // ID của entity gốc (0 cho CREATE)
@@ -952,7 +981,7 @@ complete_entity_workflow: |
   ### 4. REPOSITORIES & INTERFACES
   ```csharp
   // src/Services/Identity/Flex.AspNetIdentity.Api/Repositories/Interfaces/I[EntityName]Repository.cs
-  public interface I[EntityName]Repository : IRepository<[EntityName]>
+  public interface I[EntityName]Repository : IRepositoryBase<[EntityName], long, TDbContext>
   {
       Task<[EntityName]?> GetByCodeAsync(string code);
       Task<bool> ExistsByCodeAsync(string code);
@@ -963,7 +992,7 @@ complete_entity_workflow: |
 
   ```csharp
   // src/Services/Identity/Flex.AspNetIdentity.Api/Repositories/Interfaces/I[EntityName]RequestRepository.cs
-  public interface I[EntityName]RequestRepository : IRepository<[EntityName]Request>
+  public interface I[EntityName]RequestRepository : IRepositoryBase<[EntityName]Request, long, TDbContext>
   {
       Task<PagedResult<[EntityName]PendingPagingDto>> GetPendingPagedAsync(Get[EntityName]PagingRequest request);
       Task<[EntityName]Request?> GetPendingByIdAsync(long requestId);
@@ -1069,10 +1098,13 @@ complete_entity_workflow: |
 
   ```csharp
   // src/Services/Identity/Flex.AspNetIdentity.Api/Repositories/[EntityName]RequestRepository.cs
-  public class [EntityName]RequestRepository : Repository<[EntityName]Request>, I[EntityName]RequestRepository
+  public class [EntityName]RequestRepository : RepositoryBase<[EntityName]Request, long, TDbContext>, I[EntityName]RequestRepository
   {
-      public [EntityName]RequestRepository(ApplicationDbContext context) : base(context)
+      private readonly TDbContext _context;
+      public [EntityName]RequestRepository(TDbContext dbContext, IUnitOfWork<TDbContext> unitOfWork)
+          : base(dbContext, unitOfWork)
       {
+          _context = dbContext;
       }
 
       public async Task<PagedResult<[EntityName]PendingPagingDto>> GetPendingPagedAsync(Get[EntityName]PagingRequest request)

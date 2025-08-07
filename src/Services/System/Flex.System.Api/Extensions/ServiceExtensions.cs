@@ -8,6 +8,8 @@ using Flex.Infrastructure.Swashbuckle;
 using Flex.Shared.Extensions;
 using Flex.EntityFrameworkCore.Oracle;
 using Flex.Redis;
+using Flex.System.Api.Services.Interfaces;
+using Flex.System.Api.Services;
 
 namespace Flex.System.Api.Extensions
 {
@@ -57,10 +59,10 @@ namespace Flex.System.Api.Extensions
                            .AddScoped<IConfigRepository, ConfigRepository>()
                            .AddScoped<IDepartmentRepository, DepartmentRepository>()
                            .AddScoped<IDepartmentRequestRepository, DepartmentRequestRepository>()
-                           .AddScoped<IBranchRequestHeaderRepository, BranchRequestHeaderRepository>()
-                           .AddScoped<IBranchRequestDataRepository, BranchRequestDataRepository>()
-                           .AddScoped<IBranchMasterRepository, BranchMasterRepository>()
-                           .AddScoped<IBranchAuditLogRepository, BranchAuditLogRepository>(); ;
+                           .AddScoped<IBranchRepository, BranchRepository>()
+                           .AddScoped<IBranchRequestRepository, BranchRequestRepository>()
+                           .AddScoped<IBranchService, BranchService>()
+                           .AddScoped<IUserService, UserService>();
         }
         #endregion
     }

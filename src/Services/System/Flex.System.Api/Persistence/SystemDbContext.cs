@@ -13,10 +13,8 @@ namespace Flex.System.Api.Persistence
         public DbSet<Entities.Config> Configs { get; set; }
         public DbSet<Entities.Department> Departments { get; set; }
         public DbSet<Entities.DepartmentRequest> DepartmentRequests { get; set; }
-        public DbSet<Entities.BranchMaster> BranchMasters { get; set; }
-        public DbSet<Entities.BranchRequestHeader> BranchRequestHeaders { get; set; }
-        public DbSet<Entities.BranchRequestData> BranchRequestDatas { get; set; }
-        public DbSet<Entities.BranchAuditLog> BranchAuditLogs { get; set; }
+        public DbSet<Entities.Branch> Branches { get; set; }
+        public DbSet<Entities.BranchRequest> BranchRequests { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
