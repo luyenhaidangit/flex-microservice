@@ -1,0 +1,383 @@
+version: 1.0
+intent: >
+  Quy định chuẩn tạo mới một thực thể (entity) trong hệ thống theo mẫu Role hiện có:
+  kiến trúc, naming, API, validation, logging, audit, comment/XML docs, format code.
+  Mục tiêu: AI/agent tạo code y hệt Role flow, không phá vỡ convention hiện hành.
+
+reference:
+  canonical_module: Role
+  follow_canonical_rules: true
+  # Khi có mâu thuẫn giữa quy định chung và triển khai Role hiện tại -> ƯU TIÊN THEO ROLE.
+  # Agent phải mở code Role hiện tại và bám sát: cấu trúc tầng, tên file, tên method, mẫu log, Result<T>...
+
+tech_stack:
+  dotnet: "8.x"
+  frameworks:
+    - ASP.NET Core Web API
+    - Entity Framework Core
+    - AutoMapper
+    - FluentValidation
+  testing:
+    - xUnit (hoặc theo repo)
+    - Moq/NSubstitute (tùy repo)
+  docs:
+    - Swagger/OpenAPI + XML docs
+  style:
+    - C# conventions (PascalCase/PUBLIC, camelCase/local)
+    - Nullable enable, warnings as errors
+    - dotnet format
+
+constraints:
+  - KHÔNG sửa hoặc refactor module Role hiện có.
+  - KHÔNG thay đổi public API của các module khác.
+  - Code tạo mới phải pass build, pass lint/format hiện tại.
+  - Áp dụng approval workflow như Role: Pending -> Approved/Rejected, request Create/Update/Delete.
+
+placeholders:
+  Entity: PascalCase singular    # ví dụ: Permission
+  EntityPlural: PascalCase plural # ví dụ: Permissions
+  Feature: PascalCase domain folder (thường giống EntityPlural) # ví dụ: Permissions
+  DbContext: tên DbContext hiện dùng trong module tương tự Role
+  TableName: tên bảng map theo convention hiện hành
+  KeyType: Guid                   # nếu Role dùng Guid, giữ nguyên Guid
+  NamespaceRoot: giữ theo repo (agent phải tự đọc csproj để biết root namespace)
+
+project_structure:
+  # Agent phải tạo các file theo đúng vị trí tương tự Role.
+  required_folders:
+    - src/{Feature}/Controllers
+    - src/{Feature}/Dtos
+    - src/{Feature}/Validators
+    - src/{Feature}/Mappings
+    - src/{Feature}/Services
+    - src/{Feature}/Entities
+    - src/{Feature}/Repositories (nếu Role có)
+    - tests/{Feature}.Tests (nếu repo có thư mục tests)
+    - http/ (sample request .http)
+  # Nếu repo dùng kiến trúc khác (Application/Domain/Infrastructure), bám theo Role.
+
+naming:
+  entity_class: "{Entity}"
+  dto_create: "Create{Entity}Dto"
+  dto_update: "Update{Entity}Dto"
+  dto_view:   "{Entity}Dto"
+  validator_create: "Create{Entity}Validator"
+  validator_update: "Update{Entity}Validator"
+  controller: "{Entity}ApprovalController"
+  service_interface: "I{Entity}ApprovalService"
+  service_impl: "{Entity}ApprovalService"
+  request_entity: "{Entity}ApprovalRequest"
+  repository_interface: "I{Entity}Repository"
+  repository_impl: "{Entity}Repository"
+  automapper_profile: "{Entity}Profile"
+  api_route_base: "api/v{version}/{entityPlural}/approval-requests"
+
+approval_workflow:
+  states: [Pending, Approved, Rejected]
+  request_types: [Create, Update, Delete]
+  operations:
+    - name: Create
+      http:
+        method: POST
+        route: "{api_route_base}/create"
+        body: "{dto_create}"
+        responses:
+          "202": "{ requestId: Guid }"
+          "400": "ProblemDetails/Result.Failure"
+    - name: Update
+      http:
+        method: POST
+        route: "{api_route_base}/{targetId:guid}/update"
+        body: "{dto_update}"
+        responses:
+          "202": "{ requestId: Guid }"
+          "400": "ProblemDetails/Result.Failure"
+    - name: Delete
+      http:
+        method: POST
+        route: "{api_route_base}/{targetId:guid}/delete"
+        responses:
+          "202": "Accepted"
+          "400": "ProblemDetails/Result.Failure"
+    - name: Approve
+      http:
+        method: POST
+        route: "{api_route_base}/{requestId:guid}/approve"
+        responses:
+          "200": "Ok"
+          "400": "ProblemDetails/Result.Failure"
+    - name: Reject
+      http:
+        method: POST
+        route: "{api_route_base}/{requestId:guid}/reject"
+        body:
+          type: RejectDto
+          fields: [Reason: string (required, 1..500)]
+        responses:
+          "200": "Ok"
+          "400": "ProblemDetails/Result.Failure"
+
+api_contract:
+  response_wrapper: "Result<T>" # giống Role
+  error_model: "ProblemDetails + Result.Failure(message)"
+  versioning: "ApiVersion(\"1.0\") + Route api/v{version:apiVersion}/..."
+  xml_docs_required: true
+  xml_docs_guidelines:
+    summary: "Intent ngắn gọn (1-2 câu)."
+    remarks: "Nêu quy trình duyệt, side-effects."
+    response_codes: ["200","202","400","401","403","404","409","500"] (tuỳ thực tế Role)
+  swagger:
+    # agent phải bật/ghi chú attribute/ProducesResponseType tương tự Role
+
+validation:
+  use: "FluentValidation"
+  create_rules:
+    - field: Name
+      rules: [NotEmpty, MaxLength(100)]
+    - field: Code
+      rules: [NotEmpty, MaxLength(50)]
+  update_rules:
+    - field: Id
+      rules: [NotEmpty]
+  # Tùy entity: agent đọc Role để map các quy tắc tương đồng.
+  model_state_response: "400 với ProblemDetails/Result.Failure"
+
+logging:
+  use: "ILogger<T>"
+  style: "structured"
+  scope: ["RequestId","ActorId","Operation","Entity","EntityId","RequestType"]
+  examples:
+    - "logger.LogInformation(\"{Operation} {Entity} request {RequestId} by {ActorId}\", op, entity, reqId, actorId);"
+
+audit:
+  table_or_sink: "Theo cách Role đang làm (DB hoặc log)."
+  fields:
+    - Operation
+    - Entity
+    - EntityId
+    - Before
+    - After
+    - RequestedBy/ApprovedBy/RejectedBy
+    - RequestedAtUtc/ProcessedAtUtc
+    - Reason (khi Reject)
+  required_on: [Create, Update, Delete, Approve, Reject]
+
+security:
+  authn: "Giống Role (JWT/Identity)."
+  authz_policies:
+    - "Require authenticated user."
+    - "Policy-based nếu Role có (vd: CanManage{EntityPlural})."
+  sensitive_fields_masking: "Mask trong log nếu có."
+
+persistence:
+  ef_core:
+    dbcontext: "{DbContext}"
+    entity_mapping:
+      - "{Entity}" -> "{TableName}"
+      - "{request_entity}" -> "{TableName}_REQUESTS" (hoặc giống Role)
+    keys:
+      - "{Entity}.Id: {KeyType}"
+    indexes:
+      - "Unique(Code)" # nếu Role áp dụng
+    conventions:
+      - UseNoTracking cho query read-only
+      - AsSplitQuery khi cần
+  migrations:
+    # Agent KHÔNG tự chạy update DB nếu không được yêu cầu; chỉ tạo migration file giống Role khi cần.
+
+automapper:
+  profile_class: "{automapper_profile}"
+  mappings:
+    - "{dto_create} -> {Entity}"
+    - "{dto_update} -> {Entity}"
+    - "{Entity} -> {dto_view}"
+
+unit_tests:
+  required: true
+  minimum:
+    - "Service: Create/Update/Delete request happy-path"
+    - "Approve/Reject transitions"
+    - "Validation rules hit 400"
+    - "Logging & Audit called"
+  naming: "MethodName_State_Expected"
+  arrange_act_assert: true
+
+http_samples:
+  folder: "http/"
+  files:
+    - "{entity}.http"
+  include_env_placeholder: true # {{host}} variable
+
+output_requirements:
+  files_to_generate:
+    - path: "src/{Feature}/Entities/{Entity}.cs"
+      template: |
+        namespace {NamespaceRoot}.{Feature}.Entities;
+        public sealed class {Entity}
+        {
+            public {KeyType} Id { get; set; }
+            public string Code { get; set; } = default!;
+            public string Name { get; set; } = default!;
+            public bool IsActive { get; set; } = true;
+            public DateTime CreatedAtUtc { get; set; }
+            public string CreatedBy { get; set; } = default!;
+            public DateTime? UpdatedAtUtc { get; set; }
+            public string? UpdatedBy { get; set; }
+        }
+    - path: "src/{Feature}/Entities/{Entity}ApprovalRequest.cs"
+      template: |
+        namespace {NamespaceRoot}.{Feature}.Entities;
+        public sealed class {Entity}ApprovalRequest
+        {
+            public Guid Id { get; set; }
+            public string RequestedBy { get; set; } = default!;
+            public DateTime RequestedAtUtc { get; set; }
+            public string? Reason { get; set; }
+            public string RequestType { get; set; } = default!; // Create|Update|Delete
+            public string Status { get; set; } = "Pending";    // Pending|Approved|Rejected
+            public string ProposedDataJson { get; set; } = default!; // mirror Role
+        }
+    - path: "src/{Feature}/Dtos/{dto_create}.cs"
+      template: |
+        /// <summary>Tạo mới {Entity}.</summary>
+        public sealed record {dto_create}(string Code, string Name, bool IsActive);
+    - path: "src/{Feature}/Dtos/{dto_update}.cs"
+      template: |
+        /// <summary>Cập nhật {Entity}.</summary>
+        public sealed record {dto_update}(Guid Id, string Code, string Name, bool IsActive);
+    - path: "src/{Feature}/Validators/{validator_create}.cs"
+      template: |
+        using FluentValidation;
+        public sealed class {validator_create} : AbstractValidator<{dto_create}>
+        {
+            public {validator_create}()
+            {
+                RuleFor(x => x.Code).NotEmpty().MaximumLength(50);
+                RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+            }
+        }
+    - path: "src/{Feature}/Validators/{validator_update}.cs"
+      template: |
+        using FluentValidation;
+        public sealed class {validator_update} : AbstractValidator<{dto_update}>
+        {
+            public {validator_update}()
+            {
+                RuleFor(x => x.Id).NotEmpty();
+                RuleFor(x => x.Code).NotEmpty().MaximumLength(50);
+                RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+            }
+        }
+    - path: "src/{Feature}/Mappings/{automapper_profile}.cs"
+      template: |
+        using AutoMapper;
+        using {NamespaceRoot}.{Feature}.Dtos;
+        using {NamespaceRoot}.{Feature}.Entities;
+        public sealed class {automapper_profile} : Profile
+        {
+            public {automapper_profile}()
+            {
+                CreateMap<{dto_create}, {Entity}>();
+                CreateMap<{dto_update}, {Entity}>();
+                CreateMap<{Entity}, {Entity}Dto>();
+            }
+        }
+    - path: "src/{Feature}/Services/{service_interface}.cs"
+      template: |
+        public interface {service_interface}
+        {
+            Task<Result<Guid>> CreateRequestAsync({dto_create} dto, string actorId, CancellationToken ct);
+            Task<Result<Guid>> UpdateRequestAsync(Guid targetId, {dto_update} dto, string actorId, CancellationToken ct);
+            Task<Result> DeleteRequestAsync(Guid targetId, string actorId, CancellationToken ct);
+            Task<Result> ApproveAsync(Guid requestId, string approverId, CancellationToken ct);
+            Task<Result> RejectAsync(Guid requestId, string approverId, string reason, CancellationToken ct);
+        }
+    - path: "src/{Feature}/Controllers/{controller}.cs"
+      template: |
+        using Microsoft.AspNetCore.Mvc;
+        /// <summary>Quản lý luồng duyệt cho {EntityPlural} (chuẩn Role).</summary>
+        [ApiController]
+        [ApiVersion("1.0")]
+        [Route("api/v{version:apiVersion}/{entityPlural}/approval-requests")]
+        public sealed class {controller} : ControllerBase
+        {
+            private readonly {service_interface} service;
+            public {controller}({service_interface} service) => this.service = service;
+
+            /// <response code="202">Tạo yêu cầu thành công</response>
+            [HttpPost("create")]
+            public async Task<IActionResult> Create([FromBody] {dto_create} dto, CancellationToken ct)
+            {
+                var actorId = User?.Identity?.Name ?? "system";
+                var result = await service.CreateRequestAsync(dto, actorId, ct);
+                return result.IsSuccess ? Accepted(new { requestId = result.Value }) : BadRequest(Result.Failure(result.Message));
+            }
+
+            [HttpPost("{targetId:guid}/update")]
+            public async Task<IActionResult> Update(Guid targetId, [FromBody] {dto_update} dto, CancellationToken ct)
+            {
+                var actorId = User?.Identity?.Name ?? "system";
+                var result = await service.UpdateRequestAsync(targetId, dto, actorId, ct);
+                return result.IsSuccess ? Accepted(new { requestId = result.Value }) : BadRequest(Result.Failure(result.Message));
+            }
+
+            [HttpPost("{targetId:guid}/delete")]
+            public async Task<IActionResult> Delete(Guid targetId, CancellationToken ct)
+            {
+                var actorId = User?.Identity?.Name ?? "system";
+                var result = await service.DeleteRequestAsync(targetId, actorId, ct);
+                return result.IsSuccess ? Accepted() : BadRequest(Result.Failure(result.Message));
+            }
+
+            [HttpPost("{requestId:guid}/approve")]
+            public async Task<IActionResult> Approve(Guid requestId, CancellationToken ct)
+            {
+                var approverId = User?.Identity?.Name ?? "system";
+                var result = await service.ApproveAsync(requestId, approverId, ct);
+                return result.IsSuccess ? Ok() : BadRequest(Result.Failure(result.Message));
+            }
+
+            [HttpPost("{requestId:guid}/reject")]
+            public async Task<IActionResult> Reject(Guid requestId, [FromBody] RejectDto body, CancellationToken ct)
+            {
+                var approverId = User?.Identity?.Name ?? "system";
+                var result = await service.RejectAsync(requestId, approverId, body.Reason, ct);
+                return result.IsSuccess ? Ok() : BadRequest(Result.Failure(result.Message));
+            }
+        }
+    - path: "http/{entity}.http"
+      template: |
+        @host = https://localhost:5001
+        ### Create
+        POST {{host}}/api/v1/{entityPlural}/approval-requests/create
+        Content-Type: application/json
+
+        {
+          "code": "PERM_VIEW",
+          "name": "Permission View",
+          "isActive": true
+        }
+
+        ### Approve
+        POST {{host}}/api/v1/{entityPlural}/approval-requests/{{requestId}}/approve
+  formatting:
+    run_dotnet_format: true
+    treat_warnings_as_errors: true
+
+commit_convention:
+  - Conventional Commits (feat, fix, chore, docs, refactor, test)
+  - Example: "feat({entity}): add approval flow scaffolding"
+
+acceptance_criteria:
+  - Build xanh ở cấu hình mặc định repo.
+  - `dotnet format` sạch.
+  - API & docs giống pattern Role (route, response, XML docs).
+  - Có file `.http` mẫu gọi được (sau khi start services).
+  - Unit tests tối thiểu được scaffold (có thể TODO nếu repo chưa sẵn framework test).
+
+usage_instruction_for_agents: >
+  1) Đọc code module Role để lấy namespace root, cách tách tầng, Result<T>, logging, audit hiện tại.
+  2) Thay thế placeholders trong các template với {Entity}, {EntityPlural}, {Feature}, {DbContext}, {NamespaceRoot}.
+  3) Tạo đủ file theo output_requirements, KHÔNG chạm vào Role.
+  4) Chạy dotnet format, build kiểm tra warning-as-error.
+  5) Tạo PR với mô tả bám acceptance_criteria + đính kèm http/{entity}.http.
