@@ -864,6 +864,7 @@ complete_entity_workflow: |
   - **Repository Interface**: Luôn kế thừa từ `IRepositoryBase<T, long, TDbContext>`
   - **Repository Implementation**: Luôn kế thừa từ `RepositoryBase<T, long, TDbContext>`
   - **Paging Request**: Phải implement `protected override Dictionary<string, string> OrderByMappings`
+  - **Repository Methods**: Luôn sử dụng `CreateAsync()` thay vì `AddAsync()` cho việc tạo mới entity
 
   ### PAGING REQUEST TEMPLATE
   ```csharp

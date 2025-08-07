@@ -39,7 +39,7 @@ namespace Flex.System.Api.Repositories
             // ===== Execute query =====
             var total = await query.CountAsync();
             var items = await query
-                .OrderByDescending(x => x.CreatedDate)
+                //.OrderByDescending(x => x.CreatedDate)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .Select(x => new BranchPendingPagingDto
@@ -48,8 +48,8 @@ namespace Flex.System.Api.Repositories
                     EntityCode = x.EntityCode,
                     Action = x.Action,
                     Status = x.Status,
-                    CreatedBy = x.CreatedBy,
-                    CreatedDate = x.CreatedDate
+                    //CreatedBy = x.CreatedBy,
+                    //CreatedDate = x.CreatedDate
                 })
                 .ToListAsync();
 

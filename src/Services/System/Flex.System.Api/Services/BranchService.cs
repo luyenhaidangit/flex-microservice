@@ -90,10 +90,10 @@ namespace Flex.System.Api.Services
                 EntityCode = request.Code,
                 Status = RequestStatusConstant.Unauthorised,
                 RequestData = JsonSerializer.Serialize(request),
-                CreatedBy = requester
+                //CreatedBy = requester
             };
 
-            await _branchRequestRepository.AddAsync(branchRequest);
+            await _branchRequestRepository.CreateAsync(branchRequest);
             return branchRequest.Id;
         }
 
@@ -134,7 +134,7 @@ namespace Flex.System.Api.Services
                     LicenseNumber = existingEntity.LicenseNumber,
                     LicenseDate = existingEntity.LicenseDate
                 }),
-                CreatedBy = requester
+                //CreatedBy = requester
             };
 
             // ===== Update entity status =====
@@ -182,14 +182,14 @@ namespace Flex.System.Api.Services
                     LicenseNumber = existingEntity.LicenseNumber,
                     LicenseDate = existingEntity.LicenseDate
                 }),
-                CreatedBy = requester
+                //CreatedBy = requester
             };
 
             // ===== Update entity status =====
             existingEntity.Status = StatusConstant.Pending;
             await _branchRepository.UpdateAsync(existingEntity);
 
-            await _branchRequestRepository.AddAsync(branchRequest);
+            await _branchRequestRepository.CreateAsync(branchRequest);
             return branchRequest.Id;
         }
         #endregion
@@ -215,8 +215,8 @@ namespace Flex.System.Api.Services
                 EntityId = request.EntityId,
                 EntityCode = request.EntityCode,
                 Status = request.Status,
-                CreatedBy = request.CreatedBy,
-                CreatedDate = request.CreatedDate,
+                //CreatedBy = request.CreatedBy,
+                //CreatedDate = request.CreatedDate,
                 CheckerId = request.CheckerId,
                 ApproveDate = request.ApproveDate,
                 Comments = request.Comments,
@@ -383,10 +383,10 @@ namespace Flex.System.Api.Services
                 TaxCode = requestData.TaxCode,
                 LicenseNumber = requestData.LicenseNumber,
                 LicenseDate = requestData.LicenseDate,
-                CreatedBy = request.CreatedBy
+                //CreatedBy = request.CreatedBy
             };
 
-            await _branchRepository.AddAsync(branch);
+            await _branchRepository.CreateAsync(branch);
         }
 
         private async Task ProcessUpdateBranch(BranchRequest request)
@@ -428,7 +428,7 @@ namespace Flex.System.Api.Services
             }
 
             branch.IsActive = false;
-            branch.Status = StatusConstant.Deleted;
+            //branch.Status = StatusConstant.Deleted;
 
             await _branchRepository.UpdateAsync(branch);
         }
