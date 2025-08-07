@@ -1,0 +1,5 @@
+- name: Format check
+  run: dotnet format --verify-no-changes
+
+- name: Build (treat warnings as errors)
+  run: dotnet build Flex.sln -c Release -warnaserror
