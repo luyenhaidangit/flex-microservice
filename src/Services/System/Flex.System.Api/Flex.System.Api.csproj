@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Persistence\Configurations\" />
     <Folder Include="Protos\" />
   </ItemGroup>
 
