@@ -1,0 +1,35 @@
+version: "3"
+
+vars:
+  CONFIG: '{{.CONFIG | default "Debug"}}'
+
+tasks:
+  bootstrap:
+    desc: Install tools & restore
+    cmds:
+      - pwsh -File ./scripts/bootstrap.ps1
+
+  build:
+    cmds:
+      - dotnet restore Flex.sln
+      - dotnet build Flex.sln -c {{.CONFIG}} -warnaserror
+
+  test:
+    cmds:
+      - if [ -d tests ]; then dotnet test tests --no-build -c {{.CONFIG}} /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura; else echo "No tests"; fi
+
+  run-all:
+    cmds:
+      - pwsh -File ./scripts/run-all.ps1 -Configuration {{.CONFIG}} -Service "{{.SERVICE}}"
+
+  migrate:
+    vars:
+      PROJECT: '{{.PROJECT}}'
+      DBCONTEXT: '{{.DBCONTEXT}}'
+      MIGRATION_NAME: '{{.MIGRATION_NAME}}'
+    cmds:
+      - pwsh -File ./scripts/migrate.ps1 -Project "{{.PROJECT}}" -DbContext "{{.DBCONTEXT}}" -MigrationName "{{.MIGRATION_NAME}}"
+
+  lint:
+    cmds:
+      - pwsh -File ./scripts/lint.ps1
