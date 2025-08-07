@@ -847,3 +847,1018 @@ entity_management_workflow: |
   - **Pending**: IsApproved = false, có RequestType
   - **Approved**: IsApproved = true, có ApprovedBy/ApprovedDate
   - **Rejected**: IsApproved = false, IsActive = false
+
+# ----------------
+# COMPLETE ENTITY MANAGEMENT WORKFLOW (ROLE-BASED PATTERN)
+# ----------------
+complete_entity_workflow: |
+  ## Complete Entity Management Flow
+  Luồng tạo và quản lý đối tượng (Entity) theo pattern Role làm base, bao gồm đầy đủ approve/reject workflow:
+
+  ### 1. ENTITY CREATION
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Entities/[EntityName].cs
+  public class [EntityName] : EntityBase
+  {
+      public string Code { get; set; } = default!;
+      public string Name { get; set; } = default!;
+      public string Description { get; set; } = default!;
+      public string Status { get; set; } = StatusConstant.Approved;
+      public bool IsActive { get; set; } = true;
+      
+      // Navigation properties nếu cần
+      public virtual ICollection<[RelatedEntity]> [RelatedEntities] { get; set; } = new List<[RelatedEntity]>();
+  }
+  ```
+
+  ### 2. REQUEST ENTITY (cho workflow)
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Entities/[EntityName]Request.cs
+  public class [EntityName]Request : EntityBase
+  {
+      public string Action { get; set; } = default!; // CREATE, UPDATE, DELETE
+      public long EntityId { get; set; } // ID của entity gốc (0 cho CREATE)
+      public string EntityCode { get; set; } = default!; // Code của entity
+      public string Status { get; set; } = RequestStatusConstant.Unauthorised;
+      public string? CheckerId { get; set; }
+      public DateTime? ApproveDate { get; set; }
+      public string? Comments { get; set; }
+      
+      // Data fields (JSON serialized)
+      public string RequestData { get; set; } = default!;
+      public string? OriginalData { get; set; } // Cho UPDATE/DELETE
+  }
+  ```
+
+  ### 3. PERSISTENCE CONFIGURATIONS
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Data/Configurations/[EntityName]Configuration.cs
+  public class [EntityName]Configuration : IEntityTypeConfiguration<[EntityName]>
+  {
+      public void Configure(EntityTypeBuilder<[EntityName]> builder)
+      {
+          builder.ToTable("[EntityName]s");
+          builder.HasKey(x => x.Id);
+          
+          builder.Property(x => x.Code)
+              .IsRequired()
+              .HasMaxLength(50);
+              
+          builder.Property(x => x.Name)
+              .IsRequired()
+              .HasMaxLength(200);
+              
+          builder.Property(x => x.Description)
+              .HasMaxLength(500);
+              
+          builder.Property(x => x.Status)
+              .IsRequired()
+              .HasMaxLength(20);
+              
+          builder.HasIndex(x => x.Code).IsUnique();
+      }
+  }
+  ```
+
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Data/Configurations/[EntityName]RequestConfiguration.cs
+  public class [EntityName]RequestConfiguration : IEntityTypeConfiguration<[EntityName]Request>
+  {
+      public void Configure(EntityTypeBuilder<[EntityName]Request> builder)
+      {
+          builder.ToTable("[EntityName]Requests");
+          builder.HasKey(x => x.Id);
+          
+          builder.Property(x => x.Action)
+              .IsRequired()
+              .HasMaxLength(20);
+              
+          builder.Property(x => x.EntityCode)
+              .IsRequired()
+              .HasMaxLength(50);
+              
+          builder.Property(x => x.Status)
+              .IsRequired()
+              .HasMaxLength(20);
+              
+          builder.Property(x => x.RequestData)
+              .IsRequired();
+              
+          builder.Property(x => x.OriginalData);
+      }
+  }
+  ```
+
+  ### 4. REPOSITORIES & INTERFACES
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Repositories/Interfaces/I[EntityName]Repository.cs
+  public interface I[EntityName]Repository : IRepository<[EntityName]>
+  {
+      Task<[EntityName]?> GetByCodeAsync(string code);
+      Task<bool> ExistsByCodeAsync(string code);
+      Task<PagedResult<[EntityName]ListItemDto>> GetPagedAsync(Get[EntityName]PagingRequest request);
+      Task<PagedResult<[EntityName]ListItemDto>> GetApprovedPagedAsync(Get[EntityName]PagingRequest request);
+  }
+  ```
+
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Repositories/Interfaces/I[EntityName]RequestRepository.cs
+  public interface I[EntityName]RequestRepository : IRepository<[EntityName]Request>
+  {
+      Task<PagedResult<[EntityName]PendingPagingDto>> GetPendingPagedAsync(Get[EntityName]PagingRequest request);
+      Task<[EntityName]Request?> GetPendingByIdAsync(long requestId);
+  }
+  ```
+
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Repositories/[EntityName]Repository.cs
+  public class [EntityName]Repository : Repository<[EntityName]>, I[EntityName]Repository
+  {
+      public [EntityName]Repository(ApplicationDbContext context) : base(context)
+      {
+      }
+
+      public async Task<[EntityName]?> GetByCodeAsync(string code)
+      {
+          return await _context.[EntityName]s
+              .FirstOrDefaultAsync(x => x.Code == code);
+      }
+
+      public async Task<bool> ExistsByCodeAsync(string code)
+      {
+          return await _context.[EntityName]s
+              .AnyAsync(x => x.Code == code);
+      }
+
+      public async Task<PagedResult<[EntityName]ListItemDto>> GetPagedAsync(Get[EntityName]PagingRequest request)
+      {
+          // ===== Process request parameters =====
+          var keyword = request?.Keyword?.Trim().ToLower();
+          var status = request?.IsActive?.Trim().ToUpper() == "Y" ? true : false;
+          int pageIndex = Math.Max(1, request.PageIndex ?? 1);
+          int pageSize = Math.Max(1, request.PageSize ?? 10);
+
+          // ===== Build query =====
+          var query = _context.[EntityName]s
+              .WhereIf(!string.IsNullOrEmpty(keyword),
+                  x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
+                       EF.Functions.Like(x.Name.ToLower(), $"%{keyword}%") ||
+                       EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
+              .WhereIf(!string.IsNullOrEmpty(request.IsActive), x => x.IsActive == status);
+
+          // ===== Execute query =====
+          var total = await query.CountAsync();
+          var items = await query
+              .OrderBy(x => x.Id)
+              .Skip((pageIndex - 1) * pageSize)
+              .Take(pageSize)
+              .Select(x => new [EntityName]ListItemDto
+              {
+                  Id = x.Id,
+                  Code = x.Code,
+                  Name = x.Name,
+                  Description = x.Description,
+                  Status = x.Status,
+                  IsActive = x.IsActive
+              })
+              .ToListAsync();
+
+          // ===== Return result =====
+          return PagedResult<[EntityName]ListItemDto>.Create(pageIndex, pageSize, total, items);
+      }
+
+      public async Task<PagedResult<[EntityName]ListItemDto>> GetApprovedPagedAsync(Get[EntityName]PagingRequest request)
+      {
+          // ===== Process request parameters =====
+          var keyword = request?.Keyword?.Trim().ToLower();
+          var status = request?.IsActive?.Trim().ToUpper() == "Y" ? true : false;
+          int pageIndex = Math.Max(1, request.PageIndex ?? 1);
+          int pageSize = Math.Max(1, request.PageSize ?? 10);
+
+          // ===== Build query =====
+          var query = _context.[EntityName]s
+              .Where(x => x.Status == StatusConstant.Approved)
+              .WhereIf(!string.IsNullOrEmpty(keyword),
+                  x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
+                       EF.Functions.Like(x.Name.ToLower(), $"%{keyword}%") ||
+                       EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
+              .WhereIf(!string.IsNullOrEmpty(request.IsActive), x => x.IsActive == status);
+
+          // ===== Execute query =====
+          var total = await query.CountAsync();
+          var items = await query
+              .OrderBy(x => x.Id)
+              .Skip((pageIndex - 1) * pageSize)
+              .Take(pageSize)
+              .Select(x => new [EntityName]ListItemDto
+              {
+                  Id = x.Id,
+                  Code = x.Code,
+                  Name = x.Name,
+                  Description = x.Description,
+                  Status = x.Status,
+                  IsActive = x.IsActive
+              })
+              .ToListAsync();
+
+          // ===== Return result =====
+          return PagedResult<[EntityName]ListItemDto>.Create(pageIndex, pageSize, total, items);
+      }
+  }
+  ```
+
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Repositories/[EntityName]RequestRepository.cs
+  public class [EntityName]RequestRepository : Repository<[EntityName]Request>, I[EntityName]RequestRepository
+  {
+      public [EntityName]RequestRepository(ApplicationDbContext context) : base(context)
+      {
+      }
+
+      public async Task<PagedResult<[EntityName]PendingPagingDto>> GetPendingPagedAsync(Get[EntityName]PagingRequest request)
+      {
+          // ===== Process request parameters =====
+          var keyword = request?.Keyword?.Trim().ToLower();
+          var requestType = request?.RequestType?.Trim().ToUpper();
+          int pageIndex = Math.Max(1, request.PageIndex ?? 1);
+          int pageSize = Math.Max(1, request.PageSize ?? 10);
+
+          // ===== Build query =====
+          var query = _context.[EntityName]Requests
+              .Where(x => x.Status == RequestStatusConstant.Unauthorised)
+              .WhereIf(!string.IsNullOrEmpty(keyword),
+                  x => EF.Functions.Like(x.EntityCode.ToLower(), $"%{keyword}%"))
+              .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
+                  x => x.Action == requestType);
+
+          // ===== Execute query =====
+          var total = await query.CountAsync();
+          var items = await query
+              .OrderByDescending(x => x.CreatedDate)
+              .Skip((pageIndex - 1) * pageSize)
+              .Take(pageSize)
+              .Select(x => new [EntityName]PendingPagingDto
+              {
+                  Id = x.Id,
+                  EntityCode = x.EntityCode,
+                  Action = x.Action,
+                  Status = x.Status,
+                  CreatedBy = x.CreatedBy,
+                  CreatedDate = x.CreatedDate
+              })
+              .ToListAsync();
+
+          // ===== Return result =====
+          return PagedResult<[EntityName]PendingPagingDto>.Create(pageIndex, pageSize, total, items);
+      }
+
+      public async Task<[EntityName]Request?> GetPendingByIdAsync(long requestId)
+      {
+          return await _context.[EntityName]Requests
+              .FirstOrDefaultAsync(x => x.Id == requestId && x.Status == RequestStatusConstant.Unauthorised);
+      }
+  }
+  ```
+
+  ### 5. DTOs
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Models/[EntityName]Dto.cs
+  public class [EntityName]Dto
+  {
+      public long Id { get; set; }
+      public string Code { get; set; } = default!;
+      public string Name { get; set; } = default!;
+      public string Description { get; set; } = default!;
+      public string Status { get; set; } = default!;
+      public bool IsActive { get; set; }
+      public DateTime CreatedDate { get; set; }
+      public string CreatedBy { get; set; } = default!;
+  }
+
+  public class [EntityName]ListItemDto
+  {
+      public long Id { get; set; }
+      public string Code { get; set; } = default!;
+      public string Name { get; set; } = default!;
+      public string Description { get; set; } = default!;
+      public string Status { get; set; } = default!;
+      public bool IsActive { get; set; }
+  }
+
+  public class Create[EntityName]RequestDto
+  {
+      public string Code { get; set; } = default!;
+      public string Name { get; set; } = default!;
+      public string Description { get; set; } = default!;
+  }
+
+  public class Update[EntityName]RequestDto
+  {
+      public string Name { get; set; } = default!;
+      public string Description { get; set; } = default!;
+  }
+
+  public class Delete[EntityName]RequestDto
+  {
+      public string Reason { get; set; } = default!;
+  }
+
+  public class [EntityName]PendingPagingDto
+  {
+      public long Id { get; set; }
+      public string EntityCode { get; set; } = default!;
+      public string Action { get; set; } = default!;
+      public string Status { get; set; } = default!;
+      public string CreatedBy { get; set; } = default!;
+      public DateTime CreatedDate { get; set; }
+  }
+
+  public class [EntityName]RequestDetailDto
+  {
+      public long Id { get; set; }
+      public string Action { get; set; } = default!;
+      public long EntityId { get; set; }
+      public string EntityCode { get; set; } = default!;
+      public string Status { get; set; } = default!;
+      public string CreatedBy { get; set; } = default!;
+      public DateTime CreatedDate { get; set; }
+      public string? CheckerId { get; set; }
+      public DateTime? ApproveDate { get; set; }
+      public string? Comments { get; set; }
+      public [EntityName]Dto? RequestData { get; set; }
+      public [EntityName]Dto? OriginalData { get; set; }
+  }
+
+  public class Approve[EntityName]RequestDto
+  {
+      public string? Comment { get; set; }
+  }
+
+  public class Reject[EntityName]RequestDto
+  {
+      public string? Reason { get; set; }
+  }
+
+  public class [EntityName]ApprovalResultDto
+  {
+      public long RequestId { get; set; }
+      public string RequestType { get; set; } = default!;
+      public string Status { get; set; } = default!;
+      public string ApprovedBy { get; set; } = default!;
+      public DateTime ApprovedDate { get; set; }
+      public string Comment { get; set; } = default!;
+  }
+  ```
+
+  ### 6. SERVICE INTERFACE
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Services/Interfaces/I[EntityName]Service.cs
+  public interface I[EntityName]Service
+  {
+      // Query
+      Task<PagedResult<[EntityName]ListItemDto>> GetApproved[EntityName]sPagedAsync(Get[EntityName]PagingRequest request);
+      Task<[EntityName]Dto> GetApproved[EntityName]ByCodeAsync(string code);
+      Task<List<[EntityName]ChangeHistoryDto>> GetApproved[EntityName]ChangeHistoryAsync(string code);
+      
+      // Command
+      Task<long> Create[EntityName]RequestAsync(Create[EntityName]RequestDto request);
+      Task<long> CreateUpdate[EntityName]RequestAsync(string code, Update[EntityName]RequestDto dto);
+      Task<long> CreateDelete[EntityName]RequestAsync(string code, Delete[EntityName]RequestDto request);
+      
+      // Pending Management
+      Task<PagedResult<[EntityName]PendingPagingDto>> GetPending[EntityName]sPagedAsync(Get[EntityName]PagingRequest request);
+      Task<[EntityName]RequestDetailDto> GetPending[EntityName]ByIdAsync(long requestId);
+      Task<[EntityName]ApprovalResultDto> ApprovePending[EntityName]RequestAsync(long requestId, string? comment = null);
+      Task<[EntityName]ApprovalResultDto> RejectPending[EntityName]RequestAsync(long requestId, string? reason = null);
+  }
+  ```
+
+  ### 7. SERVICE IMPLEMENTATION
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Services/[EntityName]Service.cs
+  public class [EntityName]Service : I[EntityName]Service
+  {
+      private readonly I[EntityName]Repository _[entityName]Repository;
+      private readonly I[EntityName]RequestRepository _[entityName]RequestRepository;
+      private readonly IUserService _userService;
+
+      public [EntityName]Service(
+          I[EntityName]Repository [entityName]Repository,
+          I[EntityName]RequestRepository [entityName]RequestRepository,
+          IUserService userService)
+      {
+          _[entityName]Repository = [entityName]Repository;
+          _[entityName]RequestRepository = [entityName]RequestRepository;
+          _userService = userService;
+      }
+
+      #region Query
+      public async Task<PagedResult<[EntityName]ListItemDto>> GetApproved[EntityName]sPagedAsync(Get[EntityName]PagingRequest request)
+      {
+          return await _[entityName]Repository.GetApprovedPagedAsync(request);
+      }
+
+      public async Task<[EntityName]Dto> GetApproved[EntityName]ByCodeAsync(string code)
+      {
+          var entity = await _[entityName]Repository.GetByCodeAsync(code);
+          if (entity == null || entity.Status != StatusConstant.Approved)
+          {
+              throw new Exception($"[EntityName] with code '{code}' not found or not approved.");
+          }
+
+          return new [EntityName]Dto
+          {
+              Id = entity.Id,
+              Code = entity.Code,
+              Name = entity.Name,
+              Description = entity.Description,
+              Status = entity.Status,
+              IsActive = entity.IsActive,
+              CreatedDate = entity.CreatedDate,
+              CreatedBy = entity.CreatedBy
+          };
+      }
+
+      public async Task<List<[EntityName]ChangeHistoryDto>> GetApproved[EntityName]ChangeHistoryAsync(string code)
+      {
+          // Implementation for change history
+          throw new NotImplementedException();
+      }
+      #endregion
+
+      #region Command
+      public async Task<long> Create[EntityName]RequestAsync(Create[EntityName]RequestDto request)
+      {
+          // ===== Validation =====
+          if (await _[entityName]Repository.ExistsByCodeAsync(request.Code))
+          {
+              throw new Exception($"[EntityName] with code '{request.Code}' already exists.");
+          }
+
+          var requester = _userService.GetCurrentUsername() ?? "system";
+          if (string.IsNullOrWhiteSpace(requester))
+          {
+              throw new ArgumentException("Requester cannot be empty.");
+          }
+
+          // ===== Create request =====
+          var [entityName]Request = new [EntityName]Request
+          {
+              Action = RequestTypeConstant.Create,
+              EntityId = 0,
+              EntityCode = request.Code,
+              Status = RequestStatusConstant.Unauthorised,
+              RequestData = JsonSerializer.Serialize(new
+              {
+                  Code = request.Code,
+                  Name = request.Name,
+                  Description = request.Description
+              }),
+              CreatedBy = requester
+          };
+
+          await _[entityName]RequestRepository.AddAsync([entityName]Request);
+          return [entityName]Request.Id;
+      }
+
+      public async Task<long> CreateUpdate[EntityName]RequestAsync(string code, Update[EntityName]RequestDto dto)
+      {
+          // ===== Validation =====
+          var existingEntity = await _[entityName]Repository.GetByCodeAsync(code);
+          if (existingEntity == null || existingEntity.Status != StatusConstant.Approved)
+          {
+              throw new Exception($"[EntityName] with code '{code}' not found or not approved.");
+          }
+
+          var requester = _userService.GetCurrentUsername() ?? "system";
+          if (string.IsNullOrWhiteSpace(requester))
+          {
+              throw new ArgumentException("Requester cannot be empty.");
+          }
+
+          // ===== Create update request =====
+          var [entityName]Request = new [EntityName]Request
+          {
+              Action = RequestTypeConstant.Update,
+              EntityId = existingEntity.Id,
+              EntityCode = code,
+              Status = RequestStatusConstant.Unauthorised,
+              RequestData = JsonSerializer.Serialize(dto),
+              OriginalData = JsonSerializer.Serialize(new
+              {
+                  Name = existingEntity.Name,
+                  Description = existingEntity.Description
+              }),
+              CreatedBy = requester
+          };
+
+          // ===== Update entity status =====
+          existingEntity.Status = StatusConstant.Pending;
+          await _[entityName]Repository.UpdateAsync(existingEntity);
+
+          await _[entityName]RequestRepository.AddAsync([entityName]Request);
+          return [entityName]Request.Id;
+      }
+
+      public async Task<long> CreateDelete[EntityName]RequestAsync(string code, Delete[EntityName]RequestDto request)
+      {
+          // ===== Validation =====
+          var existingEntity = await _[entityName]Repository.GetByCodeAsync(code);
+          if (existingEntity == null || existingEntity.Status != StatusConstant.Approved)
+          {
+              throw new Exception($"[EntityName] with code '{code}' not found or not approved.");
+          }
+
+          var requester = _userService.GetCurrentUsername() ?? "system";
+          if (string.IsNullOrWhiteSpace(requester))
+          {
+              throw new ArgumentException("Requester cannot be empty.");
+          }
+
+          // ===== Create delete request =====
+          var [entityName]Request = new [EntityName]Request
+          {
+              Action = RequestTypeConstant.Delete,
+              EntityId = existingEntity.Id,
+              EntityCode = code,
+              Status = RequestStatusConstant.Unauthorised,
+              RequestData = JsonSerializer.Serialize(request),
+              OriginalData = JsonSerializer.Serialize(new
+              {
+                  Name = existingEntity.Name,
+                  Description = existingEntity.Description
+              }),
+              CreatedBy = requester
+          };
+
+          // ===== Update entity status =====
+          existingEntity.Status = StatusConstant.Pending;
+          await _[entityName]Repository.UpdateAsync(existingEntity);
+
+          await _[entityName]RequestRepository.AddAsync([entityName]Request);
+          return [entityName]Request.Id;
+      }
+      #endregion
+
+      #region Pending Management
+      public async Task<PagedResult<[EntityName]PendingPagingDto>> GetPending[EntityName]sPagedAsync(Get[EntityName]PagingRequest request)
+      {
+          return await _[entityName]RequestRepository.GetPendingPagedAsync(request);
+      }
+
+      public async Task<[EntityName]RequestDetailDto> GetPending[EntityName]ByIdAsync(long requestId)
+      {
+          var request = await _[entityName]RequestRepository.GetPendingByIdAsync(requestId);
+          if (request == null)
+          {
+              throw new Exception($"Pending [EntityName] request with ID '{requestId}' not found.");
+          }
+
+          return new [EntityName]RequestDetailDto
+          {
+              Id = request.Id,
+              Action = request.Action,
+              EntityId = request.EntityId,
+              EntityCode = request.EntityCode,
+              Status = request.Status,
+              CreatedBy = request.CreatedBy,
+              CreatedDate = request.CreatedDate,
+              CheckerId = request.CheckerId,
+              ApproveDate = request.ApproveDate,
+              Comments = request.Comments,
+              RequestData = !string.IsNullOrEmpty(request.RequestData) 
+                  ? JsonSerializer.Deserialize<[EntityName]Dto>(request.RequestData) 
+                  : null,
+              OriginalData = !string.IsNullOrEmpty(request.OriginalData) 
+                  ? JsonSerializer.Deserialize<[EntityName]Dto>(request.OriginalData) 
+                  : null
+          };
+      }
+
+      public async Task<[EntityName]ApprovalResultDto> ApprovePending[EntityName]RequestAsync(long requestId, string? comment = null)
+      {
+          // ===== Validation =====
+          if (requestId <= 0)
+          {
+              throw new ArgumentException("RequestId must be greater than 0.", nameof(requestId));
+          }
+
+          var approver = _userService.GetCurrentUsername() ?? "system";
+          if (string.IsNullOrWhiteSpace(approver))
+          {
+              throw new ArgumentException("Approver cannot be empty.");
+          }
+
+          // ===== Get request data =====
+          var request = await _[entityName]RequestRepository
+              .FindAll()
+              .AsNoTracking()
+              .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+
+          if (request == null)
+          {
+              throw new Exception($"Pending [EntityName] request with ID '{requestId}' not found.");
+          }
+
+          // ===== Process approval with transaction =====
+          await using var transaction = await _[entityName]RequestRepository.BeginTransactionAsync();
+          try
+          {
+              // ===== Process entity changes =====
+              await Process[EntityName]Approval(request);
+
+              // ===== Update request status =====
+              await UpdateRequestStatus(request, approver, comment);
+
+              await transaction.CommitAsync();
+
+              // ===== Return result =====
+              return new [EntityName]ApprovalResultDto
+              {
+                  RequestId = request.Id,
+                  RequestType = request.Action,
+                  Status = RequestStatusConstant.Authorised,
+                  ApprovedBy = approver,
+                  ApprovedDate = DateTime.UtcNow,
+                  Comment = comment ?? "Approved"
+              };
+          }
+          catch
+          {
+              await transaction.RollbackAsync();
+              throw new Exception($"Failed to approve [EntityName] request ID '{requestId}'.");
+          }
+      }
+
+      public async Task<[EntityName]ApprovalResultDto> RejectPending[EntityName]RequestAsync(long requestId, string? reason = null)
+      {
+          // ===== Validation =====
+          if (requestId <= 0)
+          {
+              throw new ArgumentException("RequestId must be greater than 0.", nameof(requestId));
+          }
+
+          var rejecter = _userService.GetCurrentUsername() ?? "system";
+          if (string.IsNullOrWhiteSpace(rejecter))
+          {
+              throw new ArgumentException("Rejecter cannot be empty.");
+          }
+
+          // ===== Get request data =====
+          var request = await _[entityName]RequestRepository
+              .FindAll()
+              .AsNoTracking()
+              .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+
+          if (request == null)
+          {
+              throw new Exception($"Pending [EntityName] request with ID '{requestId}' not found.");
+          }
+
+          // ===== Process rejection with transaction =====
+          await using var transaction = await _[entityName]RequestRepository.BeginTransactionAsync();
+          try
+          {
+              // ===== Revert entity status if needed =====
+              await Revert[EntityName]StatusIfNeeded(request);
+
+              // ===== Update request status =====
+              await UpdateRejectedRequestStatus(request, rejecter, reason);
+
+              await transaction.CommitAsync();
+
+              // ===== Return result =====
+              return new [EntityName]ApprovalResultDto
+              {
+                  RequestId = request.Id,
+                  RequestType = request.Action,
+                  Status = RequestStatusConstant.Rejected,
+                  ApprovedBy = rejecter,
+                  ApprovedDate = DateTime.UtcNow,
+                  Comment = reason ?? "Rejected"
+              };
+          }
+          catch
+          {
+              await transaction.RollbackAsync();
+              throw new Exception($"Failed to reject [EntityName] request ID '{requestId}'.");
+          }
+      }
+      #endregion
+
+      #region Private Methods
+      private async Task Process[EntityName]Approval([EntityName]Request request)
+      {
+          switch (request.Action)
+          {
+              case RequestTypeConstant.Create:
+                  await ProcessCreate[EntityName](request);
+                  break;
+              case RequestTypeConstant.Update:
+                  await ProcessUpdate[EntityName](request);
+                  break;
+              case RequestTypeConstant.Delete:
+                  await ProcessDelete[EntityName](request);
+                  break;
+              default:
+                  throw new ArgumentException($"Unsupported action: {request.Action}");
+          }
+      }
+
+      private async Task ProcessCreate[EntityName]([EntityName]Request request)
+      {
+          var requestData = JsonSerializer.Deserialize<Create[EntityName]RequestDto>(request.RequestData);
+          if (requestData == null)
+          {
+              throw new Exception("Invalid request data for CREATE action.");
+          }
+
+          var [entityName] = new [EntityName]
+          {
+              Code = requestData.Code,
+              Name = requestData.Name,
+              Description = requestData.Description,
+              Status = StatusConstant.Approved,
+              IsActive = true,
+              CreatedBy = request.CreatedBy
+          };
+
+          await _[entityName]Repository.AddAsync([entityName]);
+      }
+
+      private async Task ProcessUpdate[EntityName]([EntityName]Request request)
+      {
+          var requestData = JsonSerializer.Deserialize<Update[EntityName]RequestDto>(request.RequestData);
+          if (requestData == null)
+          {
+              throw new Exception("Invalid request data for UPDATE action.");
+          }
+
+          var [entityName] = await _[entityName]Repository.FindByIdAsync(request.EntityId);
+          if ([entityName] == null)
+          {
+              throw new Exception($"[EntityName] with ID '{request.EntityId}' not found.");
+          }
+
+          [entityName].Name = requestData.Name;
+          [entityName].Description = requestData.Description;
+          [entityName].Status = StatusConstant.Approved;
+
+          await _[entityName]Repository.UpdateAsync([entityName]);
+      }
+
+      private async Task ProcessDelete[EntityName]([EntityName]Request request)
+      {
+          var [entityName] = await _[entityName]Repository.FindByIdAsync(request.EntityId);
+          if ([entityName] == null)
+          {
+              throw new Exception($"[EntityName] with ID '{request.EntityId}' not found.");
+          }
+
+          [entityName].IsActive = false;
+          [entityName].Status = StatusConstant.Deleted;
+
+          await _[entityName]Repository.UpdateAsync([entityName]);
+      }
+
+      private async Task Revert[EntityName]StatusIfNeeded([EntityName]Request request)
+      {
+          if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) 
+              && request.EntityId > 0)
+          {
+              var [entityName] = await _[entityName]Repository.FindByIdAsync(request.EntityId);
+              if ([entityName] != null)
+              {
+                  [entityName].Status = StatusConstant.Approved; // Revert to approved status
+                  await _[entityName]Repository.UpdateAsync([entityName]);
+              }
+          }
+      }
+
+      private async Task UpdateRequestStatus([EntityName]Request request, string approver, string? comment)
+      {
+          request.Status = RequestStatusConstant.Authorised;
+          request.CheckerId = approver;
+          request.ApproveDate = DateTime.UtcNow;
+          request.Comments = comment ?? "Approved";
+
+          await _[entityName]RequestRepository.UpdateAsync(request);
+      }
+
+      private async Task UpdateRejectedRequestStatus([EntityName]Request request, string rejecter, string? reason)
+      {
+          request.Status = RequestStatusConstant.Rejected;
+          request.CheckerId = rejecter;
+          request.ApproveDate = DateTime.UtcNow;
+          request.Comments = reason ?? "Rejected";
+
+          await _[entityName]RequestRepository.UpdateAsync(request);
+      }
+      #endregion
+  }
+  ```
+
+  ### 8. CONTROLLER
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Controllers/[EntityName]Controller.cs
+  [ApiController]
+  [Route("api/[controller]")]
+  public class [EntityName]Controller : ControllerBase
+  {
+      private readonly I[EntityName]Service _[entityName]Service;
+
+      public [EntityName]Controller(I[EntityName]Service [entityName]Service)
+      {
+          _[entityName]Service = [entityName]Service;
+      }
+
+      /// <summary>
+      /// Get all approved [EntityName]s with pagination.
+      /// </summary>
+      [HttpGet]
+      public async Task<IActionResult> GetApproved[EntityName]s([FromQuery] Get[EntityName]PagingRequest request)
+      {
+          var result = await _[entityName]Service.GetApproved[EntityName]sPagedAsync(request);
+          return Ok(Result.Success(result));
+      }
+
+      /// <summary>
+      /// Get approved [EntityName] by code.
+      /// </summary>
+      [HttpGet("{code}")]
+      public async Task<IActionResult> GetApproved[EntityName]ByCode(string code)
+      {
+          var result = await _[entityName]Service.GetApproved[EntityName]ByCodeAsync(code);
+          return Ok(Result.Success(result));
+      }
+
+      /// <summary>
+      /// Create [EntityName] request.
+      /// </summary>
+      [HttpPost]
+      public async Task<IActionResult> Create[EntityName]Request([FromBody] Create[EntityName]RequestDto request)
+      {
+          var requestId = await _[entityName]Service.Create[EntityName]RequestAsync(request);
+          return Ok(Result.Success(new { RequestId = requestId }));
+      }
+
+      /// <summary>
+      /// Create update [EntityName] request.
+      /// </summary>
+      [HttpPut("{code}")]
+      public async Task<IActionResult> CreateUpdate[EntityName]Request(string code, [FromBody] Update[EntityName]RequestDto request)
+      {
+          var requestId = await _[entityName]Service.CreateUpdate[EntityName]RequestAsync(code, request);
+          return Ok(Result.Success(new { RequestId = requestId }));
+      }
+
+      /// <summary>
+      /// Create delete [EntityName] request.
+      /// </summary>
+      [HttpDelete("{code}")]
+      public async Task<IActionResult> CreateDelete[EntityName]Request(string code, [FromBody] Delete[EntityName]RequestDto request)
+      {
+          var requestId = await _[entityName]Service.CreateDelete[EntityName]RequestAsync(code, request);
+          return Ok(Result.Success(new { RequestId = requestId }));
+      }
+
+      /// <summary>
+      /// Get pending [EntityName]s with pagination.
+      /// </summary>
+      [HttpGet("pending")]
+      public async Task<IActionResult> GetPending[EntityName]s([FromQuery] Get[EntityName]PagingRequest request)
+      {
+          var result = await _[entityName]Service.GetPending[EntityName]sPagedAsync(request);
+          return Ok(Result.Success(result));
+      }
+
+      /// <summary>
+      /// Get pending [EntityName] request by ID.
+      /// </summary>
+      [HttpGet("pending/{requestId}")]
+      public async Task<IActionResult> GetPending[EntityName]ById(long requestId)
+      {
+          var result = await _[entityName]Service.GetPending[EntityName]ByIdAsync(requestId);
+          return Ok(Result.Success(result));
+      }
+
+      /// <summary>
+      /// Approve pending [EntityName] request by ID.
+      /// </summary>
+      [HttpPost("pending/{requestId}/approve")]
+      public async Task<IActionResult> ApprovePending[EntityName]Request(long requestId, [FromBody] Approve[EntityName]RequestDto? dto = null)
+      {
+          try
+          {
+              // ===== Validation =====
+              if (requestId <= 0)
+              {
+                  return BadRequest(Result.Failure("RequestId must be greater than 0."));
+              }
+
+              // ===== Process approval =====
+              var result = await _[entityName]Service.ApprovePending[EntityName]RequestAsync(requestId, dto?.Comment);
+              
+              // ===== Return result =====
+              return Ok(Result.Success(result));
+          }
+          catch (ArgumentException ex)
+          {
+              return BadRequest(Result.Failure(ex.Message));
+          }
+          catch (Exception ex)
+          {
+              return StatusCode(500, Result.Failure($"Failed to approve [EntityName] request: {ex.Message}"));
+          }
+      }
+
+      /// <summary>
+      /// Reject pending [EntityName] request by ID.
+      /// </summary>
+      [HttpPost("pending/{requestId}/reject")]
+      public async Task<IActionResult> RejectPending[EntityName]Request(long requestId, [FromBody] Reject[EntityName]RequestDto? dto = null)
+      {
+          try
+          {
+              // ===== Validation =====
+              if (requestId <= 0)
+              {
+                  return BadRequest(Result.Failure("RequestId must be greater than 0."));
+              }
+
+              // ===== Process rejection =====
+              var result = await _[entityName]Service.RejectPending[EntityName]RequestAsync(requestId, dto?.Reason);
+              
+              // ===== Return result =====
+              return Ok(Result.Success(result));
+          }
+          catch (ArgumentException ex)
+          {
+              return BadRequest(Result.Failure(ex.Message));
+          }
+          catch (Exception ex)
+          {
+              return StatusCode(500, Result.Failure($"Failed to reject [EntityName] request: {ex.Message}"));
+          }
+      }
+  }
+  ```
+
+  ### 9. DI REGISTRATION
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Extensions/ServiceExtensions.cs
+  public static class ServiceExtensions
+  {
+      public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+      {
+          // Existing registrations...
+          
+          // [EntityName] Services
+          services.AddScoped<I[EntityName]Repository, [EntityName]Repository>();
+          services.AddScoped<I[EntityName]RequestRepository, [EntityName]RequestRepository>();
+          services.AddScoped<I[EntityName]Service, [EntityName]Service>();
+          
+          return services;
+      }
+  }
+  ```
+
+  ### 10. DB CONTEXT CONFIGURATION
+  ```csharp
+  // src/Services/Identity/Flex.AspNetIdentity.Api/Data/ApplicationDbContext.cs
+  public class ApplicationDbContext : DbContext
+  {
+      // Existing DbSets...
+      
+      public DbSet<[EntityName]> [EntityName]s { get; set; }
+      public DbSet<[EntityName]Request> [EntityName]Requests { get; set; }
+      
+      protected override void OnModelCreating(ModelBuilder modelBuilder)
+      {
+          base.OnModelCreating(modelBuilder);
+          
+          // Existing configurations...
+          
+          modelBuilder.ApplyConfiguration(new [EntityName]Configuration());
+          modelBuilder.ApplyConfiguration(new [EntityName]RequestConfiguration());
+      }
+  }
+  ```
+
+  ## Workflow Rules & Conventions
+  - **Entity Naming**: [EntityName] thay thế bằng tên thực thể (ví dụ: Role, User, Permission)
+  - **File Structure**: Tuân thủ cấu trúc thư mục đã định nghĩa
+  - **Naming Convention**: PascalCase cho classes, camelCase cho variables
+  - **Transaction Safety**: Luôn sử dụng database transaction cho approve/reject operations
+  - **Error Handling**: Comprehensive error handling với proper exception messages
+  - **Validation**: Input validation và business rule validation
+  - **Audit Trail**: Ghi đầy đủ thông tin approve/reject (user, time, comment)
+  - **Status Management**: Proper status transitions (Approved → Pending → Approved/Rejected)
+  - **JSON Serialization**: Sử dụng System.Text.Json cho request data serialization
+  - **Constants Usage**: Luôn sử dụng constants thay vì hardcode strings
+  - **Comment Blocks**: Sử dụng "=====" để phân chia rõ ràng các sections
+  - **Async/Await**: Luôn sử dụng async/await patterns
+  - **Repository Pattern**: Strict separation giữa data access và business logic
+  - **Service Layer**: Business logic tập trung trong service layer
+  - **Controller Responsibility**: Chỉ handle HTTP requests và responses
+  - **DI Registration**: Đăng ký đầy đủ dependencies trong ServiceExtensions
