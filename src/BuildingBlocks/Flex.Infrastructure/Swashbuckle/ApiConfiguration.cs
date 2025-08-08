@@ -2,6 +2,10 @@
 
 namespace Flex.Infrastructure.Swashbuckle
 {
+    /// <summary>
+    /// Configuration swagger for the API.
+    /// var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigKeyConstants.ApiConfiguration)
+    /// </summary>
     public partial class ApiConfiguration
     {
         [Required]

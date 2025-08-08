@@ -28,7 +28,6 @@ namespace Flex.OcelotApiGateway.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Bind configuration settings
-            var apiConfiguration = configuration.GetRequiredSection<ApiConfiguration>(ConfigKeyConstants.ApiConfiguration);
             var jwtSettingsAdmin = configuration
                 .GetSection($"{ConfigKeyConstants.AuthenticationSchemes}:{GatewayConstants.AuthenticationProviderKey.AdminPortal}")
                 .Get<JwtSchemeSettings>()!;
@@ -38,7 +37,7 @@ namespace Flex.OcelotApiGateway.Extensions
 
             services.AddEndpointsApiExplorer();
 
-            services.ConfigureSwagger(apiConfiguration);
+            services.ConfigureSwagger();
 
             services.ConfigureRouteOptions();
             services.ConfigureValidationErrorResponse();
