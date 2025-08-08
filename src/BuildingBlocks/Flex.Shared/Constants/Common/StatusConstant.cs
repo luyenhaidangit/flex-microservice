@@ -8,5 +8,6 @@
         public const string Approved = "APPROVED";
         public const string Canceled = "CANCELED";
         public const string Rejected = "REJECTED";
+        public const string Deleted = "DELETED";
     }
 }

@@ -56,7 +56,13 @@ namespace Flex.System.Api.Services
                 Email = entity.Email,
                 TaxCode = entity.TaxCode,
                 LicenseNumber = entity.LicenseNumber,
-                LicenseDate = entity.LicenseDate
+                LicenseDate = entity.LicenseDate,
+                CreatedDate = entity.CreatedDate,
+                CreatedBy = entity.CreatedBy,
+                // Additional fields from business requirements
+                EstablishmentDate = entity.EstablishmentDate,
+                ClosedDate = entity.ClosedDate,
+                ManagerName = entity.ManagerName
             };
         }
 
@@ -132,7 +138,10 @@ namespace Flex.System.Api.Services
                     Email = existingEntity.Email,
                     TaxCode = existingEntity.TaxCode,
                     LicenseNumber = existingEntity.LicenseNumber,
-                    LicenseDate = existingEntity.LicenseDate
+                    LicenseDate = existingEntity.LicenseDate,
+                    // Additional fields from business requirements
+                    EstablishmentDate = existingEntity.EstablishmentDate,
+                    ManagerName = existingEntity.ManagerName
                 }),
                 //CreatedBy = requester
             };
@@ -180,7 +189,10 @@ namespace Flex.System.Api.Services
                     Email = existingEntity.Email,
                     TaxCode = existingEntity.TaxCode,
                     LicenseNumber = existingEntity.LicenseNumber,
-                    LicenseDate = existingEntity.LicenseDate
+                    LicenseDate = existingEntity.LicenseDate,
+                    // Additional fields from business requirements
+                    EstablishmentDate = existingEntity.EstablishmentDate,
+                    ManagerName = existingEntity.ManagerName
                 }),
                 //CreatedBy = requester
             };
@@ -383,6 +395,9 @@ namespace Flex.System.Api.Services
                 TaxCode = requestData.TaxCode,
                 LicenseNumber = requestData.LicenseNumber,
                 LicenseDate = requestData.LicenseDate,
+                // Additional fields from business requirements
+                EstablishmentDate = requestData.EstablishmentDate,
+                ManagerName = requestData.ManagerName,
                 //CreatedBy = request.CreatedBy
             };
 
@@ -414,6 +429,9 @@ namespace Flex.System.Api.Services
             branch.TaxCode = requestData.TaxCode;
             branch.LicenseNumber = requestData.LicenseNumber;
             branch.LicenseDate = requestData.LicenseDate;
+            // Additional fields from business requirements
+            branch.EstablishmentDate = requestData.EstablishmentDate;
+            branch.ManagerName = requestData.ManagerName;
             branch.Status = StatusConstant.Approved;
 
             await _branchRepository.UpdateAsync(branch);
@@ -428,6 +446,7 @@ namespace Flex.System.Api.Services
             }
 
             branch.IsActive = false;
+            branch.ClosedDate = DateTime.UtcNow; // Set ngày đóng chi nhánh
             //branch.Status = StatusConstant.Deleted;
 
             await _branchRepository.UpdateAsync(branch);

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Flex.System.Api.Entities;
+using Flex.Shared.Constants.Common;
 
 namespace Flex.System.Api.Data.Configurations
 {
@@ -21,6 +22,15 @@ namespace Flex.System.Api.Data.Configurations
                 
             builder.Property(x => x.Description)
                 .HasMaxLength(500);
+                
+            builder.Property(x => x.Status)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasDefaultValue(StatusConstant.Approved);
+                
+            builder.Property(x => x.IsActive)
+                .IsRequired()
+                .HasDefaultValue(true);
                 
             builder.Property(x => x.MemberCode)
                 .IsRequired()
@@ -47,6 +57,14 @@ namespace Flex.System.Api.Data.Configurations
                 
             builder.Property(x => x.LicenseNumber)
                 .HasMaxLength(100);
+                
+            // Additional fields from business requirements
+            builder.Property(x => x.ManagerName)
+                .IsRequired()
+                .HasMaxLength(200);
+                
+            builder.Property(x => x.EstablishmentDate);
+            builder.Property(x => x.ClosedDate);
                 
             builder.HasIndex(x => x.Code).IsUnique();
         }

@@ -23,6 +23,11 @@ namespace Flex.System.Api.Models
         public string TaxCode { get; set; } = default!;
         public string LicenseNumber { get; set; } = default!;
         public DateTime? LicenseDate { get; set; }
+        
+        // Additional fields from business requirements
+        public DateTime? EstablishmentDate { get; set; }
+        public DateTime? ClosedDate { get; set; }
+        public string ManagerName { get; set; } = default!;
     }
 
     public class BranchListItemDto
@@ -39,6 +44,10 @@ namespace Flex.System.Api.Models
         public string BranchType { get; set; } = default!;
         public string Address { get; set; } = default!;
         public string ProvinceCode { get; set; } = default!;
+        
+        // Additional fields from business requirements
+        public string ManagerName { get; set; } = default!;
+        public DateTime? EstablishmentDate { get; set; }
     }
 
     public class CreateBranchRequestDto
@@ -55,6 +64,10 @@ namespace Flex.System.Api.Models
         public string TaxCode { get; set; } = default!;
         public string LicenseNumber { get; set; } = default!;
         public DateTime? LicenseDate { get; set; }
+        
+        // Additional fields from business requirements
+        public DateTime? EstablishmentDate { get; set; }
+        public string ManagerName { get; set; } = default!;
     }
 
     public class UpdateBranchRequestDto
@@ -70,6 +83,10 @@ namespace Flex.System.Api.Models
         public string TaxCode { get; set; } = default!;
         public string LicenseNumber { get; set; } = default!;
         public DateTime? LicenseDate { get; set; }
+        
+        // Additional fields from business requirements
+        public DateTime? EstablishmentDate { get; set; }
+        public string ManagerName { get; set; } = default!;
     }
 
     public class DeleteBranchRequestDto
