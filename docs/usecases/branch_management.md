@@ -6,14 +6,13 @@
 - Là điểm giao dịch chính tại từng khu vực.
 
 ## 2. Đối tượng quản lý
-- **Mã chi nhánh (BranchCode)** – duy nhất.
-- **Tên chi nhánh (BranchName)** – tên giao dịch.
-- **Địa chỉ, Tỉnh/Thành phố**.
-- **Trạng thái hoạt động**: Active / Inactive.
+- **Mã chi nhánh (Code)** – duy nhất.
+- **Tên chi nhánh (Name)** – tên giao dịch.
+- **Mô tả (Descrition)**
+- **Trạng thái hoạt động (IsActive)**: true/false.
 - **Ngày thành lập / Ngày ngừng hoạt động**.
 - **Người quản lý chính (Branch Manager)**.
 - **Thông tin liên hệ**: số điện thoại, email.
-- **Liên kết hệ thống**: mã trong VSD, Core Banking.
 
 ## 3. Nghiệp vụ chính
 
@@ -23,7 +22,6 @@
 - Checker phê duyệt hoặc từ chối.
 - Sau khi duyệt:
   - Kích hoạt chi nhánh trong hệ thống.
-  - Đồng bộ với Core Banking và VSD.
 
 ### 3.2. Cập nhật thông tin chi nhánh
 - Thay đổi địa chỉ, tên, người quản lý, trạng thái.
@@ -32,8 +30,7 @@
 
 ### 3.3. Ngừng hoạt động / Đóng chi nhánh
 - Maker gửi yêu cầu đóng.
-- Checker phê duyệt → trạng thái **Inactive**.
-- Đồng bộ với hệ thống liên quan.
+- Checker phê duyệt → trạng thái **false**.
 - Thực hiện chuyển giao khách hàng (nếu cần).
 
 ### 3.4. Tra cứu & Báo cáo
@@ -50,14 +47,7 @@
      - Nếu **Approve** → cập nhật bảng `BRANCHES`, đồng bộ hệ thống, ghi Audit log.
      - Nếu **Reject** → cập nhật trạng thái yêu cầu, ghi Audit log.
 
-## 5. Yêu cầu phi chức năng
-- **Bảo mật**: phân quyền rõ ràng.
-- **Audit trail**: log đầy đủ thao tác.
-- **Tích hợp**: đồng bộ Core Banking, VSD.
-- **Hiệu năng**: tra cứu nhanh với số lượng lớn chi nhánh.
-- **Mở rộng**: hỗ trợ nhiều loại đơn vị (chi nhánh, phòng giao dịch, điểm lưu ký).
-
-## 6. Sơ đồ luồng quy trình
+## 5. Sơ đồ luồng quy trình
 
 [Maker]
 │
