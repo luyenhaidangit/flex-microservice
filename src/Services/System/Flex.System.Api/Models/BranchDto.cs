@@ -68,7 +68,7 @@ namespace Flex.System.Api.Models
         public long Id { get; set; }
         public string Action { get; set; } = default!;
         public long EntityId { get; set; }
-        public string EntityCode { get; set; } = default!;
+        //public string EntityCode { get; set; } = default!;
         public string Status { get; set; } = default!;
         public string CreatedBy { get; set; } = default!;
         public DateTime CreatedDate { get; set; }
@@ -76,7 +76,7 @@ namespace Flex.System.Api.Models
         public DateTime? ApproveDate { get; set; }
         public string? Comments { get; set; }
         public BranchDto? RequestData { get; set; }
-        public BranchDto? OriginalData { get; set; }
+        //public BranchDto? OriginalData { get; set; }
     }
 
     public class ApproveBranchRequestDto

@@ -78,7 +78,7 @@ namespace Flex.System.Api.Services
             {
                 Action = RequestTypeConstant.Create,
                 EntityId = 0,
-                EntityCode = request.Code,
+                //EntityCode = request.Code,
                 Status = RequestStatusConstant.Unauthorised,
                 RequestedData = JsonSerializer.Serialize(request),
                 MakerId = requester
@@ -108,15 +108,15 @@ namespace Flex.System.Api.Services
             {
                 Action = RequestTypeConstant.Update,
                 EntityId = existingEntity.Id,
-                EntityCode = code,
+                //EntityCode = code,
                 Status = RequestStatusConstant.Unauthorised,
                 RequestedData = JsonSerializer.Serialize(dto),
-                OriginalData = JsonSerializer.Serialize(new
-                {
-                    Name = existingEntity.Name,
-                    Description = existingEntity.Description ?? string.Empty,
-                    IsActive = existingEntity.IsActive
-                }),
+                //OriginalData = JsonSerializer.Serialize(new
+                //{
+                //    Name = existingEntity.Name,
+                //    Description = existingEntity.Description ?? string.Empty,
+                //    IsActive = existingEntity.IsActive
+                //}),
                 MakerId = requester
             };
 
@@ -148,15 +148,15 @@ namespace Flex.System.Api.Services
             {
                 Action = RequestTypeConstant.Delete,
                 EntityId = existingEntity.Id,
-                EntityCode = code,
+                //EntityCode = code,
                 Status = RequestStatusConstant.Unauthorised,
                 RequestedData = JsonSerializer.Serialize(request),
-                OriginalData = JsonSerializer.Serialize(new
-                {
-                    Name = existingEntity.Name,
-                    Description = existingEntity.Description ?? string.Empty,
-                    IsActive = existingEntity.IsActive
-                }),
+                //OriginalData = JsonSerializer.Serialize(new
+                //{
+                //    Name = existingEntity.Name,
+                //    Description = existingEntity.Description ?? string.Empty,
+                //    IsActive = existingEntity.IsActive
+                //}),
                 MakerId = requester
             };
 
@@ -188,7 +188,7 @@ namespace Flex.System.Api.Services
                 Id = request.Id,
                 Action = request.Action,
                 EntityId = request.EntityId,
-                EntityCode = request.EntityCode,
+                //EntityCode = request.EntityCode,
                 Status = request.Status,
                 CreatedBy = request.MakerId,
                 CreatedDate = request.RequestedDate,
@@ -196,9 +196,9 @@ namespace Flex.System.Api.Services
                 ApproveDate = request.ApproveDate,
                 Comments = request.Comments,
                 RequestData = null, // Không thể deserialize vì không biết loại dữ liệu
-                OriginalData = !string.IsNullOrEmpty(request.OriginalData) 
-                    ? JsonSerializer.Deserialize<BranchDto>(request.OriginalData) 
-                    : null
+                //OriginalData = !string.IsNullOrEmpty(request.OriginalData) 
+                //    ? JsonSerializer.Deserialize<BranchDto>(request.OriginalData) 
+                //    : null
             };
         }
 
