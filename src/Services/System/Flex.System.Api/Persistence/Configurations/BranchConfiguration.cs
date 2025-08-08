@@ -29,6 +29,7 @@ namespace Flex.System.Api.Persistence.Configurations
             // BranchType
             builder.Property(b => b.BranchType)
                    .HasColumnName("BRANCH_TYPE")
+                   .HasColumnType("NUMBER(10)")
                    .IsRequired();
 
             // IsActive: bool <-> 'Y'/'N'
@@ -38,7 +39,7 @@ namespace Flex.System.Api.Persistence.Configurations
                    .HasConversion(new BoolToStringYNConverter())
                    .HasMaxLength(1)
                    .IsRequired()
-                   .HasDefaultValue(true);
+                   .HasDefaultValueSql("'Y'");
 
             // Status
             builder.Property(b => b.Status)
