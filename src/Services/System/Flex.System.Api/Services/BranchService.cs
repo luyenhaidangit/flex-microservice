@@ -67,18 +67,12 @@ namespace Flex.System.Api.Services
                 throw new Exception($"Branch with code '{request.Code}' already exists.");
             }
 
-            var requester = _userService.GetCurrentUsername() ?? "system";
-            if (string.IsNullOrWhiteSpace(requester))
-            {
-                throw new ArgumentException("Requester cannot be empty.");
-            }
-
             // ===== Create request =====
+            var requester = _userService.GetCurrentUsername() ?? "system";
             var branchRequest = new BranchRequest
             {
                 Action = RequestTypeConstant.Create,
                 EntityId = 0,
-                //EntityCode = request.Code,
                 Status = RequestStatusConstant.Unauthorised,
                 RequestedData = JsonSerializer.Serialize(request),
                 MakerId = requester

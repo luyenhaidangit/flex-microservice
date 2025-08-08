@@ -22,21 +22,6 @@ namespace Flex.System.Api.Models
         public bool IsActive { get; set; }
     }
 
-    public class CreateBranchRequestDto
-    {
-        [Required(ErrorMessage = "Branch code is required")]
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "Branch code must be between 3 and 50 characters")]
-        [RegularExpression("^[a-zA-Z0-9-_]+$", ErrorMessage = "Branch code can only contain letters, numbers, hyphens and underscores")]
-        public string Code { get; set; } = default!;
-        
-        [Required(ErrorMessage = "Branch name is required")]
-        [StringLength(200, MinimumLength = 3, ErrorMessage = "Branch name must be between 3 and 200 characters")]
-        public string Name { get; set; } = default!;
-        
-        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
-        public string Description { get; set; } = default!;
-    }
-
     public class UpdateBranchRequestDto
     {
         [Required(ErrorMessage = "Branch name is required")]
