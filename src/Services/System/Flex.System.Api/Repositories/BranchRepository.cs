@@ -46,7 +46,7 @@ namespace Flex.System.Api.Repositories
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(x.Name.ToLower(), $"%{keyword}%") ||
-                         EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
+                         EF.Functions.Like((x.Description ?? "").ToLower(), $"%{keyword}%"))
                 .WhereIf(!string.IsNullOrEmpty(request.IsActive), x => x.IsActive == status);
 
             // ===== Execute query =====
@@ -60,13 +60,9 @@ namespace Flex.System.Api.Repositories
                     Id = x.Id,
                     Code = x.Code,
                     Name = x.Name,
-                    Description = x.Description,
+                    Description = x.Description ?? string.Empty,
                     Status = x.Status,
-                    IsActive = x.IsActive,
-                    MemberCode = x.MemberCode,
-                    BranchType = x.BranchType,
-                    Address = x.Address,
-                    ProvinceCode = x.ProvinceCode
+                    IsActive = x.IsActive
                 })
                 .ToListAsync();
 
@@ -88,7 +84,7 @@ namespace Flex.System.Api.Repositories
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(x.Name.ToLower(), $"%{keyword}%") ||
-                         EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
+                         EF.Functions.Like((x.Description ?? "").ToLower(), $"%{keyword}%"))
                 .WhereIf(!string.IsNullOrEmpty(request.IsActive), x => x.IsActive == status);
 
             // ===== Execute query =====
@@ -102,13 +98,9 @@ namespace Flex.System.Api.Repositories
                     Id = x.Id,
                     Code = x.Code,
                     Name = x.Name,
-                    Description = x.Description,
+                    Description = x.Description ?? string.Empty,
                     Status = x.Status,
-                    IsActive = x.IsActive,
-                    MemberCode = x.MemberCode,
-                    BranchType = x.BranchType,
-                    Address = x.Address,
-                    ProvinceCode = x.ProvinceCode
+                    IsActive = x.IsActive
                 })
                 .ToListAsync();
 

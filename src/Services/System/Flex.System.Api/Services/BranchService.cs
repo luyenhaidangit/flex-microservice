@@ -45,24 +45,9 @@ namespace Flex.System.Api.Services
                 Id = entity.Id,
                 Code = entity.Code,
                 Name = entity.Name,
-                Description = entity.Description,
+                Description = entity.Description ?? string.Empty,
                 Status = entity.Status,
-                IsActive = entity.IsActive,
-                MemberCode = entity.MemberCode,
-                BranchType = entity.BranchType,
-                Address = entity.Address,
-                ProvinceCode = entity.ProvinceCode,
-                PhoneNumber = entity.PhoneNumber,
-                Email = entity.Email,
-                TaxCode = entity.TaxCode,
-                LicenseNumber = entity.LicenseNumber,
-                LicenseDate = entity.LicenseDate,
-                CreatedDate = entity.CreatedDate,
-                CreatedBy = entity.CreatedBy,
-                // Additional fields from business requirements
-                EstablishmentDate = entity.EstablishmentDate,
-                ClosedDate = entity.ClosedDate,
-                ManagerName = entity.ManagerName
+                IsActive = entity.IsActive
             };
         }
 
@@ -96,7 +81,7 @@ namespace Flex.System.Api.Services
                 EntityCode = request.Code,
                 Status = RequestStatusConstant.Unauthorised,
                 RequestData = JsonSerializer.Serialize(request),
-                //CreatedBy = requester
+                CreatedBy = requester
             };
 
             await _branchRequestRepository.CreateAsync(branchRequest);
@@ -129,21 +114,10 @@ namespace Flex.System.Api.Services
                 OriginalData = JsonSerializer.Serialize(new
                 {
                     Name = existingEntity.Name,
-                    Description = existingEntity.Description,
-                    MemberCode = existingEntity.MemberCode,
-                    BranchType = existingEntity.BranchType,
-                    Address = existingEntity.Address,
-                    ProvinceCode = existingEntity.ProvinceCode,
-                    PhoneNumber = existingEntity.PhoneNumber,
-                    Email = existingEntity.Email,
-                    TaxCode = existingEntity.TaxCode,
-                    LicenseNumber = existingEntity.LicenseNumber,
-                    LicenseDate = existingEntity.LicenseDate,
-                    // Additional fields from business requirements
-                    EstablishmentDate = existingEntity.EstablishmentDate,
-                    ManagerName = existingEntity.ManagerName
+                    Description = existingEntity.Description ?? string.Empty,
+                    IsActive = existingEntity.IsActive
                 }),
-                //CreatedBy = requester
+                CreatedBy = requester
             };
 
             // ===== Update entity status =====
@@ -180,21 +154,10 @@ namespace Flex.System.Api.Services
                 OriginalData = JsonSerializer.Serialize(new
                 {
                     Name = existingEntity.Name,
-                    Description = existingEntity.Description,
-                    MemberCode = existingEntity.MemberCode,
-                    BranchType = existingEntity.BranchType,
-                    Address = existingEntity.Address,
-                    ProvinceCode = existingEntity.ProvinceCode,
-                    PhoneNumber = existingEntity.PhoneNumber,
-                    Email = existingEntity.Email,
-                    TaxCode = existingEntity.TaxCode,
-                    LicenseNumber = existingEntity.LicenseNumber,
-                    LicenseDate = existingEntity.LicenseDate,
-                    // Additional fields from business requirements
-                    EstablishmentDate = existingEntity.EstablishmentDate,
-                    ManagerName = existingEntity.ManagerName
+                    Description = existingEntity.Description ?? string.Empty,
+                    IsActive = existingEntity.IsActive
                 }),
-                //CreatedBy = requester
+                CreatedBy = requester
             };
 
             // ===== Update entity status =====
@@ -227,8 +190,8 @@ namespace Flex.System.Api.Services
                 EntityId = request.EntityId,
                 EntityCode = request.EntityCode,
                 Status = request.Status,
-                //CreatedBy = request.CreatedBy,
-                //CreatedDate = request.CreatedDate,
+                CreatedBy = request.CreatedBy,
+                CreatedDate = request.CreatedDate,
                 CheckerId = request.CheckerId,
                 ApproveDate = request.ApproveDate,
                 Comments = request.Comments,
@@ -383,22 +346,9 @@ namespace Flex.System.Api.Services
             {
                 Code = requestData.Code,
                 Name = requestData.Name,
-                Description = requestData.Description,
+                Description = requestData.Description ?? string.Empty,
                 Status = StatusConstant.Approved,
-                IsActive = true,
-                MemberCode = requestData.MemberCode,
-                BranchType = requestData.BranchType,
-                Address = requestData.Address,
-                ProvinceCode = requestData.ProvinceCode,
-                PhoneNumber = requestData.PhoneNumber,
-                Email = requestData.Email,
-                TaxCode = requestData.TaxCode,
-                LicenseNumber = requestData.LicenseNumber,
-                LicenseDate = requestData.LicenseDate,
-                // Additional fields from business requirements
-                EstablishmentDate = requestData.EstablishmentDate,
-                ManagerName = requestData.ManagerName,
-                //CreatedBy = request.CreatedBy
+                IsActive = true
             };
 
             await _branchRepository.CreateAsync(branch);
@@ -419,19 +369,7 @@ namespace Flex.System.Api.Services
             }
 
             branch.Name = requestData.Name;
-            branch.Description = requestData.Description;
-            branch.MemberCode = requestData.MemberCode;
-            branch.BranchType = requestData.BranchType;
-            branch.Address = requestData.Address;
-            branch.ProvinceCode = requestData.ProvinceCode;
-            branch.PhoneNumber = requestData.PhoneNumber;
-            branch.Email = requestData.Email;
-            branch.TaxCode = requestData.TaxCode;
-            branch.LicenseNumber = requestData.LicenseNumber;
-            branch.LicenseDate = requestData.LicenseDate;
-            // Additional fields from business requirements
-            branch.EstablishmentDate = requestData.EstablishmentDate;
-            branch.ManagerName = requestData.ManagerName;
+            branch.Description = requestData.Description ?? string.Empty;
             branch.Status = StatusConstant.Approved;
 
             await _branchRepository.UpdateAsync(branch);
@@ -446,8 +384,7 @@ namespace Flex.System.Api.Services
             }
 
             branch.IsActive = false;
-            branch.ClosedDate = DateTime.UtcNow; // Set ngày đóng chi nhánh
-            //branch.Status = StatusConstant.Deleted;
+            branch.Status = StatusConstant.Deleted;
 
             await _branchRepository.UpdateAsync(branch);
         }

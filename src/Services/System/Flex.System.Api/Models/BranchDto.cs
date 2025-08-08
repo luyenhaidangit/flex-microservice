@@ -11,24 +11,6 @@ namespace Flex.System.Api.Models
         public string Description { get; set; } = default!;
         public string Status { get; set; } = default!;
         public bool IsActive { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public string CreatedBy { get; set; } = default!;
-        
-        // Additional fields for Branch
-        public string MemberCode { get; set; } = default!;
-        public string BranchType { get; set; } = default!;
-        public string Address { get; set; } = default!;
-        public string ProvinceCode { get; set; } = default!;
-        public string PhoneNumber { get; set; } = default!;
-        public string Email { get; set; } = default!;
-        public string TaxCode { get; set; } = default!;
-        public string LicenseNumber { get; set; } = default!;
-        public DateTime? LicenseDate { get; set; }
-        
-        // Additional fields from business requirements
-        public DateTime? EstablishmentDate { get; set; }
-        public DateTime? ClosedDate { get; set; }
-        public string ManagerName { get; set; } = default!;
     }
 
     public class BranchListItemDto
@@ -39,16 +21,6 @@ namespace Flex.System.Api.Models
         public string Description { get; set; } = default!;
         public string Status { get; set; } = default!;
         public bool IsActive { get; set; }
-        
-        // Additional fields for Branch
-        public string MemberCode { get; set; } = default!;
-        public string BranchType { get; set; } = default!;
-        public string Address { get; set; } = default!;
-        public string ProvinceCode { get; set; } = default!;
-        
-        // Additional fields from business requirements
-        public string ManagerName { get; set; } = default!;
-        public DateTime? EstablishmentDate { get; set; }
     }
 
     public class CreateBranchRequestDto
@@ -64,42 +36,6 @@ namespace Flex.System.Api.Models
         
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string Description { get; set; } = default!;
-        
-        [Required(ErrorMessage = "Member code is required")]
-        [StringLength(50, ErrorMessage = "Member code cannot exceed 50 characters")]
-        public string MemberCode { get; set; } = default!;
-        
-        [Required(ErrorMessage = "Branch type is required")]
-        [StringLength(50, ErrorMessage = "Branch type cannot exceed 50 characters")]
-        public string BranchType { get; set; } = default!;
-        
-        [StringLength(500, ErrorMessage = "Address cannot exceed 500 characters")]
-        public string Address { get; set; } = default!;
-        
-        [StringLength(20, ErrorMessage = "Province code cannot exceed 20 characters")]
-        public string ProvinceCode { get; set; } = default!;
-        
-        [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
-        public string PhoneNumber { get; set; } = default!;
-        
-        [EmailAddress(ErrorMessage = "Invalid email format")]
-        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
-        public string Email { get; set; } = default!;
-        
-        [StringLength(50, ErrorMessage = "Tax code cannot exceed 50 characters")]
-        public string TaxCode { get; set; } = default!;
-        
-        [StringLength(100, ErrorMessage = "License number cannot exceed 100 characters")]
-        public string LicenseNumber { get; set; } = default!;
-        
-        public DateTime? LicenseDate { get; set; }
-        
-        // Additional fields from business requirements
-        public DateTime? EstablishmentDate { get; set; }
-        
-        [Required(ErrorMessage = "Manager name is required")]
-        [StringLength(200, ErrorMessage = "Manager name cannot exceed 200 characters")]
-        public string ManagerName { get; set; } = default!;
     }
 
     public class UpdateBranchRequestDto
@@ -110,42 +46,6 @@ namespace Flex.System.Api.Models
         
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string Description { get; set; } = default!;
-        
-        [Required(ErrorMessage = "Member code is required")]
-        [StringLength(50, ErrorMessage = "Member code cannot exceed 50 characters")]
-        public string MemberCode { get; set; } = default!;
-        
-        [Required(ErrorMessage = "Branch type is required")]
-        [StringLength(50, ErrorMessage = "Branch type cannot exceed 50 characters")]
-        public string BranchType { get; set; } = default!;
-        
-        [StringLength(500, ErrorMessage = "Address cannot exceed 500 characters")]
-        public string Address { get; set; } = default!;
-        
-        [StringLength(20, ErrorMessage = "Province code cannot exceed 20 characters")]
-        public string ProvinceCode { get; set; } = default!;
-        
-        [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
-        public string PhoneNumber { get; set; } = default!;
-        
-        [EmailAddress(ErrorMessage = "Invalid email format")]
-        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
-        public string Email { get; set; } = default!;
-        
-        [StringLength(50, ErrorMessage = "Tax code cannot exceed 50 characters")]
-        public string TaxCode { get; set; } = default!;
-        
-        [StringLength(100, ErrorMessage = "License number cannot exceed 100 characters")]
-        public string LicenseNumber { get; set; } = default!;
-        
-        public DateTime? LicenseDate { get; set; }
-        
-        // Additional fields from business requirements
-        public DateTime? EstablishmentDate { get; set; }
-        
-        [Required(ErrorMessage = "Manager name is required")]
-        [StringLength(200, ErrorMessage = "Manager name cannot exceed 200 characters")]
-        public string ManagerName { get; set; } = default!;
     }
 
     public class DeleteBranchRequestDto
@@ -197,5 +97,16 @@ namespace Flex.System.Api.Models
         public string ApprovedBy { get; set; } = default!;
         public DateTime ApprovedDate { get; set; }
         public string Comment { get; set; } = default!;
+    }
+
+    public class BranchChangeHistoryDto
+    {
+        public long Id { get; set; }
+        public string Operation { get; set; } = default!;
+        public string OldValue { get; set; } = default!;
+        public string NewValue { get; set; } = default!;
+        public string RequestedBy { get; set; } = default!;
+        public string? ApproveBy { get; set; }
+        public DateTime LogDate { get; set; }
     }
 }
