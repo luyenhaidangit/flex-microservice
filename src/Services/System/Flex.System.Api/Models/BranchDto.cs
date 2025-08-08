@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace Flex.System.Api.Models
 {
@@ -52,40 +53,98 @@ namespace Flex.System.Api.Models
 
     public class CreateBranchRequestDto
     {
+        [Required(ErrorMessage = "Branch code is required")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Branch code must be between 3 and 50 characters")]
+        [RegularExpression("^[a-zA-Z0-9-_]+$", ErrorMessage = "Branch code can only contain letters, numbers, hyphens and underscores")]
         public string Code { get; set; } = default!;
+        
+        [Required(ErrorMessage = "Branch name is required")]
+        [StringLength(200, MinimumLength = 3, ErrorMessage = "Branch name must be between 3 and 200 characters")]
         public string Name { get; set; } = default!;
+        
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string Description { get; set; } = default!;
+        
+        [Required(ErrorMessage = "Member code is required")]
+        [StringLength(50, ErrorMessage = "Member code cannot exceed 50 characters")]
         public string MemberCode { get; set; } = default!;
+        
+        [Required(ErrorMessage = "Branch type is required")]
+        [StringLength(50, ErrorMessage = "Branch type cannot exceed 50 characters")]
         public string BranchType { get; set; } = default!;
+        
+        [StringLength(500, ErrorMessage = "Address cannot exceed 500 characters")]
         public string Address { get; set; } = default!;
+        
+        [StringLength(20, ErrorMessage = "Province code cannot exceed 20 characters")]
         public string ProvinceCode { get; set; } = default!;
+        
+        [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
         public string PhoneNumber { get; set; } = default!;
+        
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
         public string Email { get; set; } = default!;
+        
+        [StringLength(50, ErrorMessage = "Tax code cannot exceed 50 characters")]
         public string TaxCode { get; set; } = default!;
+        
+        [StringLength(100, ErrorMessage = "License number cannot exceed 100 characters")]
         public string LicenseNumber { get; set; } = default!;
+        
         public DateTime? LicenseDate { get; set; }
         
         // Additional fields from business requirements
         public DateTime? EstablishmentDate { get; set; }
+        
+        [Required(ErrorMessage = "Manager name is required")]
+        [StringLength(200, ErrorMessage = "Manager name cannot exceed 200 characters")]
         public string ManagerName { get; set; } = default!;
     }
 
     public class UpdateBranchRequestDto
     {
+        [Required(ErrorMessage = "Branch name is required")]
+        [StringLength(200, MinimumLength = 3, ErrorMessage = "Branch name must be between 3 and 200 characters")]
         public string Name { get; set; } = default!;
+        
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string Description { get; set; } = default!;
+        
+        [Required(ErrorMessage = "Member code is required")]
+        [StringLength(50, ErrorMessage = "Member code cannot exceed 50 characters")]
         public string MemberCode { get; set; } = default!;
+        
+        [Required(ErrorMessage = "Branch type is required")]
+        [StringLength(50, ErrorMessage = "Branch type cannot exceed 50 characters")]
         public string BranchType { get; set; } = default!;
+        
+        [StringLength(500, ErrorMessage = "Address cannot exceed 500 characters")]
         public string Address { get; set; } = default!;
+        
+        [StringLength(20, ErrorMessage = "Province code cannot exceed 20 characters")]
         public string ProvinceCode { get; set; } = default!;
+        
+        [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
         public string PhoneNumber { get; set; } = default!;
+        
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
         public string Email { get; set; } = default!;
+        
+        [StringLength(50, ErrorMessage = "Tax code cannot exceed 50 characters")]
         public string TaxCode { get; set; } = default!;
+        
+        [StringLength(100, ErrorMessage = "License number cannot exceed 100 characters")]
         public string LicenseNumber { get; set; } = default!;
+        
         public DateTime? LicenseDate { get; set; }
         
         // Additional fields from business requirements
         public DateTime? EstablishmentDate { get; set; }
+        
+        [Required(ErrorMessage = "Manager name is required")]
+        [StringLength(200, ErrorMessage = "Manager name cannot exceed 200 characters")]
         public string ManagerName { get; set; } = default!;
     }
 

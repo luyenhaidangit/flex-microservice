@@ -1,43 +1,19 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Flex.Shared.Constants.Common;
 
 namespace Flex.AspNetIdentity.Api.Entities
 {
     [Table("ROLES")]
     public class Role : IdentityRole<long>
     {
-        [Required]
-        [Column("CODE")]
-        public string Code { get; set; }
-
-        [Column("IS_ACTIVE")]
+        public string Code { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
-
-        [Column("DESCRIPTION")]
         public string? Description { get; set; } = string.Empty;
+        public string Status { get; set; } = StatusConstant.Approved;
 
-        [Column("STATUS")]
-        public string Status { get; set; } = "APPROVED";
-
-        //[Column("CREATED_AT")]
-        //public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        //[Column("LAST_UPDATED")]
-        //public DateTime? LastUpdated { get; set; }
-
-        //[Column("MAKER_ID")]
-        //public string? MakerId { get; set; }
-
-        //[Column("CHECKER_ID")]
-        //public string? CheckerId { get; set; }
-
-        //[Column("REQUEST_ID")]
-        //public long? RequestId { get; set; }
-
-        public Role()
-        {
-        }
+        #region Constructors
+        protected Role() {}
 
         public Role(string roleName, string code)
         {
@@ -46,5 +22,6 @@ namespace Flex.AspNetIdentity.Api.Entities
             ConcurrencyStamp = Guid.NewGuid().ToString();
             Code = code;
         }
+        #endregion
     }
 }

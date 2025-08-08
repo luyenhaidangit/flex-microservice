@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Flex.AspNetIdentity.Api.Entities;
+using Flex.EntityFrameworkCore.Converters;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Flex.AspNetIdentity.Api.Entities;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Flex.AspNetIdentity.Api.Persistence.Configurations
 {
@@ -11,28 +11,53 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
         {
             builder.ToTable("ROLES");
 
-            // Columns
-            builder.Property(r => r.Id).HasColumnName("ID");
-            builder.Property(r => r.Name).HasColumnName("NAME");
-            builder.Property(r => r.Code).HasColumnName("CODE");
-            builder.Property(r => r.Description).HasColumnName("DESCRIPTION");
+            // Keys
+            builder.HasKey(r => r.Id);
 
-            var boolToStringConverter = new ValueConverter<bool?, string>(
-                v => v.HasValue ? (v.Value ? "Y" : "N") : null,
-                v => v == "Y"
-            );
+            // Columns
+            builder.Property(r => r.Id)
+                    .HasColumnName("ID");
+
+            builder.Property(r => r.Name)
+                   .HasColumnName("NAME").HasMaxLength(256);
+
+            builder.Property(r => r.NormalizedName)
+                   .HasColumnName("NORMALIZED_NAME")
+                   .HasMaxLength(256)
+                   .IsRequired();
+
+            builder.Property(r => r.Code)
+                   .HasColumnName("CODE")
+                   .HasMaxLength(100)
+                   .IsRequired();
+
+            builder.Property(r => r.Description)
+                   .HasColumnName("DESCRIPTION");
+
+            builder.Property(r => r.Status)
+                   .HasColumnName("STATUS")
+                   .HasMaxLength(50);
 
             builder.Property(r => r.IsActive)
-                .HasColumnName("IS_ACTIVE")
-                .HasColumnType("CHAR(1)")
-                .HasConversion(boolToStringConverter);
+                   .HasColumnName("IS_ACTIVE")
+                   .HasColumnType("CHAR(1)")
+                   .HasConversion(new BoolToStringYNConverter())
+                   .HasMaxLength(1)
+                   .IsRequired()
+                   .HasDefaultValue(true);
 
-            builder.Property(x => x.NormalizedName)
-                .HasColumnName("NORMALIZED_NAME")
-                .HasColumnType("varchar2(256)");
+            builder.Property(r => r.ConcurrencyStamp)
+                   .HasColumnName("CONCURRENCY_STAMP")
+                   .IsConcurrencyToken();
 
-            // Ignore NormalizedName and ConcurrencyStamp if not present in DB
-            builder.Ignore(r => r.ConcurrencyStamp);
+            // Unique indexes theo chuẩn Identity
+            builder.HasIndex(r => r.NormalizedName)
+                   .HasDatabaseName("UX_ROLES_NORMALIZED_NAME")
+                   .IsUnique();
+
+            builder.HasIndex(r => r.Code)
+                   .HasDatabaseName("UX_ROLES_CODE")
+                   .IsUnique();
         }
     }
 }
