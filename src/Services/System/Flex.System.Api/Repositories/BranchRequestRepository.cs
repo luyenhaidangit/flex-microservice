@@ -31,8 +31,8 @@ namespace Flex.System.Api.Repositories
             // ===== Build query =====
             var query = _context.BranchRequests
                 .Where(x => x.Status == RequestStatusConstant.Unauthorised)
-                .WhereIf(!string.IsNullOrEmpty(keyword),
-                    x => EF.Functions.Like(x.EntityCode.ToLower(), $"%{keyword}%"))
+                //.WhereIf(!string.IsNullOrEmpty(keyword),
+                //    x => EF.Functions.Like(x.EntityCode.ToLower(), $"%{keyword}%"))
                 .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
                     x => x.Action == requestType);
 
@@ -45,7 +45,7 @@ namespace Flex.System.Api.Repositories
                 .Select(x => new BranchPendingPagingDto
                 {
                     Id = x.Id,
-                    EntityCode = x.EntityCode,
+                    //EntityCode = x.EntityCode,
                     Action = x.Action,
                     Status = x.Status,
                     CreatedBy = x.MakerId,

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace Flex.System.Api.Models
@@ -56,7 +55,7 @@ namespace Flex.System.Api.Models
     public class BranchPendingPagingDto
     {
         public long Id { get; set; }
-        public string EntityCode { get; set; } = default!;
+        //public string EntityCode { get; set; } = default!;
         public string Action { get; set; } = default!;
         public string Status { get; set; } = default!;
         public string CreatedBy { get; set; } = default!;
@@ -97,16 +96,5 @@ namespace Flex.System.Api.Models
         public string ApprovedBy { get; set; } = default!;
         public DateTime ApprovedDate { get; set; }
         public string Comment { get; set; } = default!;
-    }
-
-    public class BranchChangeHistoryDto
-    {
-        public long Id { get; set; }
-        public string Operation { get; set; } = default!;
-        public string OldValue { get; set; } = default!;
-        public string NewValue { get; set; } = default!;
-        public string RequestedBy { get; set; } = default!;
-        public string? ApproveBy { get; set; }
-        public DateTime LogDate { get; set; }
     }
 }
