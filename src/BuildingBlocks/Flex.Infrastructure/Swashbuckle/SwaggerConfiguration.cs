@@ -5,6 +5,11 @@ using Flex.Shared.Options;
 
 namespace Flex.Infrastructure.Swashbuckle
 {
+    /// <summary>
+    /// Required setings: Directory.Build.props.
+    /// <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    /// <NoWarn>$(NoWarn);1591</NoWarn>
+    /// </summary>
     public static class SwaggerConfiguration
     {
         public static void ConfigureSwagger(this IServiceCollection services)
