@@ -1,4 +1,8 @@
-version: 1
+version: 1.0
+intent: >
+  Quy định chuẩn tạo mới quản lý một thực thể (entity) trong hệ thống theo mẫu code Role hiện có làm bản base:
+  Kiến trúc, naming, API, validation, logging, audit, comment/XML docs, format code.
+  Mục tiêu: AI/agent tạo code dựa trên mẫu codebase Role flow, không phá vỡ convention hiện hành.
 
 # ================================
 # ENTITY MANAGEMENT WORKFLOW
