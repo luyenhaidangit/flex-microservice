@@ -80,8 +80,8 @@ namespace Flex.System.Api.Services
                 EntityId = 0,
                 EntityCode = request.Code,
                 Status = RequestStatusConstant.Unauthorised,
-                RequestData = JsonSerializer.Serialize(request),
-                CreatedBy = requester
+                RequestedData = JsonSerializer.Serialize(request),
+                MakerId = requester
             };
 
             await _branchRequestRepository.CreateAsync(branchRequest);
@@ -110,14 +110,14 @@ namespace Flex.System.Api.Services
                 EntityId = existingEntity.Id,
                 EntityCode = code,
                 Status = RequestStatusConstant.Unauthorised,
-                RequestData = JsonSerializer.Serialize(dto),
+                RequestedData = JsonSerializer.Serialize(dto),
                 OriginalData = JsonSerializer.Serialize(new
                 {
                     Name = existingEntity.Name,
                     Description = existingEntity.Description ?? string.Empty,
                     IsActive = existingEntity.IsActive
                 }),
-                CreatedBy = requester
+                MakerId = requester
             };
 
             // ===== Update entity status =====
@@ -150,14 +150,14 @@ namespace Flex.System.Api.Services
                 EntityId = existingEntity.Id,
                 EntityCode = code,
                 Status = RequestStatusConstant.Unauthorised,
-                RequestData = JsonSerializer.Serialize(request),
+                RequestedData = JsonSerializer.Serialize(request),
                 OriginalData = JsonSerializer.Serialize(new
                 {
                     Name = existingEntity.Name,
                     Description = existingEntity.Description ?? string.Empty,
                     IsActive = existingEntity.IsActive
                 }),
-                CreatedBy = requester
+                MakerId = requester
             };
 
             // ===== Update entity status =====
@@ -190,14 +190,12 @@ namespace Flex.System.Api.Services
                 EntityId = request.EntityId,
                 EntityCode = request.EntityCode,
                 Status = request.Status,
-                CreatedBy = request.CreatedBy,
-                CreatedDate = request.CreatedDate,
+                CreatedBy = request.MakerId,
+                CreatedDate = request.RequestedDate,
                 CheckerId = request.CheckerId,
                 ApproveDate = request.ApproveDate,
                 Comments = request.Comments,
-                RequestData = !string.IsNullOrEmpty(request.RequestData) 
-                    ? JsonSerializer.Deserialize<BranchDto>(request.RequestData) 
-                    : null,
+                RequestData = null, // Không thể deserialize vì không biết loại dữ liệu
                 OriginalData = !string.IsNullOrEmpty(request.OriginalData) 
                     ? JsonSerializer.Deserialize<BranchDto>(request.OriginalData) 
                     : null
@@ -336,7 +334,7 @@ namespace Flex.System.Api.Services
 
         private async Task ProcessCreateBranch(BranchRequest request)
         {
-            var requestData = JsonSerializer.Deserialize<CreateBranchRequestDto>(request.RequestData);
+            var requestData = JsonSerializer.Deserialize<CreateBranchRequestDto>(request.RequestedData);
             if (requestData == null)
             {
                 throw new Exception("Invalid request data for CREATE action.");
@@ -356,7 +354,7 @@ namespace Flex.System.Api.Services
 
         private async Task ProcessUpdateBranch(BranchRequest request)
         {
-            var requestData = JsonSerializer.Deserialize<UpdateBranchRequestDto>(request.RequestData);
+            var requestData = JsonSerializer.Deserialize<UpdateBranchRequestDto>(request.RequestedData);
             if (requestData == null)
             {
                 throw new Exception("Invalid request data for UPDATE action.");

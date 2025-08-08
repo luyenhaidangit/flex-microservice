@@ -44,8 +44,8 @@ namespace Flex.System.Api.Persistence.Configurations
 
             // Maker/Checker & thời gian
             builder.Property(x => x.MakerId)
-                   .HasColumnName("REQUESTED_BY")
-                   .HasColumnType("VARCHAR2(256)")
+                   .HasColumnName("MAKER_ID")
+                   .HasColumnType("VARCHAR2(100)")
                    .IsRequired();
 
             builder.Property(x => x.RequestedDate)
@@ -53,11 +53,21 @@ namespace Flex.System.Api.Persistence.Configurations
                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             builder.Property(x => x.CheckerId)
-                   .HasColumnName("APPROVED_BY")
-                   .HasColumnType("VARCHAR2(256)");
+                   .HasColumnName("CHECKER_ID")
+                   .HasColumnType("VARCHAR2(100)");
 
             builder.Property(x => x.ApproveDate)
                    .HasColumnName("APPROVE_DATE");
+
+            // Additional fields for BranchRequest
+            builder.Property(x => x.EntityCode)
+                   .HasColumnName("ENTITY_CODE")
+                   .HasColumnType("VARCHAR2(50)")
+                   .IsRequired();
+
+            builder.Property(x => x.OriginalData)
+                   .HasColumnName("ORIGINAL_DATA")
+                   .HasColumnType("CLOB");
 
             // --- Indexes để tối ưu truy vấn màn hình duyệt ---
             builder.HasIndex(x => x.Status)
