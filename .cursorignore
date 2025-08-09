@@ -1,0 +1,75 @@
+# Cursor ignore rules for Flex Microservice (.NET 9)
+
+# ========= Build artifacts =========
+**/bin/**
+**/obj/**
+**/out/**
+**/artifacts/**
+**/publish/**
+**/dist/**
+**/build/**
+**/TestResults/**
+
+# ========= Package caches =========
+**/packages/**
+**/.nuget/**
+
+# ========= IDE/workspace =========
+**/.vs/**
+**/.vscode/**
+**/.idea/**
+
+# ========= Logs & coverage =========
+**/logs/**
+**/log/**
+**/coverage/**
+**/Coverage/**
+**/reports/**
+*.log
+
+# ========= Node (if exists) =========
+**/node_modules/**
+
+# ========= OS cruft =========
+.DS_Store
+Thumbs.db
+
+# ========= Secrets & credentials =========
+secrets/**
+**/*.pfx
+**/*.snk
+**/*.cer
+**/*.key
+**/*.pem
+
+# ========= Terraform state =========
+**/.terraform/**
+**/*.tfstate
+**/*.tfstate.backup
+**/crash.log
+**/crash.*.log
+
+# ========= Binary artifacts =========
+**/*.exe
+**/*.dll
+**/*.so
+**/*.dylib
+**/*.pdb
+**/*.nupkg
+**/*.zip
+**/*.tar
+**/*.tar.gz
+**/*.7z
+
+# ========= Media binaries (not needed for code search) =========
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.ico
+**/*.pdf
+**/*.mp4
+**/*.mov
+
+# Keep text-based sources (cs, csproj, json, yml, md, sql, proto, tf) indexed.
+# Do NOT ignore source directories like src/**, docs/**, scripts/** by default.
