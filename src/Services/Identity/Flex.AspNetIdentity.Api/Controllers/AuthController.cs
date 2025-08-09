@@ -33,38 +33,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             _jwtSettings = jwtSettings.Value;
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
-        {
-            _logger.LogInformation("Attempting to register user: {Email}", request.Email);
-
-            // Validate
-            var existingUser = await _userManager.FindByEmailAsync(request.Email);
-            if (existingUser != null)
-            {
-                return BadRequest(Result.Failure(message: "User already exists with this email."));
-            }
-
-            var existingUsername = await _userManager.FindByNameAsync(request.Email);
-            if (existingUsername != null)
-            {
-                return BadRequest(Result.Failure(message: "User already exists with this username."));
-            }
-
-            // Process
-            var user = _mapper.Map<User>(request);
-
-            var result = await _userManager.CreateAsync(user, request.Password);
-
-            if (!result.Succeeded)
-            {
-                return BadRequest(Result.Failure(message: "User registration failed.", errors: result.Errors));
-            }
-
-            _logger.LogInformation("User {Email} registered successfully.", request.Email);
-            return Ok(Result.Success(message: "User registered successfully"));
-        }
-
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginByUserNameRequest request)
@@ -105,6 +73,38 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
             _logger.LogInformation("User {Username} logged in successfully.", request.UserName);
             return Ok(Result.Success(message: "Login success!", data: result));
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
+        {
+            _logger.LogInformation("Attempting to register user: {Email}", request.Email);
+
+            // Validate
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser != null)
+            {
+                return BadRequest(Result.Failure(message: "User already exists with this email."));
+            }
+
+            var existingUsername = await _userManager.FindByNameAsync(request.Email);
+            if (existingUsername != null)
+            {
+                return BadRequest(Result.Failure(message: "User already exists with this username."));
+            }
+
+            // Process
+            var user = _mapper.Map<User>(request);
+
+            var result = await _userManager.CreateAsync(user, request.Password);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(Result.Failure(message: "User registration failed.", errors: result.Errors));
+            }
+
+            _logger.LogInformation("User {Email} registered successfully.", request.Email);
+            return Ok(Result.Success(message: "User registered successfully"));
         }
 
         [HttpPost("logout")]
