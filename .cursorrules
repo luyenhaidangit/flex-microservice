@@ -1,7 +1,18 @@
 # ================================
 # Cursor Rules for Flex Microservice - .NET 9 + Microservices
 # ================================
-version: 2
+version: 1
+
+# ----------------
+# RULES
+# ----------------
+rules:
+  # BE
+  - name: "validatior"
+    trigger:
+        - "validator, fluentvalidation, validate dto, validation rules"
+    read:
+      - docs/prompts/be-validator.md
 
 # ----------------
 # GENERAL CONTEXT
