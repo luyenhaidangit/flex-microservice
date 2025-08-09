@@ -15,7 +15,6 @@ namespace Flex.OcelotApiGateway.Extensions
     {
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions<ApiConfiguration>().Bind(configuration.GetSection(ConfigKeyConstants.ApiConfiguration)).ValidateDataAnnotations().ValidateOnStart();
             services.AddOptions<Security.JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
             services.AddOptions<JwtSchemeSettings>(GatewayConstants.AuthenticationProviderKey.AdminPortal)
             .Bind(configuration.GetSection($"{ConfigKeyConstants.AuthenticationSchemes}:{GatewayConstants.AuthenticationProviderKey.AdminPortal}"))
