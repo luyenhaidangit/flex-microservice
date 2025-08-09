@@ -15,6 +15,7 @@ namespace Flex.System.Api.Persistence
         public DbSet<Entities.DepartmentRequest> DepartmentRequests { get; set; }
         public DbSet<Entities.Branch> Branches { get; set; }
         public DbSet<Entities.BranchRequest> BranchRequests { get; set; }
+        public DbSet<Entities.Views.ProposedBranch> ProposedBranches { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,11 +43,11 @@ namespace Flex.System.Api.Persistence
             //            break;
 
             //        case EntityState.Modified:
-            //            // Không cho phép sửa thuộc tính "Id"
             //            Entry(item.Entity).Property("Id").IsModified = false;
             //            if (item.Entity is IDateTracking modifiedEntity)
             //            {
             //                modifiedEntity.LastModifiedDate = DateTime.UtcNow;
+            //                item.State = EntityState.Modified;
             //            }
             //            break;
             //    }

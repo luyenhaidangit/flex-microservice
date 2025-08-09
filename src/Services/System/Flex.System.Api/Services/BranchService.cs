@@ -7,6 +7,7 @@ using Flex.System.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.Shared.Constants.Common;
+using Flex.System.Api.Persistence;
 
 namespace Flex.System.Api.Services
 {
@@ -15,15 +16,18 @@ namespace Flex.System.Api.Services
         private readonly IBranchRepository _branchRepository;
         private readonly IBranchRequestRepository _branchRequestRepository;
         private readonly IUserService _userService;
+        private readonly SystemDbContext _dbContext;
 
         public BranchService(
             IBranchRepository branchRepository,
             IBranchRequestRepository branchRequestRepository,
-            IUserService userService)
+            IUserService userService,
+            SystemDbContext dbContext)
         {
             _branchRepository = branchRepository;
             _branchRequestRepository = branchRequestRepository;
             _userService = userService;
+            _dbContext = dbContext;
         }
 
         #region Query
@@ -65,6 +69,17 @@ namespace Flex.System.Api.Services
             if (await _branchRepository.ExistsByCodeAsync(request.Code))
             {
                 throw new Exception($"Branch with code '{request.Code}' already exists.");
+            }
+
+            // ===== Check duplicate pending request by code (UNA + CREATE) via view =====
+            var hasPending = await _dbContext.ProposedBranches
+                .AsNoTracking()
+                .AnyAsync(v => v.Action == RequestTypeConstant.Create
+                               && v.Status == RequestStatusConstant.Unauthorised
+                               && v.Code == request.Code);
+            if (hasPending)
+            {
+                throw new Exception($"Pending branch request already exists for code '{request.Code}'.");
             }
 
             // ===== Create request =====
