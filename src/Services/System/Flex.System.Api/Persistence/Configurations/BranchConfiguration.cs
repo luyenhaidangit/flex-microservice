@@ -39,7 +39,6 @@ namespace Flex.System.Api.Persistence.Configurations
                    .HasConversion(new BoolToStringYNConverter())
                    .HasMaxLength(1)
                    .IsRequired()
-                   .HasDefaultValue(true)
                    .HasDefaultValueSql("'Y'");
 
             // Status
