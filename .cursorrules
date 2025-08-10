@@ -7,7 +7,18 @@ version: 1
 # RULES
 # ----------------
 rules:
-  # BE
+  - name: "common"
+    trigger:
+        - "common, common rules, common conventions, common patterns"
+    description: |
+      Khi generate class C#, cần tuân thủ quy tắc khởi tạo string:
+      1. Nếu là DTO / Request / ViewModel → dùng `string.Empty`
+      2. Nếu là Entity/Model (được ORM gán giá trị) → dùng `default!`
+      3. Không dùng `default!` cho DTO trừ khi bắt buộc
+    patterns:
+      - "**/*.cs"
+    match: |
+      public\s+string\s+\w+\s*\{\s*get;\s*set;\s*\}.*$
   - name: "validatior"
     trigger:
         - "validator, fluentvalidation, validate dto, validation rules"
