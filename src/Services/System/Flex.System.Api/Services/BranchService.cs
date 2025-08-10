@@ -74,7 +74,7 @@ namespace Flex.System.Api.Services
             // ===== Check duplicate pending request via view =====
             var hasPending = await _dbContext.ProposedBranches
                 .AsNoTracking()
-                .AnyAsync(v => v.Status == RequestStatusConstant.Unauthorised && v.Code == request.Code);
+                .CountAsync(v => v.Status == RequestStatusConstant.Unauthorised && v.Code == request.Code) > 0;
             if (hasPending)
             {
                 throw new Exception($"Pending branch request already exists for code '{request.Code}'.");

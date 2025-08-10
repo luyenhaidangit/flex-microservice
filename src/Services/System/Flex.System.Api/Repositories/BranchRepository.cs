@@ -30,7 +30,7 @@ namespace Flex.System.Api.Repositories
         public async Task<bool> ExistsByCodeAsync(string code)
         {
             return await _context.Branches
-                .AnyAsync(x => x.Code == code);
+                .CountAsync(x => x.Code == code) > 0;
         }
 
         public async Task<PagedResult<BranchListItemDto>> GetPagedAsync(GetBranchPagingRequest request)
