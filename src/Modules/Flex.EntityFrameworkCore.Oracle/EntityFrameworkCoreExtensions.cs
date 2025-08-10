@@ -39,7 +39,10 @@ namespace Flex.EntityFrameworkCore.Oracle
                     DataSource = walletConfig.DataSource,
                     TnsAdmin = walletConfig.WalletPath,
                     WalletLocation = walletConfig.WalletPath,
-                    PersistSecurityInfo = true
+                    PersistSecurityInfo = true,
+                    Pooling = true,
+                    ValidateConnection = true,
+                    ConnectionTimeout = 15
                 }.ToString();
             }
             else
