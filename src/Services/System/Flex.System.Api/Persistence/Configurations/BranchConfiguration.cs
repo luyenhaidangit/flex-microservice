@@ -39,6 +39,7 @@ namespace Flex.System.Api.Persistence.Configurations
                    .HasConversion(new BoolToStringYNConverter())
                    .HasMaxLength(1)
                    .IsRequired()
+                   .HasDefaultValue(true)
                    .HasDefaultValueSql("'Y'");
 
             // Status
@@ -52,10 +53,10 @@ namespace Flex.System.Api.Persistence.Configurations
                    .HasColumnName("DESCRIPTION")
                    .HasMaxLength(500);
 
-            // Index: Code unique
+            // Unique index cho Code
             builder.HasIndex(b => b.Code)
-                   .IsUnique()
-                   .HasDatabaseName("UX_BRANCH_CODE");
+                   .HasDatabaseName("UX_BRANCHES_CODE")
+                   .IsUnique();
         }
     }
 }

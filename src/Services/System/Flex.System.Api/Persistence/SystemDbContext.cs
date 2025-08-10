@@ -24,6 +24,12 @@ namespace Flex.System.Api.Persistence
             modelBuilder.ApplyConfigurationsFromAssembly(AssemblyReference.Assembly);
         }
 
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.DefaultTypeMapping<string>(
+                b => b.IsUnicode(false));
+        }
+
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             //var modified = ChangeTracker.Entries()
