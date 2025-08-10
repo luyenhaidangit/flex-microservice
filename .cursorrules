@@ -11,10 +11,10 @@ rules:
     trigger:
         - "common, common rules, common conventions, common patterns"
     description: |
-      Khi generate class C#, cần tuân thủ quy tắc khởi tạo string:
       1. Nếu là DTO / Request / ViewModel → dùng `string.Empty`
       2. Nếu là Entity/Model (được ORM gán giá trị) → dùng `default!`
       3. Không dùng `default!` cho DTO trừ khi bắt buộc
+      4. Sử dụng FluentValidation để định nghĩa validation rules, DTO/Request/ViewModel: KHÔNG sử dụng validation attributes
     patterns:
       - "**/*.cs"
     match: |
