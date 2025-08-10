@@ -8,6 +8,7 @@ using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.Shared.Constants.Common;
 using Flex.System.Api.Persistence;
+using Flex.Infrastructure.EF;
 
 namespace Flex.System.Api.Services
 {
@@ -181,7 +182,42 @@ namespace Flex.System.Api.Services
         #region Pending Management
         public async Task<PagedResult<BranchPendingPagingDto>> GetPendingBranchesPagedAsync(GetBranchPagingRequest request)
         {
-            return await _branchRequestRepository.GetPendingPagedAsync(request);
+            // ===== Process request parameters =====
+            var keyword = request?.Keyword?.Trim().ToLower();
+            int pageIndex = Math.Max(1, request.PageIndex ?? 1);
+            int pageSize = Math.Max(1, request.PageSize ?? 10);
+
+            // ===== Build query =====
+            var proposedBranchQuery = _branchRepository.GetBranchCombinedQuery()
+                .Where(r => r.Status == RequestStatusConstant.Unauthorised)
+                .WhereIf(!string.IsNullOrEmpty(keyword),
+                    r => EF.Functions.Like(r.Code.ToLower(), $"%{keyword}%") ||
+                         EF.Functions.Like(r.Description.ToLower(), $"%{keyword}%"))
+                .AsNoTracking();
+
+            var pendingQuery = proposedBranchQuery
+                .Select(r => new BranchPendingPagingDto
+                {
+                    Code = r.Code,
+                    Name = r.Name,
+                    Description = r.Description,
+                    RequestType = r.Action,
+                    CreatedBy = r.CreatedBy,
+                    CreatedDate = r.CreatedDate,
+                    Id = r.Id ?? 0
+                });
+
+            // ===== Execute query =====
+            var total = await pendingQuery.CountAsync();
+            var items = await pendingQuery
+                .OrderByDescending(dto => dto.CreatedDate)
+                .ThenBy(dto => dto.Id)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // ===== Return result =====
+            return PagedResult<BranchPendingPagingDto>.Create(pageIndex, pageSize, total, items);
         }
 
         public async Task<BranchRequestDetailDto> GetPendingBranchByIdAsync(long requestId)

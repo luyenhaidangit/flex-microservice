@@ -37,16 +37,6 @@ namespace Flex.System.Api.Models
         public string Reason { get; set; } = default!;
     }
 
-    public class BranchPendingPagingDto
-    {
-        public long Id { get; set; }
-        //public string EntityCode { get; set; } = default!;
-        public string Action { get; set; } = default!;
-        public string Status { get; set; } = default!;
-        public string CreatedBy { get; set; } = default!;
-        public DateTime CreatedDate { get; set; }
-    }
-
     public class BranchRequestDetailDto
     {
         public long Id { get; set; }

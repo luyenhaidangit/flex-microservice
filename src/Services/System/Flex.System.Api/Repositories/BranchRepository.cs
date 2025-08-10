@@ -9,6 +9,7 @@ using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.Shared.Constants.Common;
 using Flex.System.Api.Persistence;
 using Flex.Infrastructure.EF;
+using Flex.System.Api.Entities.Views;
 
 namespace Flex.System.Api.Repositories
 {
@@ -106,6 +107,11 @@ namespace Flex.System.Api.Repositories
 
             // ===== Return result =====
             return PagedResult<BranchListItemDto>.Create(pageIndex, pageSize, total, items);
+        }
+
+        public IQueryable<ProposedBranch> GetBranchCombinedQuery()
+        {
+            return _context.Set<ProposedBranch>().AsNoTracking();
         }
     }
 }
