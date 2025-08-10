@@ -1,14 +1,15 @@
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using Flex.System.Api.Entities;
-using Flex.System.Api.Models;
-using Flex.System.Api.Repositories.Interfaces;
-using Flex.System.Api.Services.Interfaces;
+using Flex.Infrastructure.EF;
+using Flex.Shared.Constants.Common;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
-using Flex.Shared.Constants.Common;
+using Flex.System.Api.Entities;
+using Flex.System.Api.Models;
 using Flex.System.Api.Persistence;
-using Flex.Infrastructure.EF;
+using Flex.System.Api.Repositories.Interfaces;
+using Flex.System.Api.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Flex.System.Api.Services
 {
@@ -34,7 +35,35 @@ namespace Flex.System.Api.Services
         #region Query
         public async Task<PagedResult<BranchListItemDto>> GetApprovedBranchesPagedAsync(GetBranchPagingRequest request)
         {
-            return await _branchRepository.GetApprovedPagedAsync(request);
+            // ===== Process request parameters =====
+            var keyword = request?.Keyword?.Trim().ToLower();
+            var status = request?.IsActive?.Trim().ToUpper() == "Y" ? true : false;
+            int pageIndex = Math.Max(1, request.PageIndex ?? 1);
+            int pageSize = Math.Max(1, request.PageSize ?? 10);
+
+            // ===== Build query =====
+            var roleQuery = _branchRepository.FindAll()
+                .WhereIf(!string.IsNullOrEmpty(keyword),
+                    x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
+                         EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"));
+
+            // ===== Execute query =====
+            var total = await roleQuery.CountAsync();
+            var items = await roleQuery
+                .OrderBy(x => x.Id)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new BranchListItemDto
+                {
+                    Code = x.Code,
+                    Name = x.Name,
+                    Description = x.Description,
+                    IsActive = x.IsActive
+                })
+                .ToListAsync();
+
+            // ===== Return result =====
+            return PagedResult<BranchListItemDto>.Create(pageIndex, pageSize, total, items);
         }
 
         public async Task<BranchDto> GetApprovedBranchByCodeAsync(string code)
