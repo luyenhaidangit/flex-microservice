@@ -71,26 +71,26 @@ namespace Flex.System.Api.Services
                 throw new Exception($"Branch with code '{request.Code}' already exists.");
             }
 
-            // ===== Check duplicate pending request by code (UNA + CREATE) via view =====
+            // ===== Check duplicate pending request via view =====
             var hasPending = await _dbContext.ProposedBranches
                 .AsNoTracking()
-                .AnyAsync(v => v.Action == RequestTypeConstant.Create
-                               && v.Status == RequestStatusConstant.Unauthorised
-                               && v.Code == request.Code);
+                .AnyAsync(v => v.Status == RequestStatusConstant.Unauthorised && v.Code == request.Code);
             if (hasPending)
             {
                 throw new Exception($"Pending branch request already exists for code '{request.Code}'.");
             }
 
             // ===== Create request =====
-            var requester = _userService.GetCurrentUsername() ?? "system";
+            var requester = _userService.GetCurrentUsername() ?? "anonymous";
             var branchRequest = new BranchRequest
             {
                 Action = RequestTypeConstant.Create,
-                EntityId = 0,
                 Status = RequestStatusConstant.Unauthorised,
+                EntityId = 0,
+                MakerId = requester,
+                RequestedDate = DateTime.UtcNow,
+                Comments = "Yêu cầu thêm mới vai trò.",
                 RequestedData = JsonSerializer.Serialize(request),
-                MakerId = requester
             };
 
             await _branchRequestRepository.CreateAsync(branchRequest);
