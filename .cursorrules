@@ -21,7 +21,7 @@ rules:
       public\s+string\s+\w+\s*\{\s*get;\s*set;\s*\}.*$
   - name: "validatior"
     trigger:
-        - "validator, fluentvalidation, validate dto, validation rules"
+      - "validator, fluentvalidation, validate dto, validation rules"
     read:
       - docs/prompts/be-validator.md
 
