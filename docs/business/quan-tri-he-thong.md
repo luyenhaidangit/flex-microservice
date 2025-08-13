@@ -1,0 +1,11 @@
+- Người dùng vào hệ thống --> Load cấu hình AuthMode
+- AuthMode DB hiển form đăng nhập tài khoản mật khẩu.
+- Login thành công --> Trả AccessToken.
+- Lưu AccessToken vào localStorage
+- Gán header thực hiện mỗi lần request.
+- Login thành công gọi /me lấy thông tin người dùng. sẽ cần token
+- Thông tin người dùng hiện tại được hiển thị
+- Gọi mỗi lần reload page.
+- Nếu không có token, hoặc có nhưng call lỗi 401 --> Yêu cầu về trang admin.
+- Logout khi đổi mật khẩu, đăng xuất,...
+- Đồng bộ tab, 1 tab log out các tab khác sẽ logout.
