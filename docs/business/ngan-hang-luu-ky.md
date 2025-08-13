@@ -18,4 +18,6 @@
 - Lý do: NĐT cá nhân trong nước giao dịch nhỏ, ít phức tạp, trong nước nên dễ xác minh, chỉ cần công ty chứng khoán, VSDC giám sát là đủ. Còn lại từ nhiều nguồn, khó xác minh, kiểm soát nên cần ngân hàng lưu ký.
 - Chứng khoán có thể hiểu là góp vốn với tổ chức phát hành.
 - Tổ chức phát hành cổ phiếu bán hết --> Vay được tiền, nếu bán hết mà dùng tiền kém hiệu quả --> Cổ đông mất niềm tin, giá cổ phiếu giảm.
-- 
+- Nếu lỗ mà vẫn phát hành tiếp --> Pha loãng quyền, giá cổ phiếu --> Nếu không phục hồi, Cả NĐT mới và cũ đều lỗ.
+- Khi nào cổ phiếu tăng, làm sao biết công ty lợi nhuận mà tăng giá cổ phiếu? Trả lời: Hàng năm công ty lập báo cáo tài chính, lời nhuận sẽ tăng hoặc giảm. Nếu lợi nhuận tăng, công ty có thể chia cổ tức bằng tiền hoặc tăng thêm cổ phiếu cho bạn. Nếu lập báo cáo sai, vi phạm pháp luật nhà nước, có thể bị sử lý.
+- Phát hành 100 cổ thu về 100m, bán hết rồi nhưng cứ báo lỗ, mặc kệ giá cổ phiếu, ủy ban hủy niêm yết cũng kệ, vì đã thu được 100m tiền chứng khoán về mà không phải trả lại thì sao? Thực tế không dễ ăn như vậy, Tiền thuộc về công ty, và công ty phải hạch toán, chịu giám sát kiểm toán, thuế, UBCKNN.Nếu cố tình báo lỗ giả: Vi phạm Luật Kế toán và Luật Chứng khoán, UBCKNN có quyền phạt tiền, buộc điều chỉnh BCTC, truy cứu trách nhiệm hình sự với cá nhân liên quan. Nếu cổ đông khởi kiện và chứng minh công ty làm sai, ban lãnh đạo vẫn phải chịu trách nhiệm cá nhân (dù công ty đã rời sàn).
