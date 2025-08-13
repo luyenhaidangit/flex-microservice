@@ -24,3 +24,30 @@
 - CTCK không được phép nhận tiền ngoại tệ, tiền từ nước ngoài --> Phải nạp từ ngân hàng lưu ký --> Ngân hàng lưu ký báo cho CTCK --> Giám sát --> NĐT nước ngoài đặt mua.
 - CTCK có tài khoản tiền phải tách bạch cá nhân và tiền NĐT, phải đặt tại một ngân hàng thương mại.
 - Khách hàng nạp tiền vào cùng 1 tài khoản của CTCK tại NHTM, dựa theo nội dung, tăng tiền tại hệ thống. Có tiền tại hệ thống, đặt lệnh, CTCK khóa số tiền, sau T+2, cty chứng khoán gửi lệnh này tới VSDC, tài khoản của CTCK tại NHTM gửi tiền tới ngân hàng thanh toán bên bán của VSDC, VSDC chuyển chứng khoán từ bên bán vào tài khoản cá nhân của NĐT.
+
+- Chức năng:
++ Onboarding & KYC/AML: Mở tài khoản lưu ký & tiền. Quản lý hồ sơ, screening, risk scoring. Kết nối hệ thống AML quốc tế (Dow Jones, Refinitiv World-Check).
++ Quản lý Tài khoản & Lưu ký: Tài khoản omnibus/segregated. Quản lý vị thế (settled, pending, blocked…).Cấu hình SSI.
++ Trade Capture & Settlement: Nhận lệnh từ CTCK/Broker (FIX/SWIFT/file).Matching & enrichment.Tích hợp DvP với VSDC.Fail trade management.
++ Cash Management: Multi-currency ledger. Payment/receipt (SWIFT, Napas).FX conversion.Cash sweep.
++ Corporate Actions: Mandatory & voluntary events.Entitlement & payment.Proxy voting.
++ Thuế (WHT) & Tax Reclaim: Tự động khấu trừ.Hỗ trợ hiệp định tránh đánh thuế 2 lần (DTA).
++ Fees & Billing: Custody fee, transaction fee, CA fee.Chu kỳ invoice.
++ Reporting & Client Portal: Daily statement.Regulatory reports.API/portal cho KH.
++ Reconciliation & Exception: Cash & position reconciliation.Exception workflow.
++  Risk & Compliance: Limit FOL, exposure.AML monitoring.
+
+4. Yêu cầu phi chức năng
+An toàn bảo mật:
++ Mã hóa dữ liệu at-rest/in-transit (TLS 1.3, AES-256).
++ Ký số thông điệp SWIFT/VSDC.
++ RBAC + SoD.
++ High Availability: 99.9% uptime, multi-AZ deployment.
++ DR/BCP: RPO ≤ 5 phút, RTO ≤ 2 giờ.
++ Audit & Traceability: Immutable audit log. Full transaction trace.
+
+Quy trình vận hành & kiểm soát
++ Maker–Checker cho mọi hành động quan trọng.
++ Daily Reconciliation bắt buộc.
++ Regulatory Report theo yêu cầu VSDC, UBCKNN, NHNN.
++ Exception SLA: xử lý break trong ≤ T+1.
