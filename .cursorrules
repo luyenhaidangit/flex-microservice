@@ -16,6 +16,7 @@ rules:
       3. Không dùng `default!` cho DTO trừ khi bắt buộc
       4. Sử dụng FluentValidation để định nghĩa validation rules, DTO/Request/ViewModel: KHÔNG sử dụng validation attributes
     patterns:
+      5. Khi render code FE, lưu ý nên sử dụng trackBy.
       - "**/*.cs"
     match: |
       public\s+string\s+\w+\s*\{\s*get;\s*set;\s*\}.*$
