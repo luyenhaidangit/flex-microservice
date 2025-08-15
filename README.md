@@ -151,3 +151,27 @@ If you have questions or need help, feel free to open an issue or email the auth
 
 ## Technology
 - IdentityServer.
+
+## Using Cookiecutter
+
+You can optionally set up AI-assisted development rules for this project using [Cookiecutter](https://cookiecutter.readthedocs.io/) and the `grapeot/devin.cursorrules` template.
+
+1. **Install Cookiecutter**
+
+   ```bash
+   pip install cookiecutter
+   ```
+
+2. **Generate the rules template**
+
+   ```bash
+   cookiecutter gh:grapeot/devin.cursorrules --checkout template
+   ```
+
+3. **Integrate into your project**
+
+   * Copy `.cursorrules` and the `tools/` folder into the project root.
+   * Customize `.cursorrules` for your .NET 8 backend conventions.
+   * Restart your AI-enabled IDE to apply the rules.
+
+**Benefits:** Consistent coding style, improved architectural decisions, and AI support aligned with your tech stack.
