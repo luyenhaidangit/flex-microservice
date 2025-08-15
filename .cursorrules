@@ -14,7 +14,8 @@ rules:
       1. Nếu là DTO / Request / ViewModel → dùng `string.Empty`
       2. Nếu là Entity/Model (được ORM gán giá trị) → dùng `default!`
       3. Không dùng `default!` cho DTO trừ khi bắt buộc
-      4. Sử dụng FluentValidation để định nghĩa validation rules, DTO/Request/ViewModel: KHÔNG sử dụng validation attributes
+      4. Sử dụng FluentValidation để định nghĩa validation rules, DTO/Request/ViewModel: KHÔNG sử dụng validation attributes.
+      5. Xem xét chức năng Đọc nhiều – đổi ít: Bảng tham số, mapping code, danh mục (branch, fee rules đã duyệt), feature flags...đề xuất cache.
     patterns:
       5. Khi render code FE, lưu ý nên sử dụng trackBy.
       - "**/*.cs"
@@ -25,6 +26,11 @@ rules:
       - "validator, fluentvalidation, validate dto, validation rules"
     read:
       - docs/prompts/be-validator.md
+  - name: "cache"
+    trigger:
+      - "cache, cache key, cache value, cache expiration, cache policy"
+    read:
+      - docs/prompts/be-cache.md
 
 # ----------------
 # GENERAL CONTEXT
