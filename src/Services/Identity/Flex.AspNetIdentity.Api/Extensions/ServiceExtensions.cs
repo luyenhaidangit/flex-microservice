@@ -1,19 +1,21 @@
-﻿using Flex.EntityFrameworkCore.Oracle;
+﻿using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Persistence;
-using Microsoft.AspNetCore.Identity;
-using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Repositories;
+using Flex.AspNetIdentity.Api.Repositories.Interfaces;
+using Flex.AspNetIdentity.Api.Services;
+using Flex.AspNetIdentity.Api.Services.Interfaces;
+using Flex.Contracts.Domains.Interfaces;
+using Flex.EntityFrameworkCore.Oracle;
+using Flex.Infrastructure.Common;
+using Flex.Infrastructure.Common.Repositories;
 using Flex.Security;
+using Flex.Shared.Authorization;
 using Flex.Shared.Constants;
+using Flex.Shared.Extensions;
 using Flex.System.Api.Repositories;
 using Flex.System.Api.Repositories.Interfaces;
-using Flex.AspNetIdentity.Api.Services.Interfaces;
-using Flex.AspNetIdentity.Api.Services;
-using Flex.AspNetIdentity.Api.Repositories.Interfaces;
-using Flex.AspNetIdentity.Api.Repositories;
-using Flex.Contracts.Domains.Interfaces;
-using Flex.Infrastructure.Common.Repositories;
-using Flex.Infrastructure.Common;
-using Flex.Shared.Extensions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -63,17 +65,6 @@ namespace Flex.AspNetIdentity.Api.Extensions
             return services;
         }
 
-        public static IServiceCollection AddRepositories(this IServiceCollection services)
-        {
-            services.AddScoped<IUserRequestHeaderRepository, UserRequestHeaderRepository>();
-            services.AddScoped<IUserRequestDataRepository, UserRequestDataRepository>();
-            services.AddScoped<IUserAuditLogRepository, UserAuditLogRepository>();
-
-            //services.AddScoped<IBranchService, BranchClientService>();
-
-            return services;
-        }
-
         //public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         //{
         //    services.AddScoped<IBranchService, BranchService>();
@@ -100,6 +91,9 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             // Repositories
             services.AddScoped<IRoleRequestRepository, RoleRequestRepository>();
+
+            services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+            services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
             return services;
         }

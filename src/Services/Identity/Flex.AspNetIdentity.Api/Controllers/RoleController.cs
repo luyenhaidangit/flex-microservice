@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Flex.Shared.SeedWork;
-using Flex.AspNetIdentity.Api.Models;
+﻿using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
+using Flex.Shared.SeedWork;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
     [Route("api/roles")]
     [ApiController]
+    //[Authorize(Policy = Permissions.Branch.Create)]
     public class RoleController : ControllerBase
     {
         private IRoleService _roleService;
