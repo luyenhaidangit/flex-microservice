@@ -102,7 +102,6 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 IsActive = role.IsActive,
                 Description = role.Description,
-                Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList(),
                 Status = StatusConstant.Approved,
             };
 
@@ -314,7 +313,6 @@ namespace Flex.AspNetIdentity.Api.Services
                 RoleCode = deleteData.Code,
                 RoleName = deleteData.Name,
                 Description = deleteData.Description,
-                Permissions = deleteData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
             };
         }
 
@@ -445,7 +443,6 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 Name = role.Name,
                 Description = role.Description,
-                Claims = claims.Select(c => new ClaimDto { Type = c.Type, Value = c.Value }).ToList()
             };
             var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
             var request = new RoleRequest

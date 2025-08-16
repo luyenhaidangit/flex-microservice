@@ -1,4 +1,6 @@
-﻿namespace Flex.AspNetIdentity.Api.Models
+﻿using Flex.AspNetIdentity.Api.Models.Permission;
+
+namespace Flex.AspNetIdentity.Api.Models
 {
     public class RoleDto
     {
@@ -8,6 +10,6 @@
         public string? Description { get; set; } = default!;
         public bool IsActive { get; set; }
         public string? Status { get; set; }
-        public List<ClaimDto>? Claims { get; set; }
+        public List<PermissionNodeDto> PermissionTree { get; set; } = new();
     }
 }
