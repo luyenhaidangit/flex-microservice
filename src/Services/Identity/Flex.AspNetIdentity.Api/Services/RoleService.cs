@@ -94,7 +94,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // ===== If role exists, get its claims =====
-            var claims = await _roleManager.GetClaimsAsync(role);
+            var flags = await GetPermissionFlagsAsync(code, search, ct);
 
             var result = new RoleDto
             {
@@ -104,6 +104,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 IsActive = role.IsActive,
                 Description = role.Description,
                 Status = StatusConstant.Approved,
+                PermissionTree = includeTree ? flags.Root : new List<PermissionNodeDto>()
             };
 
             return result;
