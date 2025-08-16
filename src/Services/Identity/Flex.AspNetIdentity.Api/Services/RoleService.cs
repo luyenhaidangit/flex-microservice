@@ -773,13 +773,13 @@ namespace Flex.AspNetIdentity.Api.Services
 
             // 3) Build tree in-memory theo ParentPermissionId (nullable root)
             var byParent = all
-                .GroupBy(p => p.ParentPermissionId) // long? key
+                .GroupBy(p => p.ParentPermissionId ?? 0L) // Dùng 0 cho node gốc
                 .ToDictionary(
                     g => g.Key,
                     g => g.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToList()
                 );
 
-            var root = Build(null); // root là ParentPermissionId == null
+            var root = Build(0L); // root là ParentPermissionId == null (0L)
 
             // 4) Stats
             int total = all.Count;
@@ -795,15 +795,13 @@ namespace Flex.AspNetIdentity.Api.Services
             };
 
             // --------- local funcs ----------
-            List<PermissionNodeDto> Build(long? parentId)
+            List<PermissionNodeDto> Build(long parentId)
             {
                 if (!byParent.TryGetValue(parentId, out var list)) return new();
-
                 var nodes = new List<PermissionNodeDto>(list.Count);
                 foreach (var p in list)
                 {
                     var children = Build(p.Id);
-
                     // Server-side search: giữ node cha nếu có con match
                     if (!string.IsNullOrWhiteSpace(search))
                     {
@@ -811,10 +809,8 @@ namespace Flex.AspNetIdentity.Api.Services
                         var selfMatch =
                             p.Name.Contains(s, StringComparison.OrdinalIgnoreCase) ||
                             p.Code.Contains(s, StringComparison.OrdinalIgnoreCase);
-
                         if (!selfMatch && children.Count == 0) continue;
                     }
-
                     nodes.Add(new PermissionNodeDto
                     {
                         Id = p.Id,
