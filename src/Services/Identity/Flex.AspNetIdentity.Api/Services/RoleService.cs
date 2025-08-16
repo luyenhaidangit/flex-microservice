@@ -5,7 +5,6 @@ using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
-using Flex.Shared.Constants.Common;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Microsoft.AspNetCore.Identity;
@@ -759,12 +758,9 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Trả cây Permission + trạng thái tick theo role.
         /// </summary>
-        public async Task<PermissionFlagsResult> GetPermissionFlagsAsync(
-    string roleCode,
-    string? search = null,
-    CancellationToken ct = default)
+        public async Task<PermissionFlagsResult> GetPermissionFlagsAsync(string roleCode, string? search = null,CancellationToken ct = default)
         {
-            // 1) Lấy catalog (cache 20')
+            // ===== Get all permission ft cache =====
             var allPermissions = await (_cache != null
                 ? _cache.GetOrCreateAsync("perm:catalog:v1", async e =>
                 {
