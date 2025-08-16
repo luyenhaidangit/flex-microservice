@@ -767,10 +767,10 @@ namespace Flex.AspNetIdentity.Api.Services
 
             // 3) Build tree in-memory
             var byParent = all
-                .GroupBy(p => p.ParentPermissionId)
+                .GroupBy(p => p.ParentPermissionId ?? 0L) // Dùng 0 cho node gốc
                 .ToDictionary(g => g.Key, g => g.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToList());
 
-            var root = Build(null);
+            var root = Build(0L); // node gốc là 0
 
             // 4) Stats
             int total = all.Count;
@@ -780,7 +780,7 @@ namespace Flex.AspNetIdentity.Api.Services
             return (root, total, assignable, checkedCount);
 
             // --------- local funcs ----------
-            List<PermissionNodeDto> Build(long? parentId)
+            List<PermissionNodeDto> Build(long parentId)
             {
                 if (!byParent.TryGetValue(parentId, out var list)) return new();
 
