@@ -7,7 +7,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
     public interface IRoleService
     {
         Task<PagedResult<RoleApprovedListItemDto>> GetApprovedRolesPagedAsync(GetRolesPagingRequest request);
-        Task<RoleDto> GetApprovedRoleByCodeAsync(string code);
+        Task<RoleDto> GetApprovedRoleByCodeAsync(string code, bool includeClaims = true, bool includeTree = true, string? search = null, CancellationToken ct = default);
         Task<List<RoleChangeHistoryDto>> GetApprovedRoleChangeHistoryAsync(string code);
         Task<long> CreateRoleRequestAsync(CreateRoleRequestDto request);
         Task<long> CreateUpdateRoleRequestAsync(string code, UpdateRoleRequestDto dto);
@@ -16,7 +16,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<RoleRequestDetailDto> GetPendingRoleByIdAsync(long requestId);
         Task<RoleApprovalResultDto> ApprovePendingRoleRequestAsync(long requestId, string? comment = null);
         Task<RoleApprovalResultDto> RejectPendingRoleRequestAsync(long requestId, string? reason = null);
-        Task<(List<PermissionNodeDto> Root, int Total, int Assignable, int Checked)> GetPermissionFlagsAsync(string roleCode, string? search = null, CancellationToken ct = default);
+        Task<PermissionFlagsResult> GetPermissionFlagsAsync(string roleCode, string? search = null, CancellationToken ct = default);
         Task UpdateRolePermissionsAsync(string roleCode, IEnumerable<string> permissionCodes, CancellationToken ct = default);
     }
 }

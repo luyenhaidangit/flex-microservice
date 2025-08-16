@@ -1,17 +1,18 @@
-﻿using System.Security.Claims;
-using System.Text.Json;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Flex.AspNetIdentity.Api.Entities;
+﻿using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models;
+using Flex.AspNetIdentity.Api.Models.Permission;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
 using Flex.Shared.Constants.Common;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Flex.AspNetIdentity.Api.Models.Permission;
+using System.Security.Claims;
+using System.Security.Permissions;
+using System.Text.Json;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -82,7 +83,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Get approved role by code.
         /// </summary>
-        public async Task<RoleDto> GetApprovedRoleByCodeAsync(string code)
+        public async Task<RoleDto> GetApprovedRoleByCodeAsync(string code, bool includeClaims = true, bool includeTree = true, string? search = null, CancellationToken ct = default)
         {
             // ===== Find role by code =====
             var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == code);
@@ -744,52 +745,72 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Trả cây Permission + trạng thái tick theo role.
         /// </summary>
-        public async Task<(List<PermissionNodeDto> Root, int Total, int Assignable, int Checked)>
-            GetPermissionFlagsAsync(string roleCode, string? search = null, CancellationToken ct = default)
+        public async Task<PermissionFlagsResult> GetPermissionFlagsAsync(
+    string roleCode,
+    string? search = null,
+    CancellationToken ct = default)
         {
             // 1) Lấy catalog (cache 20')
-            var all = await (_cache != null
-                ? _cache.GetOrCreateAsync("perm:catalog", async e =>
-                  {
-                      e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20);
-                      return await _permissionRepository.GetAllAsync(ct);
-                  })
+            var allPermissions = await (_cache != null
+                ? _cache.GetOrCreateAsync("perm:catalog:v1", async e =>
+                {
+                    e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20);
+                    return await _permissionRepository.GetAllAsync(ct);
+                })
                 : _permissionRepository.GetAllAsync(ct)) ?? new List<Permission>();
 
+            // Chỉ lấy permission đang active
+            var all = allPermissions.Where(p => p.IsActive == 1).ToList();
+
             // 2) Lấy role & claims
-            var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleCode, ct)
-                       ?? throw new Exception($"Role '{roleCode}' not found.");
+            var role = await _roleManager.Roles.AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Code == roleCode, ct)
+                ?? throw new Exception($"Role '{roleCode}' not found.");
+
             var claimCodes = await _permissionRepository.GetPermissionCodesOfRoleAsync(role.Id, ct);
             var selected = claimCodes.ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            // 3) Build tree in-memory
+            // 3) Build tree in-memory theo ParentPermissionId (nullable root)
             var byParent = all
-                .GroupBy(p => p.ParentPermissionId ?? 0L) // Dùng 0 cho node gốc
-                .ToDictionary(g => g.Key, g => g.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToList());
+                .GroupBy(p => p.ParentPermissionId) // long? key
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToList()
+                );
 
-            var root = Build(0L); // node gốc là 0
+            var root = Build(null); // root là ParentPermissionId == null
 
             // 4) Stats
             int total = all.Count;
             int assignable = all.Count(x => x.IsAssignable == 1);
             int checkedCount = all.Count(x => x.IsAssignable == 1 && selected.Contains(x.Code));
 
-            return (root, total, assignable, checkedCount);
+            return new PermissionFlagsResult
+            {
+                Root = root,
+                Total = total,
+                Assignable = assignable,
+                Checked = checkedCount
+            };
 
             // --------- local funcs ----------
-            List<PermissionNodeDto> Build(long parentId)
+            List<PermissionNodeDto> Build(long? parentId)
             {
                 if (!byParent.TryGetValue(parentId, out var list)) return new();
 
                 var nodes = new List<PermissionNodeDto>(list.Count);
                 foreach (var p in list)
                 {
-                    // server-side search: giữ node cha nếu có con match
                     var children = Build(p.Id);
+
+                    // Server-side search: giữ node cha nếu có con match
                     if (!string.IsNullOrWhiteSpace(search))
                     {
-                        var s = search.Trim().ToLowerInvariant();
-                        var selfMatch = p.Name.ToLower().Contains(s) || p.Code.ToLower().Contains(s);
+                        var s = search.Trim();
+                        var selfMatch =
+                            p.Name.Contains(s, StringComparison.OrdinalIgnoreCase) ||
+                            p.Code.Contains(s, StringComparison.OrdinalIgnoreCase);
+
                         if (!selfMatch && children.Count == 0) continue;
                     }
 
