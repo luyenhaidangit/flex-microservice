@@ -524,6 +524,20 @@ namespace Flex.AspNetIdentity.Api.Services
                 }
 
                 // ===== Update request status =====
+                switch (request.Action)
+                {
+                    case RequestTypeConstant.Create:
+                        comment = "Yêu cầu thêm mới vai trò.";
+                        break;
+
+                    case RequestTypeConstant.Update:
+                        comment = "Yêu cầu cập nhật vai trò.";
+                        break;
+
+                    default:
+                        throw new Exception($"Unsupported request type: {request.Action}");
+                }
+
                 await UpdateRequestStatus(request, approver, comment);
 
                 await transaction.CommitAsync();
@@ -571,13 +585,13 @@ namespace Flex.AspNetIdentity.Api.Services
             await _roleManager.CreateAsync(newRole);
 
             // ===== Add claims if any =====
-            if (dto.Claims != null && dto.Claims.Any())
-            {
-                foreach (var claim in dto.Claims)
-                {
-                    await _roleManager.AddClaimAsync(newRole, new Claim(claim.Type, claim.Value));
-                }
-            }
+            //if (dto.Claims != null && dto.Claims.Any())
+            //{
+            //    foreach (var claim in dto.Claims)
+            //    {
+            //        await _roleManager.AddClaimAsync(newRole, new Claim(claim.Type, claim.Value));
+            //    }
+            //}
 
             // ===== Update request with created role ID =====
             request.EntityId = newRole.Id;
