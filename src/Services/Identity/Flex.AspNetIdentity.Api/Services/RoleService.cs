@@ -1,6 +1,7 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Models.Permission;
+using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
@@ -46,7 +47,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Get all approved roles with pagination.
         /// </summary>
-        public async Task<PagedResult<RoleApprovedListItemDto>> GetApprovedRolesPagedAsync(GetRolesPagingRequest request)
+        public async Task<PagedResult<RoleApprovedListItemDto>> GetApprovedRolesPagedAsync(GetApproveRolesPagingRequest request)
         {
             // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim().ToLower();
@@ -161,7 +162,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Get all pending roles with pagination.
         /// </summary>
-        public async Task<PagedResult<RolePendingPagingDto>> GetPendingRolesPagedAsync(GetRolesPagingRequest request)
+        public async Task<PagedResult<RolePendingPagingDto>> GetPendingRolesPagedAsync(GetApproveRolesPagingRequest request)
         {
             // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim().ToLower();

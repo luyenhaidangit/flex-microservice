@@ -1,4 +1,5 @@
 ﻿using Flex.AspNetIdentity.Api.Models;
+using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// Get all approved roles with pagination.
         /// </summary>
         [HttpGet("approved")]
-        public async Task<IActionResult> GetPagingApprovedRoles([FromQuery] GetRolesPagingRequest request)
+        public async Task<IActionResult> GetPagingApprovedRoles([FromQuery] GetApproveRolesPagingRequest request)
         {
             var result = await _roleService.GetApprovedRolesPagedAsync(request);
             return Ok(Result.Success(result));
@@ -81,7 +82,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// Get all pending roles with pagination
         /// </summary>
         [HttpGet("pending")]
-        public async Task<IActionResult> GetPagingPendingRolesAsync([FromQuery] GetRolesPagingRequest request)
+        public async Task<IActionResult> GetPagingPendingRolesAsync([FromQuery] GetApproveRolesPagingRequest request)
         {
             var result = await _roleService.GetPendingRolesPagedAsync(request);
             return Ok(Result.Success(result));
