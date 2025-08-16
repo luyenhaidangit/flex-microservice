@@ -2,6 +2,7 @@
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;
+using static Flex.AspNetIdentity.Api.Services.RoleService;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
@@ -134,6 +135,20 @@ namespace Flex.AspNetIdentity.Api.Controllers
         {
             var result = await _roleService.RejectPendingRoleRequestAsync(requestId, dto?.Reason);
             return Ok(Result.Success(result));
+        }
+
+        [HttpGet("{code}/permission-flags")]
+        public async Task<IActionResult> GetPermissionFlags(string code, [FromQuery] string? search, CancellationToken ct)
+        {
+            var (root, total, assignable, @checked) = await _roleService.GetPermissionFlagsAsync(code, search, ct);
+            return Ok(new { root, stats = new { total, assignable, @checked } });
+        }
+
+        [HttpPut("{code}/permissions")]
+        public async Task<IActionResult> SavePermissions(string code, [FromBody] SavePermissionsRequest req, CancellationToken ct)
+        {
+            await _roleService.UpdateRolePermissionsAsync(code, req.PermissionCodes, ct);
+            return NoContent();
         }
     }
 }

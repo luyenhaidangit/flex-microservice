@@ -10,7 +10,7 @@ namespace Flex.AspNetIdentity.Api.Entities
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public long? ParentPermissionId { get; set; }
-        public bool IsAssignable { get; set; } = true;
+        public int IsAssignable { get; set; } = 1;
         public int SortOrder { get; set; }
         public bool IsActive { get; set; } = true;
         #region Navigation Properties

@@ -10,6 +10,8 @@ using Flex.Infrastructure.EF;
 using Flex.Shared.Constants.Common;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
+using Microsoft.Extensions.Caching.Memory;
+using Flex.AspNetIdentity.Api.Models.Permission;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -19,13 +21,24 @@ namespace Flex.AspNetIdentity.Api.Services
         private readonly RoleManager<Role> _roleManager;
         private readonly IRoleRequestRepository _roleRequestRepository;
         private readonly IUserService _userService;
+        private readonly IPermissionRepository _permissionRepository;
+        private readonly IMemoryCache? _cache;
+        private const string ClaimTypePermission = "PERMISSION";
 
-        public RoleService(ILogger<RoleService> logger, IRoleRequestRepository roleRequestRepository, RoleManager<Role> roleManager, IUserService userService)
+        public RoleService(
+            ILogger<RoleService> logger,
+            IRoleRequestRepository roleRequestRepository,
+            RoleManager<Role> roleManager,
+            IUserService userService,
+            IPermissionRepository permissionRepository,
+            IMemoryCache? cache = null)
         {
             _logger = logger;
             _roleRequestRepository = roleRequestRepository;
             _roleManager = roleManager;
             _userService = userService;
+            _permissionRepository = permissionRepository;
+            _cache = cache;
         }
         #region Query
 
@@ -730,5 +743,124 @@ namespace Flex.AspNetIdentity.Api.Services
             await _roleRequestRepository.UpdateAsync(request);
         }
         #endregion
+
+        /// <summary>
+        /// Trả cây Permission + trạng thái tick theo role.
+        /// </summary>
+        public async Task<(List<PermissionNodeDto> Root, int Total, int Assignable, int Checked)>
+            GetPermissionFlagsAsync(string roleCode, string? search = null, CancellationToken ct = default)
+        {
+            // 1) Lấy catalog (cache 20')
+            var all = await (_cache != null
+                ? _cache.GetOrCreateAsync("perm:catalog", async e =>
+                  {
+                      e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20);
+                      return await _permissionRepository.GetAllAsync(ct);
+                  })
+                : _permissionRepository.GetAllAsync(ct)) ?? new List<Permission>();
+
+            // 2) Lấy role & claims
+            var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleCode, ct)
+                       ?? throw new Exception($"Role '{roleCode}' not found.");
+            var claimCodes = await _permissionRepository.GetPermissionCodesOfRoleAsync(role.Id, ct);
+            var selected = claimCodes.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            // 3) Build tree in-memory
+            var byParent = all
+                .GroupBy(p => p.ParentPermissionId)
+                .ToDictionary(g => g.Key, g => g.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToList());
+
+            var root = Build(null);
+
+            // 4) Stats
+            int total = all.Count;
+            int assignable = all.Count(x => x.IsAssignable == 1);
+            int checkedCount = all.Count(x => x.IsAssignable == 1 && selected.Contains(x.Code));
+
+            return (root, total, assignable, checkedCount);
+
+            // --------- local funcs ----------
+            List<PermissionNodeDto> Build(long? parentId)
+            {
+                if (!byParent.TryGetValue(parentId, out var list)) return new();
+
+                var nodes = new List<PermissionNodeDto>(list.Count);
+                foreach (var p in list)
+                {
+                    // server-side search: giữ node cha nếu có con match
+                    var children = Build(p.Id);
+                    if (!string.IsNullOrWhiteSpace(search))
+                    {
+                        var s = search.Trim().ToLowerInvariant();
+                        var selfMatch = p.Name.ToLower().Contains(s) || p.Code.ToLower().Contains(s);
+                        if (!selfMatch && children.Count == 0) continue;
+                    }
+
+                    nodes.Add(new PermissionNodeDto
+                    {
+                        Id = p.Id,
+                        Code = p.Code,
+                        Name = p.Name,
+                        IsAssignable = p.IsAssignable == 1,
+                        IsChecked = selected.Contains(p.Code),
+                        SortOrder = p.SortOrder,
+                        Children = children
+                    });
+                }
+                return nodes;
+            }
+        }
+
+        /// <summary>
+        /// Thay thế toàn bộ permission-claims cho role bằng set mới.
+        /// Tự thêm *.VIEW nếu người dùng chỉ chọn CREATE/UPDATE/DELETE/APPROVE.
+        /// </summary>
+        public async Task UpdateRolePermissionsAsync(string roleCode, IEnumerable<string> permissionCodes, CancellationToken ct = default)
+        {
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Code == roleCode, ct)
+                       ?? throw new Exception($"Role '{roleCode}' not found.");
+
+            // 1) Chuẩn hoá input
+            var input = permissionCodes?
+                .Select(c => c?.Trim())
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase)
+                ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // 2) Tự thêm *.VIEW cho các hành động
+            var toAdd = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var code in input.ToList())
+            {
+                if (EndsWithAny(code, ".CREATE", ".UPDATE", ".DELETE", ".APPROVE"))
+                {
+                    var prefix = code[..code.LastIndexOf('.')];
+                    var viewCode = $"{prefix}.VIEW";
+                    if (!input.Contains(viewCode)) toAdd.Add(viewCode);
+                }
+            }
+            input.UnionWith(toAdd);
+
+            // 3) Replace-set claims (type = PERMISSION)
+            var existing = await _roleManager.GetClaimsAsync(role);
+            var existingPerms = existing.Where(c => c.Type.Equals(ClaimTypePermission, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            foreach (var c in existingPerms)
+                await _roleManager.RemoveClaimAsync(role, c);
+
+            //foreach (var code in input.Distinct(StringComparer.OrdinalIgnoreCase))
+            //    await _roleManager.AddClaimAsync(role, new Claims.Claim(ClaimTypePermission, code));
+        }
+
+        private static bool EndsWithAny(string value, params string[] suffixes)
+        {
+            foreach (var s in suffixes)
+                if (value.EndsWith(s, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
+        public sealed class SavePermissionsRequest
+        {
+            public List<string> PermissionCodes { get; set; } = new();
+        }
     }
 }
