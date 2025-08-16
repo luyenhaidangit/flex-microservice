@@ -1,16 +1,15 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
-using Flex.Shared.Constants.Common;
 
 namespace Flex.AspNetIdentity.Api.Entities
 {
     [Table("ROLES")]
     public class Role : IdentityRole<long>
     {
-        public string Code { get; set; } = string.Empty;
+        public string Code { get; set; } = default!;
         public bool IsActive { get; set; } = true;
-        public string? Description { get; set; } = string.Empty;
-        public string Status { get; set; } = StatusConstant.Approved;
+        public string? Description { get; set; } = default!;
+        public string Status { get; set; } = default!;
 
         #region Constructors
         protected Role() {}
