@@ -476,7 +476,6 @@ namespace Flex.AspNetIdentity.Api.Services
                 await transaction.RollbackAsync();
                 throw new Exception("Failed to create update role request.");
             }
-            await _roleManager.UpdateAsync(role);
 
             return request.Id;
         }
