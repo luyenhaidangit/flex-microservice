@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
-using System.Security.Permissions;
 using System.Text.Json;
 
 namespace Flex.AspNetIdentity.Api.Services
@@ -104,7 +103,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 IsActive = role.IsActive,
                 Description = role.Description,
-                Status = StatusConstant.Approved,
+                Status = RequestStatusConstant.Authorised,
                 PermissionTree = includeTree ? flags.Root : new List<PermissionNodeDto>()
             };
 
@@ -723,7 +722,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
                 if (role != null)
                 {
-                    role.Status = StatusConstant.Approved; // Revert to approved status
+                    role.Status = RequestStatusConstant.Authorised; // Revert to approved status
                     await _roleManager.UpdateAsync(role);
                 }
             }
