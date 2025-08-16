@@ -5,9 +5,9 @@
     /// </summary>
     public class RoleApprovedListItemDto
     {
-        public string Code { get; set; } = default!;
-        public string Name { get; set; } = default!;
-        public string? Description { get; set; }
-        public bool? IsActive { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
     }
 }
