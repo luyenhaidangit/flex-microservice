@@ -17,6 +17,6 @@ namespace Flex.AspNetIdentity.Api.Models
 
         public bool IsActive { get; set; } = true;
 
-        public List<ClaimDto>? Claims { get; set; }
+        public List<string> Claims { get; set; } = new List<string>();
     }
 }

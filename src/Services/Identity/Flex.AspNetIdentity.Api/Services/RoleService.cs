@@ -265,7 +265,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 RoleCode = createData.Code,
                 RoleName = createData.Name,
                 Description = createData.Description,
-                Permissions = createData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
+                //Permissions = createData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
             };
         }
 
