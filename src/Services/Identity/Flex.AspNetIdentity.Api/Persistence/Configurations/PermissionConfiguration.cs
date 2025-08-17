@@ -41,6 +41,11 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
                 .IsRequired()
                 .HasColumnName("IS_ACTIVE");
 
+            builder.Property(x => x.IsCrudRule)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasColumnName("IS_CRUD_RULE");
+
             builder.Property(x => x.ParentPermissionId)
                 .HasColumnName("PARENT_PERMISSION_ID");
 

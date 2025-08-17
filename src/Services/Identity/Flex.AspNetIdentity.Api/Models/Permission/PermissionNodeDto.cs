@@ -8,6 +8,7 @@
         public bool IsAssignable { get; set; }  // node lá hay node nhóm
         public bool IsChecked { get; set; }     // đã gán cho role?
         public bool IsIndeterminate { get; set; } // tính ở FE khi có children mixed
+        public int IsCrudRule { get; set; }
         public int SortOrder { get; set; }
         public List<PermissionNodeDto> Children { get; set; } = new();
     }

@@ -13,6 +13,7 @@ namespace Flex.AspNetIdentity.Api.Entities
         public int IsAssignable { get; set; } = 1;
         public int SortOrder { get; set; }
         public int IsActive { get; set; }
+        public int IsCrudRule { get; set; }
         #region Navigation Properties
         public virtual Permission? ParentPermission { get; set; }
         public virtual ICollection<Permission> Children { get; set; } = new List<Permission>();

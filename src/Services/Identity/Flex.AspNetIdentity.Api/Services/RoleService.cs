@@ -400,6 +400,7 @@ namespace Flex.AspNetIdentity.Api.Services
                         IsAssignable = p.IsAssignable == 1,
                         IsChecked = selected.Contains(p.Code),
                         SortOrder = p.SortOrder,
+                        IsCrudRule = p.IsCrudRule,
                         Children = children
                     });
                 }
