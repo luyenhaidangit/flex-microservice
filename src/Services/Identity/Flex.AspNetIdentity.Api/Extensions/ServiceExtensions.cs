@@ -8,6 +8,7 @@ using Flex.Contracts.Domains.Interfaces;
 using Flex.EntityFrameworkCore.Oracle;
 using Flex.Infrastructure.Common;
 using Flex.Infrastructure.Common.Repositories;
+using Flex.Infrastructure.Redis;
 using Flex.Security;
 using Flex.Shared.Authorization;
 using Flex.Shared.Constants;
@@ -50,6 +51,9 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // Identity
             services.ConfigureAspNetIdentity();
             services.AddAuthenticationJwtToken(configuration);
+
+            // Redis
+            services.ConfigureStackExchangeRedisCache(configuration);
 
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);

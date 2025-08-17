@@ -10,6 +10,7 @@ using Flex.Shared.Constants;
 using Microsoft.Extensions.Caching.Distributed;
 using Flex.Shared.DTOs.System.Config;
 using Flex.System.Api.Validators;
+using Flex.Shared.Cache;
 
 namespace Flex.System.Api.Controllers
 {
@@ -141,7 +142,7 @@ namespace Flex.System.Api.Controllers
         [HttpGet("get-auth-mode")]
         public async Task<IActionResult> GetAuthModeAsync()
         {
-            string? result = await _cache.GetStringAsync(CacheRedisKeyConstant.ConfigAuthMode);
+            string? result = await _cache.GetStringAsync(CacheKeys.ConfigAuthMode);
 
             if (string.IsNullOrEmpty(result))
             {
@@ -154,7 +155,7 @@ namespace Flex.System.Api.Controllers
                 result = config.Value;
 
                 // Set cache value
-                await _cache.SetStringAsync(CacheRedisKeyConstant.ConfigAuthMode, result);
+                await _cache.SetStringAsync(CacheKeys.ConfigAuthMode, result);
             }
 
             return Ok(Result.Success(message: result));
@@ -192,7 +193,7 @@ namespace Flex.System.Api.Controllers
             await _configRepository.SaveChangesAsync();
 
             // Cập nhật lại cache Redis
-            await _cache.SetStringAsync(CacheRedisKeyConstant.ConfigAuthMode, config.Value);
+            await _cache.SetStringAsync(CacheKeys.ConfigAuthMode, config.Value);
 
             return Ok(Result.Success(message: "AuthMode updated successfully."));
         }

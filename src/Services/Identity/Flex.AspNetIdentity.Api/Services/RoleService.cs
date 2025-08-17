@@ -5,10 +5,12 @@ using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
+using Flex.Shared.Cache;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 using System.Text.Json;
@@ -22,7 +24,7 @@ namespace Flex.AspNetIdentity.Api.Services
         private readonly IRoleRequestRepository _roleRequestRepository;
         private readonly IUserService _userService;
         private readonly IPermissionRepository _permissionRepository;
-        private readonly IMemoryCache? _cache;
+        private readonly IDistributedCache _cache;
         private const string ClaimTypePermission = "PERMISSION";
 
         public RoleService(
@@ -31,7 +33,7 @@ namespace Flex.AspNetIdentity.Api.Services
             RoleManager<Role> roleManager,
             IUserService userService,
             IPermissionRepository permissionRepository,
-            IMemoryCache? cache = null)
+            IDistributedCache cache)
         {
             _logger = logger;
             _roleRequestRepository = roleRequestRepository;
@@ -755,19 +757,39 @@ namespace Flex.AspNetIdentity.Api.Services
         }
         #endregion
 
-        /// <summary>
-        /// Trả cây Permission + trạng thái tick theo role.
-        /// </summary>
-        public async Task<PermissionFlagsResult> GetPermissionFlagsAsync(string roleCode, string? search = null,CancellationToken ct = default)
+    //    string? result = await _cache.GetStringAsync(CacheRedisKeyConstant.ConfigAuthMode);
+
+    //        if (string.IsNullOrEmpty(result))
+    //        {
+    //            var config = await _configRepository.FindByCondition(c => c.Key == ConfigKeyConstants.AuthMode).FirstOrDefaultAsync();
+    //            if (config == null)
+    //            {
+    //                return NotFound(Result.Failure(message: "Config not found."));
+    //            }
+
+    //result = config.Value;
+
+                // Set cache value
+                //await _cache.SetStringAsync(CacheRedisKeyConstant.ConfigAuthMode, result);
+//}
+
+/// <summary>
+/// Trả cây Permission + trạng thái tick theo role.
+/// </summary>
+public async Task<PermissionFlagsResult> GetPermissionFlagsAsync(string roleCode, string? search = null,CancellationToken ct = default)
         {
             // ===== Get all permission ft cache =====
-            var allPermissions = await (_cache != null
-                ? _cache.GetOrCreateAsync("perm:catalog:v1", async e =>
-                {
-                    e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20);
-                    return await _permissionRepository.GetAllAsync(ct);
-                })
-                : _permissionRepository.GetAllAsync(ct)) ?? new List<Permission>();
+            string? result = await _cache.GetStringAsync(CacheKeys.ConfigAuthMode);
+
+            //var allPermissions = await (_cache != null
+            //    ? _cache.GetOrCreateAsync("perm:catalog:v1", async e =>
+            //    {
+            //        e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20);
+            //        return await _permissionRepository.GetAllAsync(ct);
+            //    })
+            //    : _permissionRepository.GetAllAsync(ct)) ?? new List<Permission>();
+
+            var allPermissions = new List<Permission>();
 
             // Chỉ lấy permission đang active
             var all = allPermissions.Where(p => p.IsActive == 1).ToList();
