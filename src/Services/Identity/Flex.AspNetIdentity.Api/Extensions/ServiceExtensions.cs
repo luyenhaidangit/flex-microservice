@@ -12,8 +12,6 @@ using Flex.Security;
 using Flex.Shared.Authorization;
 using Flex.Shared.Constants;
 using Flex.Shared.Extensions;
-using Flex.System.Api.Repositories;
-using Flex.System.Api.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
