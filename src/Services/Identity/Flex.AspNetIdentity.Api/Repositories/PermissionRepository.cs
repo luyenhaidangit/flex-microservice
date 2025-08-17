@@ -4,6 +4,7 @@ using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.Contracts.Domains.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Flex.Shared.Authorization;
 
 namespace Flex.AspNetIdentity.Api.Repositories
 {
@@ -31,8 +32,9 @@ namespace Flex.AspNetIdentity.Api.Repositories
         public async Task<List<string>> GetPermissionCodesOfRoleAsync(long roleId, CancellationToken ct = default)
         {
             return await _context.RoleClaims
-                .Where(rc => rc.RoleId == roleId && rc.ClaimType == "PERMISSION")
-                .Select(rc => rc.ClaimValue)
+                .Where(rc => rc.RoleId == roleId && rc.ClaimType == ClaimTypes.Permission)
+                .Select(rc => rc.ClaimValue!)
+                .Where(v => v != null)
                 .Distinct()
                 .ToListAsync(ct);
         }

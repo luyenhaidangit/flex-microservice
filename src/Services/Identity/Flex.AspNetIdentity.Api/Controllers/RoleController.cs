@@ -138,12 +138,12 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(result));
         }
 
-        //[HttpGet("{code}/permission-flags")]
-        //public async Task<IActionResult> GetPermissionFlags(string code, [FromQuery] string? search, CancellationToken ct)
-        //{
-        //    var (root, total, assignable, @checked) = await _roleService.GetPermissionFlagsAsync(code, search, ct);
-        //    return Ok(new { root, stats = new { total, assignable, @checked } });
-        //}
+        [HttpGet("tree-permissions")]
+        public async Task<IActionResult> GetTreePermissions([FromQuery] string? code, CancellationToken ct)
+        {
+            var result = await _roleService.GetPermissionFlagsAsync(code, ct);
+            return Ok(Result.Success(result));
+        }
 
         [HttpPut("{code}/permissions")]
         public async Task<IActionResult> SavePermissions(string code, [FromBody] SavePermissionsRequest req, CancellationToken ct)

@@ -17,7 +17,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<RoleRequestDetailDto> GetPendingRoleByIdAsync(long requestId);
         Task<RoleApprovalResultDto> ApprovePendingRoleRequestAsync(long requestId, string? comment = null);
         Task<RoleApprovalResultDto> RejectPendingRoleRequestAsync(long requestId, string? reason = null);
-        Task<PermissionFlagsResult> GetPermissionFlagsAsync(string roleCode, string? search = null, CancellationToken ct = default);
+        Task<PermissionFlagsResult> GetPermissionFlagsAsync(string? roleCode, CancellationToken ct = default);
         Task UpdateRolePermissionsAsync(string roleCode, IEnumerable<string> permissionCodes, CancellationToken ct = default);
     }
 }

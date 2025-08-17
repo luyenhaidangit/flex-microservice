@@ -1,6 +1,6 @@
 ﻿namespace Flex.Shared.Cache
 {
-    public class CacheKeys
+    public static class CacheKeys
     {
         // Authentication
         public const string JwtBlacklist = "jwt-blacklist";
