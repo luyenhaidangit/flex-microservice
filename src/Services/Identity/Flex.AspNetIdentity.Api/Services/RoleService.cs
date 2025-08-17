@@ -675,13 +675,13 @@ namespace Flex.AspNetIdentity.Api.Services
             await _roleManager.CreateAsync(newRole);
 
             // ===== Add claims if any =====
-            //if (dto.Claims != null && dto.Claims.Any())
-            //{
-            //    foreach (var claim in dto.Claims)
-            //    {
-            //        await _roleManager.AddClaimAsync(newRole, new Claim(claim.Type, claim.Value));
-            //    }
-            //}
+            if (dto.Claims != null && dto.Claims.Any())
+            {
+                foreach (var code in dto.Claims)
+                {
+                    await _roleManager.AddClaimAsync(newRole, new Claim(Shared.Authorization.ClaimTypes.Permission, code));
+                }
+            }
 
             // ===== Update request with created role ID =====
             request.EntityId = newRole.Id;
@@ -721,17 +721,15 @@ namespace Flex.AspNetIdentity.Api.Services
             if (dto.Claims != null)
             {
                 var existingClaims = await _roleManager.GetClaimsAsync(role);
-                
                 // Remove existing claims
                 foreach (var existingClaim in existingClaims)
                 {
                     await _roleManager.RemoveClaimAsync(role, existingClaim);
                 }
-
                 // Add new claims
                 foreach (var claim in dto.Claims)
                 {
-                    await _roleManager.AddClaimAsync(role, new Claim(claim.Type, claim.Value));
+                    await _roleManager.AddClaimAsync(role, new Claim(Shared.Authorization.ClaimTypes.Permission, claim.Value));
                 }
             }
         }
