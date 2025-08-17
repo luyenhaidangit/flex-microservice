@@ -1,5 +1,4 @@
-﻿using Flex.Redis;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -7,6 +6,7 @@ using StackExchange.Redis;
 using System.Text;
 using Flex.Shared.Extensions;
 using Flex.Shared.Constants;
+using Flex.Infrastructure.Redis;
 
 namespace Flex.Security
 {

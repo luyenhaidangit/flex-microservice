@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 
-namespace Flex.Redis
+namespace Flex.Infrastructure.Redis
 {
     public static class RedisExtensions
     {

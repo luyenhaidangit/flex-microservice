@@ -1,4 +1,4 @@
-﻿namespace Flex.Redis
+﻿namespace Flex.Infrastructure.Redis
 {
     public class RedisConstants
     {

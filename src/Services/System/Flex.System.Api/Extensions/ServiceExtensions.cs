@@ -7,9 +7,9 @@ using Flex.System.Api.Repositories;
 using Flex.Infrastructure.Swashbuckle;
 using Flex.Shared.Extensions;
 using Flex.EntityFrameworkCore.Oracle;
-using Flex.Redis;
 using Flex.System.Api.Services.Interfaces;
 using Flex.System.Api.Services;
+using Flex.Infrastructure.Redis;
 
 namespace Flex.System.Api.Extensions
 {
