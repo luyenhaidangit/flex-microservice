@@ -1,7 +1,8 @@
 ﻿namespace Flex.Infrastructure.Redis
 {
-    public class RedisConstants
+    public static class RedisConstants
     {
-        public const string RedisConnectionKey = "RedisConnection";
+        public const string RedisConnectionKey = "RedisConnection"; // connection string name
+        public const string RedisOptionsSection = "RedisOptions";          // optional section for tuning
     }
 }
