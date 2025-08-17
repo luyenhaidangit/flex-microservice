@@ -34,6 +34,7 @@ namespace Flex.Infrastructure.Redis
             cfg.ConnectTimeout = redisOptions.ConnectTimeoutMs;
             cfg.AsyncTimeout = redisOptions.AsyncTimeoutMs;
             cfg.ConnectRetry = redisOptions.ConnectRetry;
+            cfg.ReconnectRetryPolicy = new ExponentialRetry(redisOptions.ReconnectBaseMs);
 
             // Optional: Configure additional Redis options if provided
             services.AddSingleton<IConnectionMultiplexer>(sp =>
