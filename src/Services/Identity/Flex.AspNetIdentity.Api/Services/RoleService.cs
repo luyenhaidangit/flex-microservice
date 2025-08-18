@@ -729,7 +729,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 // Add new claims
                 foreach (var claim in dto.Claims)
                 {
-                    //await _roleManager.AddClaimAsync(role, new Claim(Shared.Authorization.ClaimTypes.Permission, claim.Value));
+                    await _roleManager.AddClaimAsync(role, new Claim(Shared.Authorization.ClaimTypes.Permission, claim));
                 }
             }
         }
