@@ -300,7 +300,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 RoleCode = updateData.Code ?? string.Empty,
                 RoleName = updateData.Name,
                 Description = updateData.Description,
-                Permissions = updateData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
+                //Permissions = updateData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
             };
         }
 
@@ -729,7 +729,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 // Add new claims
                 foreach (var claim in dto.Claims)
                 {
-                    await _roleManager.AddClaimAsync(role, new Claim(Shared.Authorization.ClaimTypes.Permission, claim.Value));
+                    //await _roleManager.AddClaimAsync(role, new Claim(Shared.Authorization.ClaimTypes.Permission, claim.Value));
                 }
             }
         }
