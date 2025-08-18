@@ -73,7 +73,8 @@ namespace Flex.AspNetIdentity.Api.Services
                     Code = x.Code,
                     Name = x.Name,
                     Description = x.Description,
-                    IsActive = x.IsActive
+                    IsActive = x.IsActive,
+                    Status = x.Status
                 })
                 .ToListAsync();
 
