@@ -266,7 +266,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 RoleCode = createData.Code,
                 RoleName = createData.Name,
                 Description = createData.Description,
-                //Permissions = createData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
+                Permissions = createData.Claims ?? new List<string>()
             };
         }
 
@@ -301,7 +301,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 RoleCode = updateData.Code ?? string.Empty,
                 RoleName = updateData.Name,
                 Description = updateData.Description,
-                //Permissions = updateData.Claims?.Select(c => $"{c.Type}:{c.Value}").ToList() ?? new List<string>()
+                Permissions = updateData.Claims ?? new List<string>()
             };
         }
 
@@ -309,7 +309,7 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             if (string.IsNullOrEmpty(request.RequestedData)) return;
 
-            var deleteData = JsonSerializer.Deserialize<RoleDto>(request.RequestedData);
+            var deleteData = JsonSerializer.Deserialize<CreateRoleRequestDto>(request.RequestedData);
             if (deleteData == null) return;
 
             result.OldData = new RoleDetailDataDto
@@ -317,6 +317,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 RoleCode = deleteData.Code,
                 RoleName = deleteData.Name,
                 Description = deleteData.Description,
+                Permissions = deleteData.Claims ?? new List<string>()
             };
         }
 
