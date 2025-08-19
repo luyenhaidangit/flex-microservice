@@ -37,6 +37,7 @@ namespace Flex.System.Api.Services
         {
             // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim().ToLower();
+            var status = request?.IsActive?.Trim().ToUpper() == "Y" ? true : false;
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
@@ -44,7 +45,8 @@ namespace Flex.System.Api.Services
             var roleQuery = _branchRepository.FindAll()
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
-                         EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"));
+                         EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
+                .WhereIf(!string.IsNullOrEmpty(request.IsActive), x => x.IsActive == status);
 
             // ===== Execute query =====
             var total = await roleQuery.CountAsync();
