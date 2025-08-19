@@ -59,6 +59,7 @@ namespace Flex.System.Api.Services
                     Description = x.Description,
                     IsActive = x.IsActive,
                     Status = x.Status,
+                    BranchType = x.BranchType,
                 })
                 .ToListAsync();
 
