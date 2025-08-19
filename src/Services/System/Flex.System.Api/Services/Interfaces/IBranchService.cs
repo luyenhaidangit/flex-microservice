@@ -8,7 +8,7 @@ namespace Flex.System.Api.Services.Interfaces
     {
         // Query
         Task<PagedResult<BranchApprovedItemDto>> GetApprovedBranchesPagedAsync(GetBranchPagingRequest request);
-        Task<BranchDto> GetApprovedBranchByCodeAsync(string code);
+        Task<BranchDetailDto> GetApprovedBranchByCodeAsync(string code);
         Task<List<BranchChangeHistoryDto>> GetApprovedBranchChangeHistoryAsync(string code);
         
         // Command

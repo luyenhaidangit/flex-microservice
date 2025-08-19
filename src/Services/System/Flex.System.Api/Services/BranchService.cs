@@ -69,7 +69,7 @@ namespace Flex.System.Api.Services
             return PagedResult<BranchApprovedItemDto>.Create(pageIndex, pageSize, total, items);
         }
 
-        public async Task<BranchDto> GetApprovedBranchByCodeAsync(string code)
+        public async Task<BranchDetailDto> GetApprovedBranchByCodeAsync(string code)
         {
             var entity = await _branchRepository.GetByCodeAsync(code);
             if (entity == null || entity.Status != StatusConstant.Approved)
@@ -77,14 +77,15 @@ namespace Flex.System.Api.Services
                 throw new Exception($"Branch with code '{code}' not found or not approved.");
             }
 
-            return new BranchDto
+            return new BranchDetailDto
             {
                 Id = entity.Id,
                 Code = entity.Code,
                 Name = entity.Name,
                 Description = entity.Description ?? string.Empty,
                 Status = entity.Status,
-                IsActive = entity.IsActive
+                IsActive = entity.IsActive,
+                BranchType = entity.BranchType
             };
         }
 

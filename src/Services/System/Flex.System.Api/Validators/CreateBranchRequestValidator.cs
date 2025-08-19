@@ -28,7 +28,7 @@ namespace Flex.System.Api.Validators
                 .When(x => !string.IsNullOrWhiteSpace(x.Description));
 
             RuleFor(x => x.BranchType)
-                .Must(bt => bt is null || bt == BranchTypeConstants.Branch || bt == BranchTypeConstants.TransactionOffice || bt == BranchTypeConstants.HeadOffice)
+                .Must(bt => bt == BranchTypeConstants.Branch || bt == BranchTypeConstants.TransactionOffice || bt == BranchTypeConstants.HeadOffice)
                 .WithMessage("Invalid branch type");
         }
     }
