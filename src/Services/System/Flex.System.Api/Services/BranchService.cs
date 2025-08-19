@@ -1,5 +1,4 @@
 using Flex.Infrastructure.EF;
-using Flex.Shared.Constants.Common;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.System.Api.Entities;
@@ -352,6 +351,20 @@ namespace Flex.System.Api.Services
                 // ===== Process entity changes =====
                 await ProcessBranchApproval(request);
 
+                // ===== Default approval comment by action (optional) =====
+                switch (request.Action)
+                {
+                    case RequestTypeConstant.Create:
+                        comment ??= "Yêu cầu thêm mới chi nhánh.";
+                        break;
+                    case RequestTypeConstant.Update:
+                        comment ??= "Yêu cầu cập nhật chi nhánh.";
+                        break;
+                    case RequestTypeConstant.Delete:
+                        comment ??= "Yêu cầu hủy kích hoạt chi nhánh.";
+                        break;
+                }
+
                 // ===== Update request status =====
                 await UpdateRequestStatus(request, approver, comment);
 
@@ -464,10 +477,12 @@ namespace Flex.System.Api.Services
                 Name = requestData.Name,
                 Description = requestData.Description ?? string.Empty,
                 Status = RequestStatusConstant.Authorised,
+                BranchType = requestData.BranchType,
                 IsActive = true
             };
 
-            await _branchRepository.CreateAsync(branch);
+            var createdId = await _branchRepository.CreateAsync(branch);
+            request.EntityId = createdId;
         }
 
         private async Task ProcessUpdateBranch(BranchRequest request)
@@ -500,7 +515,7 @@ namespace Flex.System.Api.Services
             }
 
             branch.IsActive = false;
-            //branch.Status = RequestStatusConstant.Unauthorised.Deleted;
+            branch.Status = RequestStatusConstant.Authorised;
 
             await _branchRepository.UpdateAsync(branch);
         }
