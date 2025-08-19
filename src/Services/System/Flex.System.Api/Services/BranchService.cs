@@ -254,6 +254,7 @@ namespace Flex.System.Api.Services
         {
             // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim().ToLower();
+            var requestType = request?.Type?.Trim().ToUpper();
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
@@ -263,6 +264,8 @@ namespace Flex.System.Api.Services
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     r => EF.Functions.Like(r.Code.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(r.Description.ToLower(), $"%{keyword}%"))
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
+                    r => r.Action == requestType)
                 .AsNoTracking();
 
             var pendingQuery = proposedBranchQuery

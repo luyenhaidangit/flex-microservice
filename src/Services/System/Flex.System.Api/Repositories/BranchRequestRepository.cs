@@ -21,38 +21,6 @@ namespace Flex.System.Api.Repositories
             _context = dbContext;
         }
 
-        public async Task<PagedResult<BranchPendingPagingDto>> GetPendingPagedAsync(GetBranchPagingRequest request)
-        {
-            // ===== Process request parameters =====
-            var keyword = request?.Keyword?.Trim().ToLower();
-            int pageIndex = Math.Max(1, request.PageIndex ?? 1);
-            int pageSize = Math.Max(1, request.PageSize ?? 10);
-
-            // ===== Build query =====
-            var query = _context.BranchRequests
-                .Where(x => x.Status == RequestStatusConstant.Unauthorised);
-
-            // ===== Execute query =====
-            var total = await query.CountAsync();
-            var items = await query
-                .OrderByDescending(x => x.RequestedDate)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .Select(x => new BranchPendingPagingDto
-                {
-                    Id = x.Id,
-                    //EntityCode = x.EntityCode,
-                    Action = x.Action,
-                    Status = x.Status,
-                    CreatedBy = x.MakerId,
-                    CreatedDate = x.RequestedDate
-                })
-                .ToListAsync();
-
-            // ===== Return result =====
-            return PagedResult<BranchPendingPagingDto>.Create(pageIndex, pageSize, total, items);
-        }
-
         public async Task<BranchRequest?> GetPendingByIdAsync(long requestId)
         {
             return await _context.BranchRequests

@@ -9,7 +9,6 @@ namespace Flex.System.Api.Repositories.Interfaces
 {
     public interface IBranchRequestRepository : IRepositoryBase<BranchRequest, long, SystemDbContext>
     {
-        Task<PagedResult<BranchPendingPagingDto>> GetPendingPagedAsync(GetBranchPagingRequest request);
         Task<BranchRequest?> GetPendingByIdAsync(long requestId);
     }
 }
