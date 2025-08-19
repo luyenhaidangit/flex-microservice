@@ -91,8 +91,45 @@ namespace Flex.System.Api.Services
 
         public async Task<List<BranchChangeHistoryDto>> GetApprovedBranchChangeHistoryAsync(string code)
         {
-            // Implementation for change history
-            throw new NotImplementedException();
+            // ===== Find branch by code =====
+            var branch = await _branchRepository.GetByCodeAsync(code);
+            if (branch == null)
+            {
+                throw new Exception($"Branch with code '{code}' not exists.");
+            }
+
+            // ===== Get branch requests by entity Id =====
+            var branchId = branch.Id;
+
+            var requests = await _branchRequestRepository
+                .FindAll()
+                .Where(r => r.EntityId == branchId)
+                .OrderByDescending(r => r.RequestedDate)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.Action,
+                    r.MakerId,
+                    r.RequestedDate,
+                    r.CheckerId,
+                    r.ApproveDate,
+                    r.Comments
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            var historyItems = requests.Select(r => new BranchChangeHistoryDto
+            {
+                Id = r.Id,
+                Operation = r.Action,
+                RequestedBy = r.MakerId,
+                ApprovedBy = r.CheckerId,
+                RequestedDate = r.RequestedDate,
+                ApprovedDate = r.ApproveDate,
+                Comments = r.Comments
+            }).ToList();
+
+            return historyItems;
         }
         #endregion
 

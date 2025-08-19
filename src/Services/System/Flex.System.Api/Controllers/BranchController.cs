@@ -38,6 +38,16 @@ namespace Flex.System.Api.Controllers
         }
 
         /// <summary>
+        /// Get approved branch history by code.
+        /// </summary>
+        [HttpGet("{code}/history")]
+        public async Task<IActionResult> GetApprovedBranchChangeHistory(string code)
+        {
+            var result = await _branchService.GetApprovedBranchChangeHistoryAsync(code);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
         /// Create branch request.
         /// </summary>
         [HttpPost]
