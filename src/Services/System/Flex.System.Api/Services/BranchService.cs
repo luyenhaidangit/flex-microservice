@@ -4,10 +4,10 @@ using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.System.Api.Entities;
 using Flex.System.Api.Models;
+using Flex.System.Api.Models.Branch;
 using Flex.System.Api.Persistence;
 using Flex.System.Api.Repositories.Interfaces;
 using Flex.System.Api.Services.Interfaces;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -33,11 +33,10 @@ namespace Flex.System.Api.Services
         }
 
         #region Query
-        public async Task<PagedResult<BranchListItemDto>> GetApprovedBranchesPagedAsync(GetBranchPagingRequest request)
+        public async Task<PagedResult<BranchApprovedItemDto>> GetApprovedBranchesPagedAsync(GetBranchPagingRequest request)
         {
             // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim().ToLower();
-            var status = request?.IsActive?.Trim().ToUpper() == "Y" ? true : false;
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
@@ -53,17 +52,18 @@ namespace Flex.System.Api.Services
                 .OrderBy(x => x.Id)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
-                .Select(x => new BranchListItemDto
+                .Select(x => new BranchApprovedItemDto
                 {
                     Code = x.Code,
                     Name = x.Name,
                     Description = x.Description,
-                    IsActive = x.IsActive
+                    IsActive = x.IsActive,
+                    Status = x.Status,
                 })
                 .ToListAsync();
 
             // ===== Return result =====
-            return PagedResult<BranchListItemDto>.Create(pageIndex, pageSize, total, items);
+            return PagedResult<BranchApprovedItemDto>.Create(pageIndex, pageSize, total, items);
         }
 
         public async Task<BranchDto> GetApprovedBranchByCodeAsync(string code)

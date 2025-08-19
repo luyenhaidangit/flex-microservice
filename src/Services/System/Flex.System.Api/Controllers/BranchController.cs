@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Flex.System.Api.Models;
 using Flex.System.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
+using Flex.System.Api.Models.Branch;
 
 namespace Flex.System.Api.Controllers
 {

@@ -8,6 +8,7 @@ using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.System.Api.Persistence;
 using Flex.Infrastructure.EF;
+using Flex.System.Api.Models.Branch;
 
 namespace Flex.System.Api.Repositories
 {
@@ -24,17 +25,12 @@ namespace Flex.System.Api.Repositories
         {
             // ===== Process request parameters =====
             var keyword = request?.Keyword?.Trim().ToLower();
-            var requestType = request?.RequestType?.Trim().ToUpper();
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
             // ===== Build query =====
             var query = _context.BranchRequests
-                .Where(x => x.Status == RequestStatusConstant.Unauthorised)
-                //.WhereIf(!string.IsNullOrEmpty(keyword),
-                //    x => EF.Functions.Like(x.EntityCode.ToLower(), $"%{keyword}%"))
-                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
-                    x => x.Action == requestType);
+                .Where(x => x.Status == RequestStatusConstant.Unauthorised);
 
             // ===== Execute query =====
             var total = await query.CountAsync();

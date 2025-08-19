@@ -10,9 +10,11 @@ namespace Flex.System.Api.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Branch> builder)
         {
             builder.ToTable("BRANCHES");
-
-            // Key
             builder.HasKey(b => b.Id);
+
+            // Id
+            builder.Property(x => x.Id)
+                .HasColumnName("ID");
 
             // Code - bắt buộc, unique
             builder.Property(b => b.Code)

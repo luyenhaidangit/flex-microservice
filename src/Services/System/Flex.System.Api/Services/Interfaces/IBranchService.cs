@@ -1,12 +1,13 @@
 using Flex.System.Api.Models;
 using Flex.Shared.SeedWork;
+using Flex.System.Api.Models.Branch;
 
 namespace Flex.System.Api.Services.Interfaces
 {
     public interface IBranchService
     {
         // Query
-        Task<PagedResult<BranchListItemDto>> GetApprovedBranchesPagedAsync(GetBranchPagingRequest request);
+        Task<PagedResult<BranchApprovedItemDto>> GetApprovedBranchesPagedAsync(GetBranchPagingRequest request);
         Task<BranchDto> GetApprovedBranchByCodeAsync(string code);
         Task<List<BranchChangeHistoryDto>> GetApprovedBranchChangeHistoryAsync(string code);
         

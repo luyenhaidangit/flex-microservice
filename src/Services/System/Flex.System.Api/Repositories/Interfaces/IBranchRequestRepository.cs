@@ -3,6 +3,7 @@ using Flex.System.Api.Models;
 using Flex.Shared.SeedWork;
 using Flex.Contracts.Domains.Interfaces;
 using Flex.System.Api.Persistence;
+using Flex.System.Api.Models.Branch;
 
 namespace Flex.System.Api.Repositories.Interfaces
 {
