@@ -42,7 +42,6 @@ namespace Flex.System.Api.Services
 
             // ===== Build query =====
             var roleQuery = _branchRepository.FindAll()
-                .Where(x => x.Status == RequestStatusConstant.Authorised)
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
