@@ -42,6 +42,7 @@ namespace Flex.System.Api.Services
 
             // ===== Build query =====
             var roleQuery = _branchRepository.FindAll()
+                .Where(x => x.Status == RequestStatusConstant.Authorised)
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
@@ -55,6 +56,7 @@ namespace Flex.System.Api.Services
                 .Take(pageSize)
                 .Select(x => new BranchApprovedItemDto
                 {
+                    Id = x.Id,
                     Code = x.Code,
                     Name = x.Name,
                     Description = x.Description,
@@ -183,13 +185,28 @@ namespace Flex.System.Api.Services
             }
 
             // ===== Create update request =====
+            // ===== Check duplicate pending request via view =====
+            var hasPending = await _dbContext.ProposedBranches
+                .AsNoTracking()
+                .CountAsync(v => v.Status == RequestStatusConstant.Unauthorised && v.EntityId == existingEntity.Id) > 0;
+            if (hasPending)
+            {
+                throw new Exception($"Pending branch update request already exists for code '{code}'.");
+            }
+
             var branchRequest = new BranchRequest
             {
                 Action = RequestTypeConstant.Update,
                 EntityId = existingEntity.Id,
                 //EntityCode = code,
                 Status = RequestStatusConstant.Unauthorised,
-                RequestedData = JsonSerializer.Serialize(dto),
+                RequestedData = JsonSerializer.Serialize(new
+                {
+                    Name = dto.Name?.Trim(),
+                    Description = dto.Description?.Trim(),
+                    BranchType = dto.BranchType,
+                    IsActive = dto.IsActive
+                }),
                 //OriginalData = JsonSerializer.Serialize(new
                 //{
                 //    Name = existingEntity.Name,
@@ -223,6 +240,15 @@ namespace Flex.System.Api.Services
             }
 
             // ===== Create delete request =====
+            // ===== Check duplicate pending request via view =====
+            var hasPending = await _dbContext.ProposedBranches
+                .AsNoTracking()
+                .CountAsync(v => v.Status == RequestStatusConstant.Unauthorised && v.EntityId == existingEntity.Id) > 0;
+            if (hasPending)
+            {
+                throw new Exception($"Pending branch delete request already exists for code '{code}'.");
+            }
+
             var branchRequest = new BranchRequest
             {
                 Action = RequestTypeConstant.Delete,
@@ -499,8 +525,10 @@ namespace Flex.System.Api.Services
                 throw new Exception($"Branch with ID '{request.EntityId}' not found.");
             }
 
-            branch.Name = requestData.Name;
-            branch.Description = requestData.Description ?? string.Empty;
+            branch.Name = requestData.Name?.Trim() ?? branch.Name;
+            branch.Description = requestData.Description?.Trim() ?? string.Empty;
+            branch.BranchType = requestData.BranchType;
+            branch.IsActive = requestData.IsActive;
             branch.Status = RequestStatusConstant.Authorised;
 
             await _branchRepository.UpdateAsync(branch);
