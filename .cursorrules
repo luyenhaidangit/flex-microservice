@@ -105,14 +105,17 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 Goal: Triển khai chức năng Quản lý Người sử dụng (User Management) theo mô hình maker-checker, thống nhất với Role Management.
 
 [X] Discovery: Rà soát Identity/Role, entity `User`, `UserRequestHeader/Data`, validator hiện có
-[ ] Design: API spec cho Users (approved/pending, create/update/delete requests, approve/reject, assign roles, lock/unlock, reset password)
-[ ] DTO & Validators: Tạo `CreateUserRequestDto`, `UpdateUserRequestDto`, `DeleteUserRequestDto`, `GetUsersPagingRequest`, `AssignRolesRequest` (chỉ dùng FluentValidation)
-[ ] Service: Viết `UserAdminService` (tách khỏi `UserService` hiện có) theo pattern `RoleService` (query + command + approve/reject)
-[ ] Controller: `UserController` route `api/users` bám conventions như `RoleController`
-[ ] DI: Đăng ký service/repo vào `ServiceExtensions`
-[ ] Security: 2FA optional, audit log, rate limit, log trail
-[ ] UI spec: Form tối giản (username, fullName, email, phone, branch, roles). Không cho nhập password trực tiếp; cung cấp reset-password flow
-[ ] Migration: Seed quyền `USERS.*` (SKIP theo yêu cầu; chỉ thực hiện khi được yêu cầu cụ thể), cập nhật policy kiểm soát
+[ ] Design: API spec Users (approved CRUD immediate, assign-roles, lock/unlock, reset-password). KHÔNG dùng USER_REQUEST_*.
+[X] DTO & Validators: `CreateUserRequestDto`, `UpdateUserRequestDto`, `DeleteUserRequestDto`, `GetUsersPagingRequest`, `AssignRolesRequest` (FluentValidation)
+[X] Service: `UserAdminService` (query approved + commands immediate)
+[ ] Controller: đảm bảo `Route("api/users")`, gắn policy `USERS.*`
+[X] DI: Đăng ký `IUserAdminService`
+[ ] Auth token: thêm claims Permission vào JWT ở `AuthController.Login`
+[ ] RoleService: hoàn thiện `UpdateRolePermissionsAsync` (add lại claims sau khi remove)
+[ ] Validation branch: implement `IBranchService.IsBranchExistsAsync` và rule cho create/update
+[ ] Security: audit log thao tác admin, rate limit cho lock/unlock/reset/assign-roles; 2FA optional
+[ ] UI spec: Form tối giản, không nhập password; nút gửi link đặt mật khẩu
+[ ] Migration: Seed quyền `USERS.*` (SKIP theo yêu cầu; chỉ thực hiện khi được yêu cầu cụ thể)
 
 Notes:
 - Không trộn DataAnnotations vào DTO mới; chỉ dùng FluentValidation cho validate input
