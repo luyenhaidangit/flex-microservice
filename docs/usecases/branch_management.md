@@ -118,14 +118,17 @@ CREATE INDEX IX_BRANCH_REQ_REQUESTED_DATE ON BRANCH_REQUESTS(REQUESTED_DATE);
 
 ## 8. API Endpoints
 
-### 8.1. Quản lý chi nhánh đã duyệt
-- `GET /api/branch` - Lấy danh sách chi nhánh đã duyệt (có phân trang)
-- `GET /api/branch/{code}` - Lấy thông tin chi nhánh theo mã
-- `POST /api/branch` - Tạo yêu cầu tạo mới chi nhánh
-- `PUT /api/branch/{code}` - Tạo yêu cầu cập nhật chi nhánh
-- `DELETE /api/branch/{code}` - Tạo yêu cầu xóa chi nhánh
+### 8.1. Quản lý chi nhánh đã duyệt (theo pattern Role)
+- `GET /api/branch/approved` - Lấy danh sách chi nhánh đã duyệt (có phân trang)
+- `GET /api/branch/approved/{code}` - Lấy thông tin chi nhánh theo mã
+- `GET /api/branch/approved/{code}/history` - Lấy lịch sử thay đổi của chi nhánh đã duyệt
 
-### 8.2. Quản lý yêu cầu chờ duyệt
+### 8.2. Tạo yêu cầu (Maker)
+- `POST /api/branch/requests/create` - Tạo yêu cầu tạo mới chi nhánh
+- `POST /api/branch/approved/{code}/update` - Tạo yêu cầu cập nhật chi nhánh
+- `POST /api/branch/approved/{code}/delete` - Tạo yêu cầu xóa chi nhánh
+
+### 8.3. Quản lý yêu cầu chờ duyệt (Checker)
 - `GET /api/branch/pending` - Lấy danh sách yêu cầu chờ duyệt
 - `GET /api/branch/pending/{requestId}` - Lấy chi tiết yêu cầu chờ duyệt
 - `POST /api/branch/pending/{requestId}/approve` - Duyệt yêu cầu

@@ -161,7 +161,7 @@ namespace Flex.System.Api.Services
                 EntityId = 0,
                 MakerId = requester,
                 RequestedDate = DateTime.UtcNow,
-                Comments = "Yêu cầu thêm mới vai trò.",
+                Comments = "Yêu cầu thêm mới chi nhánh.",
                 RequestedData = JsonSerializer.Serialize(request),
             };
 
@@ -249,27 +249,46 @@ namespace Flex.System.Api.Services
                 throw new Exception($"Pending branch delete request already exists for code '{code}'.");
             }
 
+            // ===== Build snapshot of current branch for audit/review =====
+            var currentSnapshot = new BranchDetailDto
+            {
+                Id = existingEntity.Id,
+                Code = existingEntity.Code,
+                Name = existingEntity.Name,
+                Description = existingEntity.Description ?? string.Empty,
+                IsActive = existingEntity.IsActive,
+                BranchType = existingEntity.BranchType,
+                Status = existingEntity.Status
+            };
+
             var branchRequest = new BranchRequest
             {
                 Action = RequestTypeConstant.Delete,
                 EntityId = existingEntity.Id,
-                //EntityCode = code,
                 Status = RequestStatusConstant.Unauthorised,
-                RequestedData = JsonSerializer.Serialize(request),
-                //OriginalData = JsonSerializer.Serialize(new
-                //{
-                //    Name = existingEntity.Name,
-                //    Description = existingEntity.Description ?? string.Empty,
-                //    IsActive = existingEntity.IsActive
-                //}),
-                MakerId = requester
+                RequestedData = JsonSerializer.Serialize(currentSnapshot),
+                MakerId = requester,
+                RequestedDate = DateTime.UtcNow,
+                Comments = string.IsNullOrWhiteSpace(request?.Reason) ? "Yêu cầu xóa chi nhánh." : request.Reason
             };
 
-            // ===== Update entity status =====
-            existingEntity.Status = RequestStatusConstant.Unauthorised;
-            await _branchRepository.UpdateAsync(existingEntity);
+            // ===== Transaction: create request + update entity status =====
+            await using var transaction = await _branchRequestRepository.BeginTransactionAsync();
+            try
+            {
+                await _branchRequestRepository.CreateAsync(branchRequest);
 
-            await _branchRequestRepository.CreateAsync(branchRequest);
+                existingEntity.Status = RequestStatusConstant.Unauthorised;
+                await _branchRepository.UpdateAsync(existingEntity);
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw new Exception("Failed to create delete branch request.");
+            }
+
             return branchRequest.Id;
         }
         #endregion

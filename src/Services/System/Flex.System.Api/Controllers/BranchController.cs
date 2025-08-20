@@ -20,7 +20,7 @@ namespace Flex.System.Api.Controllers
         /// <summary>
         /// Get all approved branches with pagination.
         /// </summary>
-        [HttpGet]
+        [HttpGet("approved")]
         public async Task<IActionResult> GetApprovedBranches([FromQuery] GetBranchPagingRequest request)
         {
             var result = await _branchService.GetApprovedBranchesPagedAsync(request);
@@ -30,7 +30,7 @@ namespace Flex.System.Api.Controllers
         /// <summary>
         /// Get approved branch by code.
         /// </summary>
-        [HttpGet("{code}")]
+        [HttpGet("approved/{code}")]
         public async Task<IActionResult> GetApprovedBranchByCode(string code)
         {
             var result = await _branchService.GetApprovedBranchByCodeAsync(code);
@@ -40,7 +40,7 @@ namespace Flex.System.Api.Controllers
         /// <summary>
         /// Get approved branch history by code.
         /// </summary>
-        [HttpGet("{code}/history")]
+        [HttpGet("approved/{code}/history")]
         public async Task<IActionResult> GetApprovedBranchChangeHistory(string code)
         {
             var result = await _branchService.GetApprovedBranchChangeHistoryAsync(code);
@@ -50,31 +50,31 @@ namespace Flex.System.Api.Controllers
         /// <summary>
         /// Create branch request.
         /// </summary>
-        [HttpPost]
+        [HttpPost("requests/create")]
         public async Task<IActionResult> CreateBranchRequest([FromBody] CreateBranchRequestDto request)
         {
             var requestId = await _branchService.CreateBranchRequestAsync(request);
-            return Ok(Result.Success(new { RequestId = requestId }));
+            return Ok(Result.Success(requestId));
         }
 
         /// <summary>
         /// Create update branch request.
         /// </summary>
-        [HttpPut("{code}")]
+        [HttpPost("approved/{code}/update")]
         public async Task<IActionResult> CreateUpdateBranchRequest(string code, [FromBody] UpdateBranchRequestDto request)
         {
             var requestId = await _branchService.CreateUpdateBranchRequestAsync(code, request);
-            return Ok(Result.Success(new { RequestId = requestId }));
+            return Ok(Result.Success(requestId));
         }
 
         /// <summary>
         /// Create delete branch request.
         /// </summary>
-        [HttpDelete("{code}")]
+        [HttpPost("approved/{code}/delete")]
         public async Task<IActionResult> CreateDeleteBranchRequest(string code, [FromBody] DeleteBranchRequestDto request)
         {
             var requestId = await _branchService.CreateDeleteBranchRequestAsync(code, request);
-            return Ok(Result.Success(new { RequestId = requestId }));
+            return Ok(Result.Success(requestId));
         }
 
         /// <summary>
