@@ -92,6 +92,7 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 - You have a python venv in ./venv. Always use (activate) it when doing python development. First, to check whether 'uv' is available, use `which uv`. If that's the case, first activate the venv, and then use `uv pip install` to install packages. Otherwise, fall back to `pip`.
 - Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
+- Không tự tạo seed (permissions/users/roles/…) nếu không có yêu cầu rõ ràng từ PO. Đặc biệt: KHÔNG seed quyền `USERS.*` mặc định trừ khi được yêu cầu.
 
 ## Cursor learned
 
@@ -111,7 +112,7 @@ Goal: Triển khai chức năng Quản lý Người sử dụng (User Management
 [ ] DI: Đăng ký service/repo vào `ServiceExtensions`
 [ ] Security: 2FA optional, audit log, rate limit, log trail
 [ ] UI spec: Form tối giản (username, fullName, email, phone, branch, roles). Không cho nhập password trực tiếp; cung cấp reset-password flow
-[ ] Migration: Seed quyền `USERS.*`, cập nhật policy kiểm soát
+[ ] Migration: Seed quyền `USERS.*` (SKIP theo yêu cầu; chỉ thực hiện khi được yêu cầu cụ thể), cập nhật policy kiểm soát
 
 Notes:
 - Không trộn DataAnnotations vào DTO mới; chỉ dùng FluentValidation cho validate input
