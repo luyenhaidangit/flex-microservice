@@ -101,3 +101,19 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - When searching for recent news, use the current year (2025) instead of previous years, or simply use the "recent" keyword to get the latest information
 
 # Scratchpad
+Goal: Triển khai chức năng Quản lý Người sử dụng (User Management) theo mô hình maker-checker, thống nhất với Role Management.
+
+[X] Discovery: Rà soát Identity/Role, entity `User`, `UserRequestHeader/Data`, validator hiện có
+[ ] Design: API spec cho Users (approved/pending, create/update/delete requests, approve/reject, assign roles, lock/unlock, reset password)
+[ ] DTO & Validators: Tạo `CreateUserRequestDto`, `UpdateUserRequestDto`, `DeleteUserRequestDto`, `GetUsersPagingRequest`, `AssignRolesRequest` (chỉ dùng FluentValidation)
+[ ] Service: Viết `UserAdminService` (tách khỏi `UserService` hiện có) theo pattern `RoleService` (query + command + approve/reject)
+[ ] Controller: `UserController` route `api/users` bám conventions như `RoleController`
+[ ] DI: Đăng ký service/repo vào `ServiceExtensions`
+[ ] Security: 2FA optional, audit log, rate limit, log trail
+[ ] UI spec: Form tối giản (username, fullName, email, phone, branch, roles). Không cho nhập password trực tiếp; cung cấp reset-password flow
+[ ] Migration: Seed quyền `USERS.*`, cập nhật policy kiểm soát
+
+Notes:
+- Không trộn DataAnnotations vào DTO mới; chỉ dùng FluentValidation cho validate input
+- Sử dụng `UserManager`/`RoleManager` để tạo user khi approve; lưu `UserRequest*` cho pending
+- Trạng thái người dùng dùng `IsActive` + `Lockout`; không xóa cứng
