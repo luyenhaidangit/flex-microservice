@@ -453,3 +453,5 @@ Thumbs.db           # Windows
 # Oracle Wallet files - giữ lại file md
 secrets/flex-oracle-wallet/*
 !secrets/flex-oracle-wallet/flex-oracle-wallet.md
+
+.env
