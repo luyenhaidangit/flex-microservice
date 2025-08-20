@@ -232,6 +232,12 @@ namespace Flex.System.Api.Services
                 throw new Exception($"Branch with code '{code}' not found or not approved.");
             }
 
+            // ===== Guard: prevent duplicate logical deletion =====
+            if (!existingEntity.IsActive)
+            {
+                throw new Exception($"Branch with code '{code}' is already inactive.");
+            }
+
             var requester = _userService.GetCurrentUsername() ?? "system";
             if (string.IsNullOrWhiteSpace(requester))
             {
@@ -248,15 +254,14 @@ namespace Flex.System.Api.Services
                 throw new Exception($"Pending branch delete request already exists for code '{code}'.");
             }
 
-            // ===== Build snapshot of current branch for audit/review =====
-            var currentSnapshot = new BranchDetailDto
+            // ===== Build snapshot of current branch for audit/review (align with Role flow) =====
+            var currentSnapshot = new BranchDto
             {
                 Id = existingEntity.Id,
                 Code = existingEntity.Code,
                 Name = existingEntity.Name,
                 Description = existingEntity.Description ?? string.Empty,
                 IsActive = existingEntity.IsActive,
-                BranchType = existingEntity.BranchType,
                 Status = existingEntity.Status
             };
 
@@ -344,7 +349,7 @@ namespace Flex.System.Api.Services
                 throw new Exception($"Pending branch request with ID '{requestId}' not found.");
             }
 
-            return new BranchRequestDetailDto
+            var result = new BranchRequestDetailDto
             {
                 Id = request.Id,
                 Action = request.Action,
@@ -356,11 +361,31 @@ namespace Flex.System.Api.Services
                 CheckerId = request.CheckerId,
                 ApproveDate = request.ApproveDate,
                 Comments = request.Comments,
-                RequestData = null, // Không thể deserialize vì không biết loại dữ liệu
+                RequestData = null, // Will populate below for supported actions
                 //OriginalData = !string.IsNullOrEmpty(request.OriginalData) 
                 //    ? JsonSerializer.Deserialize<BranchDto>(request.OriginalData) 
                 //    : null
             };
+
+            // ===== Populate request data for DELETE (snapshot of current entity) =====
+            if (request.Action == RequestTypeConstant.Delete && !string.IsNullOrEmpty(request.RequestedData))
+            {
+                try
+                {
+                    // RequestedData was stored as a BranchDetailDto snapshot; deserialize into BranchDto for display
+                    var snapshot = JsonSerializer.Deserialize<BranchDto>(request.RequestedData);
+                    if (snapshot != null)
+                    {
+                        result.RequestData = snapshot;
+                    }
+                }
+                catch
+                {
+                    // Ignore deserialization issues; keep RequestData = null
+                }
+            }
+
+            return result;
         }
 
         public async Task<BranchApprovalResultDto> ApprovePendingBranchRequestAsync(long requestId, string? comment = null)
@@ -563,7 +588,7 @@ namespace Flex.System.Api.Services
             branch.IsActive = false;
             branch.Status = RequestStatusConstant.Authorised;
 
-            await _branchRepository.UpdateAsync(branch);
+            await _branchRepository.DeleteAsync(branch);
         }
 
         private async Task RevertBranchStatusIfNeeded(BranchRequest request)
