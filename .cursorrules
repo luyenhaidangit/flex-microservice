@@ -93,6 +93,7 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - You have a python venv in ./venv. Always use (activate) it when doing python development. First, to check whether 'uv' is available, use `which uv`. If that's the case, first activate the venv, and then use `uv pip install` to install packages. Otherwise, fall back to `pip`.
 - Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
 - Không tự tạo seed (permissions/users/roles/…) nếu không có yêu cầu rõ ràng từ PO. Đặc biệt: KHÔNG seed quyền `USERS.*` mặc định trừ khi được yêu cầu.
+- Mapping entity: Sử dụng EF Core Fluent API qua `IEntityTypeConfiguration<T>` để định nghĩa bảng/cột/index/quan hệ. KHÔNG dùng DataAnnotations (`[Table]`, `[Column]`, `[StringLength]`, …) trên entity.
 
 ## Cursor learned
 
@@ -116,6 +117,10 @@ Goal: Triển khai chức năng Quản lý Người sử dụng (User Management
 [ ] Security: audit log thao tác admin, rate limit cho lock/unlock/reset/assign-roles; 2FA optional
 [ ] UI spec: Form tối giản, không nhập password; nút gửi link đặt mật khẩu
 [ ] Migration: Seed quyền `USERS.*` (SKIP theo yêu cầu; chỉ thực hiện khi được yêu cầu cụ thể)
+
+Progress notes:
+[X] Refactor entity `User` bỏ DataAnnotations; dùng `UserConfiguration` cho mapping
+[ ] Rà soát các entity Identity còn DataAnnotations (nếu có) và chuyển hết sang configuration
 
 Notes:
 - Không trộn DataAnnotations vào DTO mới; chỉ dùng FluentValidation cho validate input
