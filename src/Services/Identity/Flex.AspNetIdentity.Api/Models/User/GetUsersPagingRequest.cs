@@ -10,9 +10,6 @@ namespace Flex.AspNetIdentity.Api.Models.User
 
         protected override Dictionary<string, string> OrderByMappings => new()
         {
-            { "userName", nameof(Entities.User.UserName) },
-            { "email", nameof(Entities.User.Email) },
-            { "fullName", nameof(Entities.User.FullName) }
         };
     }
 }

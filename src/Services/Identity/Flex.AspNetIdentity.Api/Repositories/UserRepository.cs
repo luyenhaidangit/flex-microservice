@@ -17,7 +17,7 @@ namespace Flex.AspNetIdentity.Api.Repositories
 			_context = dbContext;
 		}
 
-		public async Task<Flex.Shared.SeedWork.PagedResult<UserApprovedListItemDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default)
+		public async Task<PagedResult<UserApprovedListItemDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default)
 		{
 			var keyword = request?.Keyword?.Trim().ToLower();
 			int pageIndex = Math.Max(1, request.PageIndex ?? 1);

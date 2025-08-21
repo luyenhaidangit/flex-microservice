@@ -109,6 +109,7 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 ## Scratchpad Notes
 - UserRepository: dùng `ToPagedResultAsync` để tránh Dynamic LINQ và resolve ambiguous `PagedResult<>`.
+ - Nếu không có yêu cầu rõ ràng về sort fields, để `OrderByMappings` rỗng trong `PagingRequest` (không map mặc định) nhằm tránh nhầm lẫn về tiêu chí sắp xếp.
 
 # Playbook: Luồng triển khai chức năng quản lý (ví dụ: User)
 
