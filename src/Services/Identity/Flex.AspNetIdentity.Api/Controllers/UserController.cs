@@ -8,25 +8,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/users")]
     [ApiController]
     public class UserController : ControllerBase
     { 
         private readonly UserManager<User> _userManager;
         private readonly ILogger<AuthController> _logger;
-        private readonly IBranchService _branchService;
         private readonly IUserService _userAdminService;
 
-        public UserController(UserManager<User> userManager, ILogger<AuthController> logger, IBranchService branchService, IUserService userAdminService)
+        public UserController(UserManager<User> userManager, ILogger<AuthController> logger, IUserService userAdminService)
         {
             _userManager = userManager;
             _logger = logger;
-            _branchService = branchService;
             _userAdminService = userAdminService;
         }
 
         [HttpGet("approved")]
-        [Authorize(Policy = "USERS.VIEW")]
+        //[Authorize(Policy = "USERS.VIEW")]
         public async Task<IActionResult> GetApprovedUsers([FromQuery] GetUsersPagingRequest request, CancellationToken cancellationToken)
         {
             var result = await _userAdminService.GetApprovedUsersPagedAsync(request, cancellationToken);

@@ -27,6 +27,19 @@
       "UpstreamHttpMethod": [ "GET", "POST" ]
     },
     {
+      "RouteName": "UserService",
+      "DownstreamPathTemplate": "/api/users/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/users/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
+    },
+    {
       "RouteName": "ConfigService",
       "DownstreamPathTemplate": "/api/config/{everything}",
       "DownstreamScheme": "https",
