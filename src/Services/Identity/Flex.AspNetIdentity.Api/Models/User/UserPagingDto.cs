@@ -1,6 +1,6 @@
 ﻿namespace Flex.AspNetIdentity.Api.Models.User
 {
-    public class UserListItemDto
+    public class UserPagingDto
     {
         public string UserName { get; set; } = string.Empty;
         public string? FullName { get; set; }
