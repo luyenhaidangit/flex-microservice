@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Flex.EntityFrameworkCore\Flex.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\Flex.EntityFrameworkCore\Flex.Infrastructure.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
 </Project>

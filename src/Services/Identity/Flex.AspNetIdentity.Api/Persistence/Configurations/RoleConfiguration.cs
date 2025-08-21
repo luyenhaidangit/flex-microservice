@@ -1,5 +1,5 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
-using Flex.EntityFrameworkCore.Converters;
+using Flex.Infrastructure.EntityFrameworkCore.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

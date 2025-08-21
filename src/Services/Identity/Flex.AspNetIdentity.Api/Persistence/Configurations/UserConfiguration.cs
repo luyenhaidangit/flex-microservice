@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Flex.AspNetIdentity.Api.Entities;
-using Flex.EntityFrameworkCore.Converters;
+using Flex.Infrastructure.EntityFrameworkCore.Converters;
 
 namespace Flex.AspNetIdentity.Api.Persistence.Configurations
 {

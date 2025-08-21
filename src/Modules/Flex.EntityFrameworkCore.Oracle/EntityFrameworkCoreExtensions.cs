@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Oracle.ManagedDataAccess.Client;
 
-namespace Flex.EntityFrameworkCore.Oracle
+namespace Flex.Infrastructure.EntityFrameworkCore.Oracle
 {
     public static class EntityFrameworkCoreExtensions
     {

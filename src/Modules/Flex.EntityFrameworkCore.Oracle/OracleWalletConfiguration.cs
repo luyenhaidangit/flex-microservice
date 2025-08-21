@@ -1,4 +1,4 @@
-﻿namespace Flex.EntityFrameworkCore.Oracle
+﻿namespace Flex.Infrastructure.EntityFrameworkCore.Oracle
 {
     public class OracleWalletConfiguration
     {

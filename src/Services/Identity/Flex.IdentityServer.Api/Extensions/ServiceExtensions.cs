@@ -1,7 +1,7 @@
 ﻿using Flex.Infrastructure.Swashbuckle;
 using Flex.Shared.Extensions;
 using Flex.IdentityServer.Api.Persistence;
-using Flex.EntityFrameworkCore.Oracle;
+using Flex.Infrastructure.EntityFrameworkCore.Oracle;
 using Microsoft.EntityFrameworkCore;
 using Flex.IdentityServer.Api.Entities;
 using Microsoft.AspNetCore.Identity;

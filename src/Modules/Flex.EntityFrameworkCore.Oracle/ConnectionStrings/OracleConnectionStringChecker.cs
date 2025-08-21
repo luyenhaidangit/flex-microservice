@@ -2,7 +2,7 @@
 using Flex.Data;
 using Flex.Core.DependencyInjection;
 
-namespace Flex.EntityFrameworkCore.Oracle.ConnectionStrings
+namespace Flex.Infrastructure.EntityFrameworkCore.Oracle.ConnectionStrings
 {
     [Dependency(ReplaceServices = true)]
     public class OracleConnectionStringChecker : IConnectionStringChecker, ITransientDependency

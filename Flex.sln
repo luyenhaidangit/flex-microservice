@@ -83,7 +83,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.OcelotApiGateway", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.EntityFrameworkCore.Oracle", "src\Modules\Flex.EntityFrameworkCore.Oracle\Flex.EntityFrameworkCore.Oracle.csproj", "{CB011BAE-7464-440E-94C3-5F9A1E6DE1CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.EntityFrameworkCore", "src\Modules\Flex.EntityFrameworkCore\Flex.EntityFrameworkCore.csproj", "{BF4F0E34-1850-4953-B128-DC13206B1569}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Infrastructure.EntityFrameworkCore", "src\Modules\Flex.EntityFrameworkCore\Flex.Infrastructure.EntityFrameworkCore.csproj", "{BF4F0E34-1850-4953-B128-DC13206B1569}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.IdentityServer.Api", "src\Services\Identity\Flex.IdentityServer.Api\Flex.IdentityServer.Api.csproj", "{F2F5DA78-6912-4049-BE02-E4CF32220ED2}"
 EndProject

@@ -5,7 +5,7 @@ using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Contracts.Domains.Interfaces;
-using Flex.EntityFrameworkCore.Oracle;
+using Flex.Infrastructure.EntityFrameworkCore.Oracle;
 using Flex.Infrastructure.Common;
 using Flex.Infrastructure.Common.Repositories;
 using Flex.Infrastructure.Redis;

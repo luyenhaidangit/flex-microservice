@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Flex.EntityFrameworkCore.Converters;
+using Flex.Infrastructure.EntityFrameworkCore.Converters;
 using Flex.System.Api.Entities;
 
 namespace Flex.System.Api.Persistence.Configurations

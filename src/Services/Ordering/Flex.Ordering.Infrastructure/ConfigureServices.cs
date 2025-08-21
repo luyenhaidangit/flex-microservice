@@ -2,10 +2,9 @@
 using Flex.Infrastructure.Common;
 using Flex.Ordering.Application.Common.Interfaces;
 using Flex.Ordering.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Flex.EntityFrameworkCore.Oracle;
+using Flex.Infrastructure.EntityFrameworkCore.Oracle;
 using Flex.Infrastructure.Common.Repositories;
 using Flex.Ordering.Infrastructure.Repositories;
 namespace Flex.Ordering.Infrastructure

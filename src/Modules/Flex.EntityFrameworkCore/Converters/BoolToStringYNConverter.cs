@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace Flex.EntityFrameworkCore.Converters
+namespace Flex.Infrastructure.EntityFrameworkCore.Converters
 {
     public class BoolToStringYNConverter : ValueConverter<bool, string>
     {
