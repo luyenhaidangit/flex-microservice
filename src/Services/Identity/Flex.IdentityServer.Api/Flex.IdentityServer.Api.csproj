@@ -26,7 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Shared\Flex.Shared.csproj" />
-    <ProjectReference Include="..\..\..\Modules\Flex.EntityFrameworkCore.Oracle\Flex.EntityFrameworkCore.Oracle.csproj" />
+    <ProjectReference Include="..\..\..\Modules\Flex.EntityFrameworkCore.Oracle\Flex.Infrastructure.EntityFrameworkCore.Oracle.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.Security\Flex.Security.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
   </ItemGroup>
