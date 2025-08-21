@@ -11,4 +11,8 @@
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.8.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Flex.Infrastructure.EntityFrameworkCore.EntityFrameworkCore\Flex.Infrastructure.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
 </Project>

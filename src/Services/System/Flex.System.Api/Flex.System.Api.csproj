@@ -14,8 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Contracts\Flex.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.EntityFrameworkCore.Oracle\Flex.Infrastructure.EntityFrameworkCore.Oracle.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\Modules\Flex.EntityFrameworkCore.Oracle\Flex.Infrastructure.EntityFrameworkCore.Oracle.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.Redis\Flex.Infrastructure.Redis.csproj" />
   </ItemGroup>
 

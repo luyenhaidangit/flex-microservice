@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Flex.Data\Flex.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Configurations\" />
+  </ItemGroup>
+
 </Project>
