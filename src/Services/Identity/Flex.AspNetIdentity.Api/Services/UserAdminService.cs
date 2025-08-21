@@ -28,7 +28,7 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         #region Query - Approved
-        public async Task<PagedResult<UserApprovedListItemDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request)
+        public async Task<PagedResult<UserListItemDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request)
         {
             var keyword = request?.Keyword?.Trim().ToLower();
             int pageIndex = Math.Max(1, request.PageIndex ?? 1);
@@ -46,7 +46,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 .OrderBy(u => u.Id)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
-                .Select(u => new UserApprovedListItemDto
+                .Select(u => new UserListItemDto
                 {
                     UserName = u.UserName ?? string.Empty,
                     FullName = u.FullName,
@@ -58,7 +58,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 })
                 .ToListAsync();
 
-            return PagedResult<UserApprovedListItemDto>.Create(pageIndex, pageSize, total, items);
+            return PagedResult<UserListItemDto>.Create(pageIndex, pageSize, total, items);
         }
 
         public async Task<UserDetailDto> GetApprovedUserByUserNameAsync(string userName)

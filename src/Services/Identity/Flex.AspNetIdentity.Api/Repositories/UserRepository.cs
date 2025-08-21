@@ -17,7 +17,7 @@ namespace Flex.AspNetIdentity.Api.Repositories
 			_context = dbContext;
 		}
 
-		public async Task<PagedResult<UserApprovedListItemDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default)
+		public async Task<PagedResult<UserListItemDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default)
 		{
 			var keyword = request?.Keyword?.Trim().ToLower();
 			int pageIndex = Math.Max(1, request.PageIndex ?? 1);
@@ -36,7 +36,7 @@ namespace Flex.AspNetIdentity.Api.Repositories
 				query = query.Where(u => (u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow) == isLocked);
 			}
 
-			var projected = query.Select(u => new UserApprovedListItemDto
+			var projected = query.Select(u => new UserListItemDto
 			{
 				UserName = u.UserName ?? string.Empty,
 				FullName = u.FullName,
