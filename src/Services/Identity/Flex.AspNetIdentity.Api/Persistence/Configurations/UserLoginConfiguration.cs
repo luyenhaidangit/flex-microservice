@@ -8,7 +8,19 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<UserLogin> builder)
         {
-            builder.ToTable("UserLogins");
+            builder.ToTable("USER_LOGINS");
+
+            builder.Property(ul => ul.LoginProvider)
+                   .HasColumnName("LOGIN_PROVIDER");
+
+            builder.Property(ul => ul.ProviderKey)
+                   .HasColumnName("PROVIDER_KEY");
+
+            builder.Property(ul => ul.ProviderDisplayName)
+                   .HasColumnName("PROVIDER_DISPLAY_NAME");
+
+            builder.Property(ul => ul.UserId)
+                   .HasColumnName("USER_ID");
         }
     }
 }

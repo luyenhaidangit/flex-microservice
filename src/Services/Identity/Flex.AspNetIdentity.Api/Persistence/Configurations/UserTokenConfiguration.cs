@@ -8,7 +8,19 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<UserToken> builder)
         {
-            builder.ToTable("UserTokens");
+            builder.ToTable("USER_TOKENS");
+
+            builder.Property(ut => ut.UserId)
+                   .HasColumnName("USER_ID");
+
+            builder.Property(ut => ut.LoginProvider)
+                   .HasColumnName("LOGIN_PROVIDER");
+
+            builder.Property(ut => ut.Name)
+                   .HasColumnName("NAME");
+
+            builder.Property(ut => ut.Value)
+                   .HasColumnName("VALUE");
         }
     }
 }

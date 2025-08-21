@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Flex.AspNetIdentity.Api.Entities
 {
-    [Table("ROLES")]
     public class Role : IdentityRole<long>
     {
         public string Code { get; set; } = default!;

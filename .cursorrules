@@ -121,6 +121,10 @@ Goal: Triển khai chức năng Quản lý Người sử dụng (User Management
 
 Progress notes:
 [X] Refactor entity `User` bỏ DataAnnotations; dùng `UserConfiguration` cho mapping
+[X] Loại bỏ DataAnnotations khỏi `Entities/Role.cs` để chỉ dùng Fluent API
+[ ] Đồng bộ mapping/tên bảng Identity: dùng UPPER_SNAKE_CASE cho `USER_LOGINS`, `USER_TOKENS`, `USER_CLAIMS`, `ROLE_CLAIMS`, `USER_ROLES`; tạo migration rename tương ứng
+[ ] Đồng bộ kiểu dữ liệu boolean -> `CHAR(1)` với `BoolToStringYNConverter` cho `USERS`: `EMAIL_CONFIRMED`, `PHONE_NUMBER_CONFIRMED`, `TWO_FACTOR_ENABLED`, `LOCKOUT_ENABLED`; tạo migration alter
+[ ] Bổ sung cột `ROLES` theo entity (`CODE`, `IS_ACTIVE`, `DESCRIPTION`, `STATUS`) bằng migration
 [ ] Rà soát các entity Identity còn DataAnnotations (nếu có) và chuyển hết sang configuration
 
 Notes:
