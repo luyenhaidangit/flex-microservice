@@ -149,7 +149,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> SavePermissions(string code, [FromBody] SavePermissionsRequest req, CancellationToken ct)
         {
             await _roleService.UpdateRolePermissionsAsync(code, req.PermissionCodes, ct);
-            return NoContent();
+            return Ok(Result.Success(message: "Update role permissions success"));
         }
     }
 }

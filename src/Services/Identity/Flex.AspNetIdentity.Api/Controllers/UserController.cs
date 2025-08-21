@@ -45,7 +45,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> AssignRoles(string userName, [FromBody] AssignRolesRequest req, CancellationToken ct)
         {
             await _userService.AssignRolesAsync(userName, req.RoleCodes, ct);
-            return NoContent();
+            return Ok(Result.Success(message: "Assign roles success"));
         }
 
         [HttpPost("{userName}/lock")]
@@ -53,7 +53,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> LockUser(string userName)
         {
             await _userService.LockAsync(userName);
-            return NoContent();
+            return Ok(Result.Success(message: "Lock user success"));
         }
 
         [HttpPost("{userName}/unlock")]
@@ -61,7 +61,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> UnlockUser(string userName)
         {
             await _userService.UnlockAsync(userName);
-            return NoContent();
+            return Ok(Result.Success(message: "Unlock user success"));
         }
 
         [HttpPost("{userName}/reset-password")]
@@ -85,7 +85,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> Update(string userName, [FromBody] UpdateUserRequestDto dto)
         {
             await _userService.UpdateUserAsync(userName, dto);
-            return NoContent();
+            return Ok(Result.Success(message: "Update user success"));
         }
 
         [HttpPost("{userName}/delete")]
@@ -93,7 +93,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> Delete(string userName, [FromBody] DeleteUserRequestDto dto)
         {
             await _userService.DeleteUserAsync(userName, dto);
-            return NoContent();
+            return Ok(Result.Success(message: "Delete user success"));
         }
     }
 }

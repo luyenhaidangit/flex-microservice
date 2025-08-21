@@ -107,6 +107,7 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 
 - Tránh xung đột tên `PagedResult<>` giữa `Flex.Shared.SeedWork.PagedResult<T>` và `System.Linq.Dynamic.Core.PagedResult<TSource>`: luôn fully-qualify `Flex.Shared.SeedWork.PagedResult<T>` trong chữ ký method hoặc loại bỏ `System.Linq.Dynamic.Core` khỏi `using`. Ưu tiên sử dụng `QueryableExtensions.ToPagedResultAsync(request)` để paging thay vì tự `OrderBy` với Dynamic LINQ khi không cần thiết.
 - Không xoá comment cũ nếu thay đổi code không làm thay đổi ý nghĩa comment; chỉ bổ sung comment mới khi cần làm rõ thay đổi. Giữ nguyên các template comment dạng "===== ... =====".
+- API không trả dữ liệu phải trả `Ok(Result.Success(message: "..."))` thay vì `NoContent()`.
 
 ## Scratchpad Notes
 - UserRepository: dùng `ToPagedResultAsync` để tránh Dynamic LINQ và resolve ambiguous `PagedResult<>`.
@@ -173,7 +174,7 @@ Goal: Triển khai chức năng Quản lý Người sử dụng (User Management
 [ ] Design: API spec Users (approved CRUD immediate, assign-roles, lock/unlock, reset-password). KHÔNG dùng USER_REQUEST_*.
 [X] DTO & Validators: `CreateUserRequestDto`, `UpdateUserRequestDto`, `DeleteUserRequestDto`, `GetUsersPagingRequest`, `AssignRolesRequest` (FluentValidation)
 [X] Service: `UserAdminService` (query approved + commands immediate)
-[ ] Controller: đảm bảo `Route("api/users")`, gắn policy `USERS.*`
+[X] Controller: đảm bảo `Route("api/users")`, gắn policy `USERS.*`, chuẩn hoá response `Ok(Result.Success(...))`
 [X] DI: Đăng ký `IUserAdminService`
 [ ] Auth token: thêm claims Permission vào JWT ở `AuthController.Login`
 [ ] RoleService: hoàn thiện `UpdateRolePermissionsAsync` (add lại claims sau khi remove)
