@@ -10,6 +10,8 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
         {
             builder.ToTable("USER_LOGINS");
 
+            builder.HasKey(ul => new { ul.LoginProvider, ul.ProviderKey });
+
             builder.Property(ul => ul.LoginProvider)
                    .HasColumnName("LOGIN_PROVIDER");
 

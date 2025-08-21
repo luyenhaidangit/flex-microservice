@@ -10,6 +10,8 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
         {
             builder.ToTable("USER_TOKENS");
 
+            builder.HasKey(ut => new { ut.UserId, ut.LoginProvider, ut.Name });
+
             builder.Property(ut => ut.UserId)
                    .HasColumnName("USER_ID");
 
