@@ -15,9 +15,9 @@ namespace Flex.AspNetIdentity.Api.Controllers
         private readonly UserManager<User> _userManager;
         private readonly ILogger<AuthController> _logger;
         private readonly IBranchService _branchService;
-        private readonly IUserAdminService _userAdminService;
+        private readonly IUserService _userAdminService;
 
-        public UserController(UserManager<User> userManager, ILogger<AuthController> logger, IBranchService branchService, IUserAdminService userAdminService)
+        public UserController(UserManager<User> userManager, ILogger<AuthController> logger, IBranchService branchService, IUserService userAdminService)
         {
             _userManager = userManager;
             _logger = logger;

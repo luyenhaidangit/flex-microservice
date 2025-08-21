@@ -89,8 +89,8 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             // Services
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IUserAdminService, UserAdminService>();
 
             // Repositories
             services.AddScoped<IRoleRequestRepository, RoleRequestRepository>();

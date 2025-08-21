@@ -13,5 +13,3 @@ namespace Flex.AspNetIdentity.Api.Models.User
         };
     }
 }
-
-

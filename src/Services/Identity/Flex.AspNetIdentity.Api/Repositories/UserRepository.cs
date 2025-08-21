@@ -19,35 +19,36 @@ namespace Flex.AspNetIdentity.Api.Repositories
 
 		public async Task<PagedResult<UserPagingDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default)
 		{
-			var keyword = request?.Keyword?.Trim().ToLower();
-			int pageIndex = Math.Max(1, request.PageIndex ?? 1);
-			int pageSize = Math.Max(1, request.PageSize ?? 10);
+			var keyword = request.Keyword?.Trim().ToLowerInvariant();
+			int pageIndex = request.PageIndexValue;
+			int pageSize = request.PageSizeValue;
 
-			var query = _context.Set<User>()
+			var query = _context.Set<User>().AsNoTracking()
 				.WhereIf(!string.IsNullOrEmpty(keyword),
 					u => EF.Functions.Like((u.UserName ?? string.Empty).ToLower(), $"%{keyword}%")
 					  || EF.Functions.Like((u.Email ?? string.Empty).ToLower(), $"%{keyword}%")
 					  || EF.Functions.Like((u.FullName ?? string.Empty).ToLower(), $"%{keyword}%"))
-				.WhereIf(request?.BranchId != null, u => u.BranchId == request!.BranchId);
+				.WhereIf(request.BranchId.HasValue, u => u.BranchId == request.BranchId!.Value)
+                .WhereIf(request.IsLocked.HasValue, u => (u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow) == request.IsLocked);
 
-			if (request?.IsLocked != null)
-			{
-				var isLocked = request.IsLocked.Value;
-				query = query.Where(u => (u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow) == isLocked);
-			}
+            var total = await query.CountAsync(ct);
+            var items = await query
+                .OrderBy(u => u.Id)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new UserPagingDto
+                {
+                    UserName = u.UserName ?? string.Empty,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
+                    BranchId = u.BranchId,
+                    IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
+                    IsActive = true
+                })
+                .ToListAsync(ct);
 
-			var projected = query.Select(u => new UserPagingDto
-			{
-				UserName = u.UserName ?? string.Empty,
-				FullName = u.FullName,
-				Email = u.Email,
-				PhoneNumber = u.PhoneNumber,
-				BranchId = u.BranchId,
-				IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
-				IsActive = true
-			}).AsNoTracking();
-
-			return await projected.ToPagedResultAsync(request);
+            return PagedResult<UserPagingDto>.Create(pageIndex, pageSize, total, items);
 		}
 
 		public async Task<User?> GetByUserNameAsync(string userName, bool asNoTracking = true, CancellationToken ct = default)

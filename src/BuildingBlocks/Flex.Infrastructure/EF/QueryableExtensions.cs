@@ -23,7 +23,7 @@ namespace Flex.Infrastructure.EF
         #endregion
 
         #region Paging
-        public static async Task<Flex.Shared.SeedWork.PagedResult<T>> ToPagedResultAsync<T>(
+        public static async Task<Shared.SeedWork.PagedResult<T>> ToPagedResultAsync<T>(
             this IQueryable<T> query,
             PagingRequest request)
             where T : class
@@ -55,7 +55,7 @@ namespace Flex.Infrastructure.EF
                 .Take(request.PageSize.Value)
                 .ToListAsync();
 
-            return Flex.Shared.SeedWork.PagedResult<T>.Create(
+            return Shared.SeedWork.PagedResult<T>.Create(
                 request.PageIndex.Value,
                 request.PageSize.Value,
                 totalItems,
@@ -65,13 +65,13 @@ namespace Flex.Infrastructure.EF
             );
         }
 
-        public static Flex.Shared.SeedWork.PagedResult<TDestination> MapPagedResult<TSource, TDestination>(
-            this Flex.Shared.SeedWork.PagedResult<TSource> source,
+        public static Shared.SeedWork.PagedResult<TDestination> MapPagedResult<TSource, TDestination>(
+            this Shared.SeedWork.PagedResult<TSource> source,
             IMapper mapper)
         {
             var mappedItems = mapper.Map<List<TDestination>>(source.Items);
 
-            return Flex.Shared.SeedWork.PagedResult<TDestination>.Create(
+            return Shared.SeedWork.PagedResult<TDestination>.Create(
                 source.PageIndex,
                 source.PageSize,
                 source.TotalItems,

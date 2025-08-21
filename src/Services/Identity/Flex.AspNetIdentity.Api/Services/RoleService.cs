@@ -22,7 +22,7 @@ namespace Flex.AspNetIdentity.Api.Services
         private readonly ILogger<RoleService> _logger;
         private readonly RoleManager<Role> _roleManager;
         private readonly IRoleRequestRepository _roleRequestRepository;
-        private readonly IUserService _userService;
+        private readonly ICurrentUserService _userService;
         private readonly IPermissionRepository _permissionRepository;
         private readonly IDistributedCache _cache;
         private const string ClaimTypePermission = "PERMISSION";
@@ -31,7 +31,7 @@ namespace Flex.AspNetIdentity.Api.Services
             ILogger<RoleService> logger,
             IRoleRequestRepository roleRequestRepository,
             RoleManager<Role> roleManager,
-            IUserService userService,
+            ICurrentUserService userService,
             IPermissionRepository permissionRepository,
             IDistributedCache cache)
         {
