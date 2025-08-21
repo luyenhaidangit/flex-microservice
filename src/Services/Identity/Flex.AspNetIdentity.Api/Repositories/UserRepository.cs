@@ -29,26 +29,29 @@ namespace Flex.AspNetIdentity.Api.Repositories
 					  || EF.Functions.Like((u.Email ?? string.Empty).ToLower(), $"%{keyword}%")
 					  || EF.Functions.Like((u.FullName ?? string.Empty).ToLower(), $"%{keyword}%"))
 				.WhereIf(request.BranchId.HasValue, u => u.BranchId == request.BranchId!.Value)
-                .WhereIf(request.IsLocked.HasValue, u => (u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow) == request.IsLocked);
+                .WhereIf(request.IsLocked is true, u => u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow)
+				.WhereIf(request.IsLocked is false, u => !u.LockoutEnd.HasValue || u.LockoutEnd.Value.UtcDateTime <= DateTime.UtcNow);
 
             var total = await query.CountAsync(ct);
-            var items = await query
-                .OrderBy(u => u.Id)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .Select(u => new UserPagingDto
-                {
-                    UserName = u.UserName ?? string.Empty,
-                    FullName = u.FullName,
-                    Email = u.Email,
-                    PhoneNumber = u.PhoneNumber,
-                    BranchId = u.BranchId,
-                    IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
-                    IsActive = true
-                })
-                .ToListAsync(ct);
+			var raw = await query
+				.OrderBy(u => u.Id)
+				.Skip((pageIndex - 1) * pageSize)
+				.Take(pageSize)
+				.Select(u => new { u.UserName, u.FullName, u.Email, u.PhoneNumber, u.BranchId, u.LockoutEnd })
+				.ToListAsync(ct);
 
-            return PagedResult<UserPagingDto>.Create(pageIndex, pageSize, total, items);
+			var items = raw.Select(u => new UserPagingDto
+			{
+				UserName = u.UserName ?? string.Empty,
+				FullName = u.FullName,
+				Email = u.Email,
+				PhoneNumber = u.PhoneNumber,
+				BranchId = u.BranchId,
+				IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
+				IsActive = true
+			}).ToList();
+
+			return PagedResult<UserPagingDto>.Create(pageIndex, pageSize, total, items);
 		}
 
 		public async Task<User?> GetByUserNameAsync(string userName, bool asNoTracking = true, CancellationToken ct = default)
