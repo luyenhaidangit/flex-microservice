@@ -1,9 +1,7 @@
-﻿using Flex.AspNetIdentity.Api.Entities;
-using Flex.AspNetIdentity.Api.Models.User;
+﻿using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Flex.AspNetIdentity.Api.Controllers
