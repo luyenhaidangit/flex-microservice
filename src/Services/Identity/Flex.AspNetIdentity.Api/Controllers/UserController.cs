@@ -33,10 +33,10 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(result));
         }
 
-        [HttpGet("{code}/history")]
-        public async Task<IActionResult> GetUserChangeHistory(string code)
+        [HttpGet("{userName}/history")]
+        public async Task<IActionResult> GetUserChangeHistory(string userName)
         {
-            var result = await _userService.GetUserChangeHistoryAsync(code);
+            var result = await _userService.GetUserChangeHistoryAsync(userName);
             return Ok(Result.Success(result));
         }
 
