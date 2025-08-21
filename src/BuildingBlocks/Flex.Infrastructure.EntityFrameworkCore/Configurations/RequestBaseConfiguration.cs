@@ -9,6 +9,11 @@ namespace Flex.Infrastructure.EntityFrameworkCore.Configurations
     {
         public virtual void Configure(EntityTypeBuilder<TEntity> builder)
         {
+            // Id and primary key
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id)
+                   .HasColumnName("ID");
+
             // Common columns for all request entities
             builder.Property(x => x.EntityId)
                    .HasColumnName("ENTITY_ID");

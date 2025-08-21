@@ -12,10 +12,6 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
             base.Configure(builder);
 
             builder.ToTable("ROLE_REQUESTS");
-
-            builder.HasKey(x => x.Id);
-            builder.Property(x => x.Id)
-                .HasColumnName("ID");
         }
     }
 }
