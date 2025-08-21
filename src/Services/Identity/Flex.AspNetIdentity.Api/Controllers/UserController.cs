@@ -1,5 +1,6 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models.User;
+using Flex.AspNetIdentity.Api.Services;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Authorization;
@@ -24,18 +25,23 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         [HttpGet("approved")]
-        //[Authorize(Policy = "USERS.VIEW")]
-        public async Task<IActionResult> GetApprovedUsers([FromQuery] GetUsersPagingRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetApprovedUsers([FromQuery] GetUsersPagingRequest request, CancellationToken ct)
         {
-            var result = await _userAdminService.GetApprovedUsersPagedAsync(request, cancellationToken);
+            var result = await _userAdminService.GetApprovedUsersPagedAsync(request, ct);
             return Ok(Result.Success(result));
         }
 
         [HttpGet("approved/{userName}")]
-        [Authorize(Policy = "USERS.VIEW")]
-        public async Task<IActionResult> GetApprovedUser(string userName)
+        public async Task<IActionResult> GetApprovedUser(string userName, CancellationToken ct)
         {
-            var result = await _userAdminService.GetApprovedUserByUserNameAsync(userName);
+            var result = await _userAdminService.GetUserByUserNameAsync(userName, ct);
+            return Ok(Result.Success(result));
+        }
+
+        [HttpGet("approved/{code}/history")]
+        public async Task<IActionResult> GetUserChangeHistory(string code)
+        {
+            var result = await _userAdminService.GetUserChangeHistoryAsync(code);
             return Ok(Result.Success(result));
         }
 

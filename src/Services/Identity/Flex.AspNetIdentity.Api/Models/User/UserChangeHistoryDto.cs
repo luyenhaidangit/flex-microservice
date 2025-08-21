@@ -1,10 +1,5 @@
 namespace Flex.AspNetIdentity.Api.Models.User
 {
-    public class UserDetailDto : UserPagingDto
-    {
-        public List<string> Roles { get; set; } = new();
-    }
-
     public class UserChangeHistoryDto
     {
         public long Id { get; set; }

@@ -5,10 +5,10 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
 {
     public interface IUserService
     {
-        // Query (approved)
+        // Query
         Task<PagedResult<UserPagingDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken cancellationToken);
-        Task<UserDetailDto> GetApprovedUserByUserNameAsync(string userName);
-        Task<List<UserChangeHistoryDto>> GetApprovedUserChangeHistoryAsync(string userName);
+        Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken cancellationToken);
+        Task<List<UserChangeHistoryDto>> GetUserChangeHistoryAsync(string userName);
 
         // Commands on approved
         Task AssignRolesAsync(string userName, IEnumerable<string> roleCodes, CancellationToken ct = default);

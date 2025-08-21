@@ -1,11 +1,10 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Flex.AspNetIdentity.Api.Entities.Views;
 
 namespace Flex.AspNetIdentity.Api.Persistence
 {
-    public class IdentityDbContext : IdentityDbContext<User, Role, long, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>
+    public class IdentityDbContext : DbContext
     {
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
         {
@@ -25,6 +24,7 @@ namespace Flex.AspNetIdentity.Api.Persistence
         }
 
         #region DbSet
+        public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<RoleClaim> RoleClaims { get; set; }
         public DbSet<RoleRequest> RoleRequests { get; set; }

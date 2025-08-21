@@ -1,5 +1,7 @@
 using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Models.User;
+using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
@@ -14,6 +16,7 @@ namespace Flex.AspNetIdentity.Api.Services
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
         private readonly IUserRepository _userRepository;
+        private readonly IUserRequestRepository _userRequestRepository;
         private readonly ICurrentUserService _userService;
 
         public UserService(
@@ -21,28 +24,33 @@ namespace Flex.AspNetIdentity.Api.Services
             UserManager<User> userManager,
             RoleManager<Role> roleManager,
             ICurrentUserService userService,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            IUserRequestRepository userRequestRepository)
         {
             _logger = logger;
             _userManager = userManager;
             _roleManager = roleManager;
             _userService = userService;
             _userRepository = userRepository;
+            _userRequestRepository = userRequestRepository;
         }
 
-        #region Query - Approved
+        #region Query
         public async Task<PagedResult<UserPagingDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken cancellationToken)
         {
             var result = await _userRepository.GetApprovedUsersPagedAsync(request, cancellationToken);
             return result;
         }
 
-        public async Task<UserDetailDto> GetApprovedUserByUserNameAsync(string userName)
+        public async Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken ct)
         {
-            var user = await _userManager.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserName == userName)
-                       ?? throw new Exception($"User '{userName}' not found.");
+            var user = await _userRepository.FindAll().AsNoTracking().FirstOrDefaultAsync(u => u.UserName.ToLowerInvariant() == userName.ToLowerInvariant(), ct);
 
-            var roles = await _userManager.GetRolesAsync(user);
+            if(user == null)
+            {
+                throw new Exception($"User '{userName}' not found.");
+            };
+
             return new UserDetailDto
             {
                 UserName = user.UserName ?? string.Empty,
@@ -52,14 +60,53 @@ namespace Flex.AspNetIdentity.Api.Services
                 BranchId = user.BranchId,
                 IsLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
                 IsActive = true,
-                Roles = roles.ToList()
+                //Roles = roles.ToList()
             };
         }
 
-        public Task<List<UserChangeHistoryDto>> GetApprovedUserChangeHistoryAsync(string userName)
+        public async Task<List<UserChangeHistoryDto>> GetUserChangeHistoryAsync(string userName)
         {
-            // Chưa có bảng history chuẩn cho User; trả về rỗng hoặc tích hợp sau với AuditLog
-            return Task.FromResult(new List<UserChangeHistoryDto>());
+            // ===== Find user with code =====
+            var user = _userRepository.ExistsByUserNameAsync(userName);
+
+            if (user == null)
+            {
+                throw new Exception($"User with username '{userName}' not exists.");
+            }
+
+            // ===== Get user histories by role Id =====
+            var userId = user.Id;
+
+            var requests = await _userRequestRepository.FindAll()
+                .Where(r => r.EntityId == userId).AsNoTracking()
+                .OrderByDescending(r => r.RequestedDate)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.MakerId,
+                    r.RequestedDate,
+                    r.CheckerId,
+                    r.ApproveDate,
+                    r.Status,
+                    r.Comments,
+                    r.RequestedData
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            var historyItems = requests.Select((req, idx) => new UserChangeHistoryDto
+            {
+                Id = req.Id,
+                MakerBy = req.MakerId,
+                MakerTime = req.RequestedDate,
+                ApproverBy = req.CheckerId,
+                ApproverTime = req.ApproveDate,
+                Status = req.Status,
+                Description = req.Comments,
+                Changes = req.RequestedData
+            }).ToList();
+
+            return historyItems;
         }
         #endregion
 
