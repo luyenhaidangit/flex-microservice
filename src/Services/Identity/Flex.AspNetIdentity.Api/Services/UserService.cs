@@ -1,8 +1,6 @@
 using Flex.AspNetIdentity.Api.Entities;
-using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
-using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
@@ -56,8 +54,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 PhoneNumber = user.PhoneNumber,
                 BranchId = user.BranchId,
                 IsLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
-                IsActive = true,
-                //Roles = roles.ToList()
+                IsActive = true
             };
         }
 
