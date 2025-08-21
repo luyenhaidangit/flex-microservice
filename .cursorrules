@@ -103,6 +103,13 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
 - When searching for recent news, use the current year (2025) instead of previous years, or simply use the "recent" keyword to get the latest information
 
+## Project-specific Lessons
+
+- Tránh xung đột tên `PagedResult<>` giữa `Flex.Shared.SeedWork.PagedResult<T>` và `System.Linq.Dynamic.Core.PagedResult<TSource>`: luôn fully-qualify `Flex.Shared.SeedWork.PagedResult<T>` trong chữ ký method hoặc loại bỏ `System.Linq.Dynamic.Core` khỏi `using`. Ưu tiên sử dụng `QueryableExtensions.ToPagedResultAsync(request)` để paging thay vì tự `OrderBy` với Dynamic LINQ khi không cần thiết.
+
+## Scratchpad Notes
+- UserRepository: dùng `ToPagedResultAsync` để tránh Dynamic LINQ và resolve ambiguous `PagedResult<>`.
+
 # Playbook: Luồng triển khai chức năng quản lý (ví dụ: User)
 
 - Mục tiêu: Chuẩn hoá quy trình thêm một module quản lý theo mô hình maker-checker, tái sử dụng tối đa hạ tầng sẵn có.

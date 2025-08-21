@@ -95,6 +95,8 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // Repositories
             services.AddScoped<IRoleRequestRepository, RoleRequestRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserRequestRepository, UserRequestRepository>();
 
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
