@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Persistence;
 using Flex.Security;
 using Flex.Shared.DTOs.Identity;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using ClaimTypesApp = Flex.Security.ClaimTypes;
@@ -20,15 +22,23 @@ namespace Flex.AspNetIdentity.Api.Controllers
     {
         private readonly ILogger<AuthController> _logger;
         private readonly IMapper _mapper;
-        private readonly UserManager<User> _userManager;
+        private readonly IdentityDbContext _dbContext;
+        private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IJwtTokenBlacklistService _jwtBacklistTokenService;
         private readonly JwtSettings _jwtSettings;
 
-        public AuthController(ILogger<AuthController> logger, IMapper mapper, UserManager<User> userManager, IJwtTokenBlacklistService jwtBacklistTokenService, IOptions<JwtSettings> jwtSettings)
+        public AuthController(
+            ILogger<AuthController> logger,
+            IMapper mapper,
+            IdentityDbContext dbContext,
+            IPasswordHasher<User> passwordHasher,
+            IJwtTokenBlacklistService jwtBacklistTokenService,
+            IOptions<JwtSettings> jwtSettings)
         {
             _logger = logger;
             _mapper = mapper;
-            _userManager = userManager;
+            _dbContext = dbContext;
+            _passwordHasher = passwordHasher;
             _jwtBacklistTokenService = jwtBacklistTokenService;
             _jwtSettings = jwtSettings.Value;
         }
@@ -40,21 +50,29 @@ namespace Flex.AspNetIdentity.Api.Controllers
             _logger.LogInformation("User {Username} attempting to login.", request.UserName);
 
             // Validate
-            var user = await _userManager.FindByNameAsync(request.UserName);
-
+            var user = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName == request.UserName);
             if (user is null)
             {
                 return BadRequest(Result.Failure(message: "User not exists with this username."));
             }
 
-            if (!await _userManager.CheckPasswordAsync(user, request.Password))
+            if (string.IsNullOrEmpty(user.PasswordHash))
+            {
+                return BadRequest(Result.Failure(message: "User has no password set."));
+            }
+
+            var verify = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+            if (verify == PasswordVerificationResult.Failed)
             {
                 return BadRequest(Result.Failure(message: "Invalid username or password."));
             }
 
-            // Process
-            var userClaims = await _userManager.GetClaimsAsync(user);
-            var userRoles = await _userManager.GetRolesAsync(user);
+            // Load roles via join
+            var roleNames = await _dbContext.Set<UserRole>()
+                .Where(ur => ur.UserId == user.Id)
+                .Join(_dbContext.Set<Role>(), ur => ur.RoleId, r => r.Id, (ur, r) => r.Name!)
+                .Distinct()
+                .ToListAsync();
 
             var claims = new List<Claim>
             {
@@ -65,10 +83,9 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 new Claim(ClaimTypesApp.Email, user.Email ?? string.Empty),
             };
 
-            claims.AddRange(userRoles.Select(role => new Claim(ClaimTypesAsp.Role, role)));
+            claims.AddRange(roleNames.Select(role => new Claim(ClaimTypesAsp.Role, role)));
 
             var token = _jwtBacklistTokenService.GenerateToken(_jwtSettings, claims);
-
             var result = new LoginResult(token);
 
             _logger.LogInformation("User {Username} logged in successfully.", request.UserName);
@@ -81,13 +98,13 @@ namespace Flex.AspNetIdentity.Api.Controllers
             _logger.LogInformation("Attempting to register user: {Email}", request.Email);
 
             // Validate
-            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            var existingUser = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.Email == request.Email);
             if (existingUser != null)
             {
                 return BadRequest(Result.Failure(message: "User already exists with this email."));
             }
 
-            var existingUsername = await _userManager.FindByNameAsync(request.Email);
+            var existingUsername = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName == request.Email);
             if (existingUsername != null)
             {
                 return BadRequest(Result.Failure(message: "User already exists with this username."));
@@ -95,13 +112,10 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
             // Process
             var user = _mapper.Map<User>(request);
+            user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
-            var result = await _userManager.CreateAsync(user, request.Password);
-
-            if (!result.Succeeded)
-            {
-                return BadRequest(Result.Failure(message: "User registration failed.", errors: result.Errors));
-            }
+            await _dbContext.Set<User>().AddAsync(user);
+            await _dbContext.SaveChangesAsync();
 
             _logger.LogInformation("User {Email} registered successfully.", request.Email);
             return Ok(Result.Success(message: "User registered successfully"));
@@ -144,7 +158,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 return Unauthorized(Result.Failure(message: "Unauthorized"));
             }
 
-            var user = await _userManager.FindByNameAsync(userName);
+            var user = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName == userName);
 
             if (user is null)
             {

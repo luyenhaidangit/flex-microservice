@@ -19,7 +19,6 @@ namespace Flex.AspNetIdentity.Api.Entities
         public bool LockoutEnabled { get; set; } = false;
         public int AccessFailedCount { get; set; } = 0;
 
-        // Custom fields
         public string FullName { get; set; } = default!;
         public long BranchId { get; set; }
     }

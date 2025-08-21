@@ -48,8 +48,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // Database
             services.ConfigureServiceDbContext<IdentityDbContext>(configuration, useWallet: true);
 
-            // Identity
-            services.ConfigureAspNetIdentity();
+            // Auth (JWT only) - remove ASP.NET Identity stores
             services.AddAuthenticationJwtToken(configuration);
 
             // Redis
@@ -133,18 +132,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
         //    return true;
         //}
 
-        private static IServiceCollection ConfigureAspNetIdentity(this IServiceCollection services)
-        {
-            services.AddIdentity<User, Role>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireNonAlphanumeric = false;
-            })
-            .AddEntityFrameworkStores<IdentityDbContext>()
-            .AddDefaultTokenProviders();
-
-            return services;
-        }
+        // Removed ASP.NET Identity registration because User no longer derives from IdentityUser
         #endregion
     }
 }
