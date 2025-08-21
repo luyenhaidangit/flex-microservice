@@ -1,11 +1,11 @@
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Models.User;
+using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.AspNetIdentity.Api.Services
@@ -13,23 +13,20 @@ namespace Flex.AspNetIdentity.Api.Services
     public class UserService : IUserService
     {
         private readonly ILogger<UserService> _logger;
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<Role> _roleManager;
+        private readonly IdentityDbContext _dbContext;
         private readonly IUserRepository _userRepository;
         private readonly IUserRequestRepository _userRequestRepository;
         private readonly ICurrentUserService _userService;
 
         public UserService(
             ILogger<UserService> logger,
-            UserManager<User> userManager,
-            RoleManager<Role> roleManager,
+            IdentityDbContext dbContext,
             ICurrentUserService userService,
             IUserRepository userRepository,
             IUserRequestRepository userRequestRepository)
         {
             _logger = logger;
-            _userManager = userManager;
-            _roleManager = roleManager;
+            _dbContext = dbContext;
             _userService = userService;
             _userRepository = userRepository;
             _userRequestRepository = userRequestRepository;
@@ -67,14 +64,14 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<List<UserChangeHistoryDto>> GetUserChangeHistoryAsync(string userName)
         {
             // ===== Find user with code =====
-            var user = _userRepository.ExistsByUserNameAsync(userName);
+            var user = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower());
 
             if (user == null)
             {
                 throw new Exception($"User with username '{userName}' not exists.");
             }
 
-            // ===== Get user histories by role Id =====
+            // ===== Get user histories by user Id =====
             var userId = user.Id;
 
             var requests = await _userRequestRepository.FindAll()
@@ -113,44 +110,56 @@ namespace Flex.AspNetIdentity.Api.Services
         #region Commands on approved
         public async Task AssignRolesAsync(string userName, IEnumerable<string> roleCodes, CancellationToken ct = default)
         {
-            var user = await _userManager.FindByNameAsync(userName) 
+            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower(), ct)
                        ?? throw new Exception($"User '{userName}' not found.");
 
-            // map code -> role name
-            var codeSet = roleCodes?.Select(c => c?.Trim()).Where(c => !string.IsNullOrWhiteSpace(c)).ToHashSet(StringComparer.OrdinalIgnoreCase) 
+            var codeSet = roleCodes?.Select(c => c?.Trim()).Where(c => !string.IsNullOrWhiteSpace(c)).ToHashSet(StringComparer.OrdinalIgnoreCase)
                           ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var roles = await _roleManager.Roles.Where(r => codeSet.Contains(r.Code)).Select(r => r.Name!).ToListAsync(ct);
+            var roles = await _dbContext.Set<Role>().Where(r => codeSet.Contains(r.Code)).Select(r => new { r.Id }).ToListAsync(ct);
 
-            var existing = await _userManager.GetRolesAsync(user);
-            var toRemove = existing.Where(r => !roles.Contains(r)).ToList();
-            var toAdd = roles.Where(r => !existing.Contains(r)).ToList();
+            var existing = await _dbContext.Set<UserRole>().Where(ur => ur.UserId == user.Id).Select(ur => ur.RoleId).ToListAsync(ct);
+            var target = roles.Select(r => r.Id).ToHashSet();
 
-            if (toRemove.Count > 0) await _userManager.RemoveFromRolesAsync(user, toRemove);
-            if (toAdd.Count > 0) await _userManager.AddToRolesAsync(user, toAdd);
+            var toRemove = existing.Where(id => !target.Contains(id)).ToList();
+            var toAdd = target.Where(id => !existing.Contains(id)).ToList();
+
+            if (toRemove.Count > 0)
+            {
+                var removeEntities = await _dbContext.Set<UserRole>().Where(ur => ur.UserId == user.Id && toRemove.Contains(ur.RoleId)).ToListAsync(ct);
+                _dbContext.Set<UserRole>().RemoveRange(removeEntities);
+            }
+            if (toAdd.Count > 0)
+            {
+                var addEntities = toAdd.Select(id => new UserRole { UserId = user.Id, RoleId = id });
+                await _dbContext.Set<UserRole>().AddRangeAsync(addEntities, ct);
+            }
+
+            await _dbContext.SaveChangesAsync(ct);
         }
 
         public async Task LockAsync(string userName, string? reason = null)
         {
-            var user = await _userManager.FindByNameAsync(userName)
+            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
-            await _userManager.SetLockoutEnabledAsync(user, true);
-            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task UnlockAsync(string userName)
         {
-            var user = await _userManager.FindByNameAsync(userName)
+            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
-            await _userManager.SetLockoutEndDateAsync(user, null);
+            user.LockoutEnd = null;
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<string> ResetPasswordAsync(string userName)
         {
-            var user = await _userManager.FindByNameAsync(userName)
+            var user = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            // TODO: gửi email chứa token theo flow ngoài scope hiện tại
-            return token;
+            // Không dùng Identity token provider nữa; tạm thời sinh mã ngẫu nhiên để gửi ngoài hệ thống
+            return Guid.NewGuid().ToString("N");
         }
         #endregion
 
@@ -158,9 +167,9 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<string> CreateUserAsync(CreateUserRequestDto dto, string? comment = null)
         {
             // Validate role codes
-            var existingCodes = await _roleManager.Roles
+            var roleIds = await _dbContext.Set<Role>()
                 .Where(r => dto.RoleCodes.Contains(r.Code))
-                .Select(r => new { r.Code, r.Name })
+                .Select(r => r.Id)
                 .ToListAsync();
 
             var user = new User
@@ -172,15 +181,14 @@ namespace Flex.AspNetIdentity.Api.Services
                 FullName = dto.FullName
             };
 
-            var result = await _userManager.CreateAsync(user);
-            if (!result.Succeeded)
-            {
-                throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
-            }
+            await _dbContext.Set<User>().AddAsync(user);
+            await _dbContext.SaveChangesAsync();
 
-            if (existingCodes.Count > 0)
+            if (roleIds.Count > 0)
             {
-                await _userManager.AddToRolesAsync(user, existingCodes.Select(x => x.Name!));
+                var maps = roleIds.Select(id => new UserRole { UserId = user.Id, RoleId = id });
+                await _dbContext.Set<UserRole>().AddRangeAsync(maps);
+                await _dbContext.SaveChangesAsync();
             }
 
             return user.UserName ?? string.Empty;
@@ -188,7 +196,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
         public async Task UpdateUserAsync(string userName, UpdateUserRequestDto dto)
         {
-            var user = await _userManager.FindByNameAsync(userName)
+            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
 
             if (dto.FullName != null) user.FullName = dto.FullName;
@@ -196,11 +204,7 @@ namespace Flex.AspNetIdentity.Api.Services
             if (dto.PhoneNumber != null) user.PhoneNumber = dto.PhoneNumber;
             if (dto.BranchId.HasValue) user.BranchId = dto.BranchId.Value;
 
-            var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded)
-            {
-                throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
-            }
+            await _dbContext.SaveChangesAsync();
 
             if (dto.RoleCodes != null)
             {
@@ -210,11 +214,12 @@ namespace Flex.AspNetIdentity.Api.Services
 
         public async Task DeleteUserAsync(string userName, DeleteUserRequestDto dto)
         {
-            var user = await _userManager.FindByNameAsync(userName)
+            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
-            // Soft-delete bằng lock + disable email xác thực (tuỳ chính sách)
-            await _userManager.SetLockoutEnabledAsync(user, true);
-            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+            // Soft-delete bằng lock
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
+            await _dbContext.SaveChangesAsync();
         }
         #endregion
     }

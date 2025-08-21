@@ -90,6 +90,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
             // Repositories
             services.AddScoped<IRoleRequestRepository, RoleRequestRepository>();

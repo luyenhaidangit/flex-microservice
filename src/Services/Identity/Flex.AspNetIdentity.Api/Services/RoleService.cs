@@ -2,6 +2,7 @@
 using Flex.AspNetIdentity.Api.Models;
 using Flex.AspNetIdentity.Api.Models.Permission;
 using Flex.AspNetIdentity.Api.Models.Role;
+using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
@@ -9,7 +10,6 @@ using Flex.Shared.Authorization;
 using Flex.Shared.Cache;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Security.Claims;
@@ -20,7 +20,7 @@ namespace Flex.AspNetIdentity.Api.Services
     public class RoleService : IRoleService
     {
         private readonly ILogger<RoleService> _logger;
-        private readonly RoleManager<Role> _roleManager;
+        private readonly IdentityDbContext _dbContext;
         private readonly IRoleRequestRepository _roleRequestRepository;
         private readonly ICurrentUserService _userService;
         private readonly IPermissionRepository _permissionRepository;
@@ -30,14 +30,14 @@ namespace Flex.AspNetIdentity.Api.Services
         public RoleService(
             ILogger<RoleService> logger,
             IRoleRequestRepository roleRequestRepository,
-            RoleManager<Role> roleManager,
+            IdentityDbContext dbContext,
             ICurrentUserService userService,
             IPermissionRepository permissionRepository,
             IDistributedCache cache)
         {
             _logger = logger;
             _roleRequestRepository = roleRequestRepository;
-            _roleManager = roleManager;
+            _dbContext = dbContext;
             _userService = userService;
             _permissionRepository = permissionRepository;
             _cache = cache;
@@ -56,7 +56,7 @@ namespace Flex.AspNetIdentity.Api.Services
             int pageSize = Math.Max(1, request.PageSize ?? 10);
 
             // ===== Build query =====
-            var roleQuery = _roleManager.Roles
+            var roleQuery = _dbContext.Set<Role>()
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     x => EF.Functions.Like(x.Code.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(x.Description.ToLower(), $"%{keyword}%"))
@@ -88,7 +88,7 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<RoleDto> GetApprovedRoleByCodeAsync(string code, bool includeClaims = true, bool includeTree = true, string? search = null, CancellationToken ct = default)
         {
             // ===== Find role by code =====
-            var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == code);
+            var role = await _dbContext.Set<Role>().AsNoTracking().FirstOrDefaultAsync(r => r.Code == code);
 
             if (role == null)
             {
@@ -118,7 +118,7 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<List<RoleChangeHistoryDto>> GetApprovedRoleChangeHistoryAsync(string roleCode)
         {
             // ===== Find role with code =====
-            var role = await _roleManager.Roles.AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleCode);
+            var role = await _dbContext.Set<Role>().AsNoTracking().FirstOrDefaultAsync(r => r.Code == roleCode);
 
             if (role == null)
             {
@@ -278,14 +278,17 @@ namespace Flex.AspNetIdentity.Api.Services
             if (updateData == null) return;
 
             // ===== Get current role data =====
-            var currentRole = await _roleManager.Roles
+            var currentRole = await _dbContext.Set<Role>()
                 .Where(r => r.Id == request.EntityId)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
             if (currentRole != null)
             {
-                var currentClaims = await _roleManager.GetClaimsAsync(currentRole);
+                var currentClaims = await _dbContext.RoleClaims
+                    .Where(rc => rc.RoleId == currentRole.Id)
+                    .Select(rc => new Claim(rc.ClaimType!, rc.ClaimValue!))
+                    .ToListAsync();
                 result.OldData = new RoleDetailDataDto
                 {
                     RoleCode = currentRole.Code,
@@ -355,7 +358,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
             else
             {
-                var role = await _roleManager.Roles.AsNoTracking()
+                var role = await _dbContext.Set<Role>().AsNoTracking()
                     .FirstOrDefaultAsync(r => r.Code == roleCode, ct)
                     ?? throw new Exception($"Role '{roleCode}' not found.");
 
@@ -420,7 +423,7 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             // ===== Validation =====
             // ===== Check role code is exits =====
-            var existingRole = await _roleManager.Roles
+            var existingRole = await _dbContext.Set<Role>()
                 .FirstOrDefaultAsync(r => r.Code == dto.Code);
             if (existingRole != null)
             {
@@ -461,7 +464,7 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             // ===== Validation =====
             // ===== Check role code is exits =====
-            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Code == code);
+            var role = await _dbContext.Set<Role>().FirstOrDefaultAsync(r => r.Code == code);
             if (role == null)
             {
                 throw new Exception($"Role with code '{code}' does not exist.");
@@ -496,7 +499,8 @@ namespace Flex.AspNetIdentity.Api.Services
             try
             {
                 await _roleRequestRepository.CreateAsync(request);
-                await _roleManager.UpdateAsync(role);
+                _dbContext.Update(role);
+                await _dbContext.SaveChangesAsync();
 
                 await transaction.CommitAsync();
             }
@@ -516,7 +520,7 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             // ===== Validation =====
             // ===== Check role code is exits =====
-            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Code == code);
+            var role = await _dbContext.Set<Role>().FirstOrDefaultAsync(r => r.Code == code);
             if (role == null)
             {
                 throw new Exception($"Role with code '{code}' does not exist.");
@@ -530,7 +534,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
             // ===== Process =====
             // ===== Create delete role request =====
-            var claims = await _roleManager.GetClaimsAsync(role);
+            var claims = await _dbContext.RoleClaims.Where(rc => rc.RoleId == role.Id).ToListAsync();
             var currentSnapshot = new RoleDto
             {
                 Id = role.Id,
@@ -558,7 +562,8 @@ namespace Flex.AspNetIdentity.Api.Services
             try
             {
                 await _roleRequestRepository.CreateAsync(request);
-                await _roleManager.UpdateAsync(role);
+                _dbContext.Update(role);
+                await _dbContext.SaveChangesAsync();
 
                 await transaction.CommitAsync();
             }
@@ -674,15 +679,20 @@ namespace Flex.AspNetIdentity.Api.Services
                 Status = RequestStatusConstant.Authorised
             };
 
-            await _roleManager.CreateAsync(newRole);
+            await _dbContext.Set<Role>().AddAsync(newRole);
+            await _dbContext.SaveChangesAsync();
 
             // ===== Add claims if any =====
             if (dto.Claims != null && dto.Claims.Any())
             {
-                foreach (var code in dto.Claims)
+                var roleClaims = dto.Claims.Select(code => new RoleClaim
                 {
-                    await _roleManager.AddClaimAsync(newRole, new Claim(Shared.Authorization.ClaimTypes.Permission, code));
-                }
+                    RoleId = newRole.Id,
+                    ClaimType = Shared.Authorization.ClaimTypes.Permission,
+                    ClaimValue = code
+                });
+                await _dbContext.RoleClaims.AddRangeAsync(roleClaims);
+                await _dbContext.SaveChangesAsync();
             }
 
             // ===== Update request with created role ID =====
@@ -705,7 +715,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // ===== Get existing role =====
-            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+            var role = await _dbContext.Set<Role>().FirstOrDefaultAsync(r => r.Id == request.EntityId);
             if (role == null)
             {
                 throw new Exception($"Original role with ID '{request.EntityId}' not found.");
@@ -717,34 +727,40 @@ namespace Flex.AspNetIdentity.Api.Services
             role.IsActive = dto.IsActive;
             role.Status = RequestStatusConstant.Authorised;
 
-            await _roleManager.UpdateAsync(role);
+            _dbContext.Update(role);
+            await _dbContext.SaveChangesAsync();
 
             // ===== Update claims =====
             if (dto.Claims != null)
             {
-                var existingClaims = await _roleManager.GetClaimsAsync(role);
-                // Remove existing claims
-                foreach (var existingClaim in existingClaims)
+                var existingClaims = await _dbContext.RoleClaims.Where(rc => rc.RoleId == role.Id && rc.ClaimType == Shared.Authorization.ClaimTypes.Permission).ToListAsync();
+                _dbContext.RoleClaims.RemoveRange(existingClaims);
+                await _dbContext.SaveChangesAsync();
+
+                var newClaims = dto.Claims.Select(code => new RoleClaim
                 {
-                    await _roleManager.RemoveClaimAsync(role, existingClaim);
-                }
-                // Add new claims
-                foreach (var claim in dto.Claims)
-                {
-                    await _roleManager.AddClaimAsync(role, new Claim(Shared.Authorization.ClaimTypes.Permission, claim));
-                }
+                    RoleId = role.Id,
+                    ClaimType = Shared.Authorization.ClaimTypes.Permission,
+                    ClaimValue = code
+                });
+                await _dbContext.RoleClaims.AddRangeAsync(newClaims);
+                await _dbContext.SaveChangesAsync();
             }
         }
 
         private async Task ProcessDeleteApproval(RoleRequest request, string approver)
         {
-            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+            var role = await _dbContext.Set<Role>().FirstOrDefaultAsync(r => r.Id == request.EntityId);
             if (role == null)
             {
                 throw new Exception($"Role with ID '{request.EntityId}' not found for deletion.");
             }
 
-            await _roleManager.DeleteAsync(role);
+            // Remove related claims first, then role
+            var relatedClaims = await _dbContext.RoleClaims.Where(rc => rc.RoleId == role.Id).ToListAsync();
+            _dbContext.RoleClaims.RemoveRange(relatedClaims);
+            _dbContext.Set<Role>().Remove(role);
+            await _dbContext.SaveChangesAsync();
         }
 
         private async Task UpdateRequestStatus(RoleRequest request, string approver, string? comment)
@@ -823,11 +839,12 @@ namespace Flex.AspNetIdentity.Api.Services
             if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) 
                 && request.EntityId > 0)
             {
-                var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == request.EntityId);
+                var role = await _dbContext.Set<Role>().FirstOrDefaultAsync(r => r.Id == request.EntityId);
                 if (role != null)
                 {
                     role.Status = RequestStatusConstant.Authorised; // Revert to approved status
-                    await _roleManager.UpdateAsync(role);
+                    _dbContext.Update(role);
+                    await _dbContext.SaveChangesAsync();
                 }
             }
         }
@@ -852,7 +869,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task UpdateRolePermissionsAsync(string roleCode, IEnumerable<string> permissionCodes, CancellationToken ct = default)
         {
-            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Code == roleCode, ct)
+            var role = await _dbContext.Set<Role>().FirstOrDefaultAsync(r => r.Code == roleCode, ct)
                        ?? throw new Exception($"Role '{roleCode}' not found.");
 
             // 1) Chuẩn hoá input
@@ -876,14 +893,25 @@ namespace Flex.AspNetIdentity.Api.Services
             input.UnionWith(toAdd);
 
             // 3) Replace-set claims (type = PERMISSION)
-            var existing = await _roleManager.GetClaimsAsync(role);
-            var existingPerms = existing.Where(c => c.Type.Equals(ClaimTypePermission, StringComparison.OrdinalIgnoreCase)).ToList();
+            var existingPerms = await _dbContext.RoleClaims
+                .Where(rc => rc.RoleId == role.Id && rc.ClaimType == ClaimTypePermission)
+                .ToListAsync(ct);
 
-            foreach (var c in existingPerms)
-                await _roleManager.RemoveClaimAsync(role, c);
+            if (existingPerms.Count > 0)
+            {
+                _dbContext.RoleClaims.RemoveRange(existingPerms);
+                await _dbContext.SaveChangesAsync(ct);
+            }
 
-            //foreach (var code in input.Distinct(StringComparer.OrdinalIgnoreCase))
-            //    await _roleManager.AddClaimAsync(role, new Claims.Claim(ClaimTypePermission, code));
+            var toInsert = input.Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(code => new RoleClaim
+                {
+                    RoleId = role.Id,
+                    ClaimType = ClaimTypePermission,
+                    ClaimValue = code
+                });
+            await _dbContext.RoleClaims.AddRangeAsync(toInsert, ct);
+            await _dbContext.SaveChangesAsync(ct);
         }
 
         private static bool EndsWithAny(string value, params string[] suffixes)
