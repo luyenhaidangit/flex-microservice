@@ -103,6 +103,60 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
 - When searching for recent news, use the current year (2025) instead of previous years, or simply use the "recent" keyword to get the latest information
 
+# Playbook: Luồng triển khai chức năng quản lý (ví dụ: User)
+
+- Mục tiêu: Chuẩn hoá quy trình thêm một module quản lý theo mô hình maker-checker, tái sử dụng tối đa hạ tầng sẵn có.
+
+- 1) Entities
+  - Khai báo entity chính: `<Entity>` (ví dụ `User`). Không dùng DataAnnotations; ràng buộc bằng FluentValidation/EF Fluent API.
+  - Khai báo entity yêu cầu duyệt: `<Entity>Request : RequestBase<long>` (ví dụ `UserRequest`).
+
+- 2) EF Core Configurations
+  - `<Entity>Configuration : IEntityTypeConfiguration<...>`: đặt tên bảng UPPER_SNAKE_CASE số nhiều (ví dụ `USERS`), cấu hình cột/kiểu dữ liệu, index, quan hệ.
+  - `<Entity>RequestConfiguration : RequestBaseConfiguration<<Entity>Request, long>`: `builder.ToTable("<ENTITY>_REQUESTS")` (ví dụ `USER_REQUESTS`).
+  - Tận dụng `RequestBaseConfiguration` để map sẵn các cột chung: `ACTION`, `STATUS`, `REQUESTED_DATA`, `MAKER_ID`, `REQUESTED_DATE`, ...
+
+- 3) DbContext
+  - Thêm `DbSet<<Entity>>` và `DbSet<<Entity>Request>` nếu cần truy vấn trực tiếp; `ApplyConfigurationsFromAssembly` sẽ tự áp dụng cấu hình.
+
+- 4) Repository
+  - Interface: `I<Entity>Repository` (mở rộng theo nhu cầu nghiệp vụ) và/hoặc `I<Entity>RequestRepository` nếu cần thao tác riêng.
+  - Implementation: kế thừa `RepositoryBase<TEntity, TKey, IdentityDbContext>` (ví dụ `RepositoryBase<UserRequest, long, IdentityDbContext>`).
+
+- 5) DTOs & Validators
+  - Tạo DTO cho create/update/delete/query. Chỉ dùng FluentValidation (không trộn DataAnnotations).
+  - Quy ước: Request DTO cho maker tạo pending; Approved/Immediate DTO cho thao tác không cần duyệt.
+
+- 6) Service (Application layer)
+  - Interface: `I<Entity>Service` (và `I<Entity>AdminService` nếu tách CRUD immediate vs admin).
+  - Thực thi maker-checker: thao tác cần duyệt -> ghi `<Entity>Request`; thao tác immediate -> dùng repository/manager thực thi trực tiếp.
+  - Sử dụng `UserManager`/`RoleManager` cho entity thuộc Identity khi cần.
+
+- 7) Controller (API)
+  - Route: `api/<entities>`; gắn policy theo `Permissions.<AREA>.<ACTION>` (ví dụ `USERS.READ`, `USERS.CREATE`, ...).
+  - Expose endpoint cho CRUD, approve/reject (nếu có request), các thao tác đặc thù (ví dụ assign-roles, lock/unlock...).
+
+- 8) Đăng ký DI
+  - `ServiceExtensions.AddInfrastructureServices`: `services.AddScoped<I<Entity>Service, EntityService>();`
+  - Đăng ký repository tương ứng; AutoMapper profile; validators `AddValidatorsFromAssembly` nếu áp dụng.
+  - Đảm bảo `AddEntityFrameworkStores<IdentityDbContext>()` cho các entity Identity.
+
+- 9) Migration & Tên bảng/kiểu dữ liệu
+  - Chuẩn hoá bảng: UPPER_SNAKE_CASE số nhiều; bảng request: `<ENTITY>_REQUESTS`.
+  - Áp dụng converter nếu cần (ví dụ boolean -> `CHAR(1)` Y/N).
+  - Tạo migration, chạy migrate trong pipeline khởi động.
+
+- 10) Bổ sung
+  - Logging/Audit cho thao tác admin; rate limit các endpoint nhạy cảm; 2FA nếu cần.
+  - Mapping AutoMapper từ DTO -> entity/request và ngược lại.
+
+- Gợi ý cấu trúc file (ví dụ trong Identity module)
+  - `Entities/<Entity>.cs`, `Entities/<Entity>Request.cs`
+  - `Persistence/Configurations/<Entity>Configuration.cs`, `.../<Entity>RequestConfiguration.cs`
+  - `Repositories/Interfaces/I<Entity>Repository.cs`, `Repositories/<Entity>Repository.cs`
+  - `Services/I<Entity>Service.cs`, `Services/<Entity>Service.cs`
+  - `Controllers/<Entity>Controller.cs`
+
 # Scratchpad
 Goal: Triển khai chức năng Quản lý Người sử dụng (User Management) theo mô hình maker-checker, thống nhất với Role Management.
 
