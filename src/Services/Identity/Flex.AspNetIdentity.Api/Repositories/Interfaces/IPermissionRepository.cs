@@ -7,7 +7,6 @@ namespace Flex.AspNetIdentity.Api.Repositories.Interfaces
     public interface IPermissionRepository : IRepositoryBase<Permission, long, IdentityDbContext>
     {
         Task<List<Permission>> GetAllAsync(CancellationToken ct = default);
-        Task<Dictionary<string, long>> GetIdByCodeAsync(IEnumerable<string> codes, CancellationToken ct = default);
         Task<List<string>> GetPermissionCodesOfRoleAsync(long roleId, CancellationToken ct = default);
     }
 }

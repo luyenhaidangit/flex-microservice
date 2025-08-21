@@ -145,7 +145,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 UserName = dto.UserName,
                 Email = dto.Email,
                 PhoneNumber = dto.PhoneNumber,
-                BranchId = dto.BranchId,
+                BranchId = dto.BranchId ?? 0,
                 FullName = dto.FullName
             };
 

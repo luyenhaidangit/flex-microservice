@@ -22,13 +22,6 @@ namespace Flex.AspNetIdentity.Api.Repositories
             return await _context.Permissions.AsNoTracking().ToListAsync(ct);
         }
 
-        public async Task<Dictionary<string, long>> GetIdByCodeAsync(IEnumerable<string> codes, CancellationToken ct = default)
-        {
-            return await _context.Permissions
-                .Where(p => codes.Contains(p.Code))
-                .ToDictionaryAsync(p => p.Code, p => p.Id, ct);
-        }
-
         public async Task<List<string>> GetPermissionCodesOfRoleAsync(long roleId, CancellationToken ct = default)
         {
             return await _context.RoleClaims

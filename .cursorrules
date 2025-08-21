@@ -94,6 +94,7 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
 - Không tự tạo seed (permissions/users/roles/…) nếu không có yêu cầu rõ ràng từ PO. Đặc biệt: KHÔNG seed quyền `USERS.*` mặc định trừ khi được yêu cầu.
 - Mapping entity: Sử dụng EF Core Fluent API qua `IEntityTypeConfiguration<T>` để định nghĩa bảng/cột/index/quan hệ. KHÔNG dùng DataAnnotations (`[Table]`, `[Column]`, `[StringLength]`, …) trên entity.
+- EF Core/Identity entities: không dùng `required` cho property vì framework khởi tạo bằng reflection; dùng `= default!` cho non-null reference và ràng buộc bằng FluentValidation/EF Fluent API (`.IsRequired()` nếu cần schema). Dùng required: cho DTO / domain model mà bạn kiểm soát việc khởi tạo, muốn ép buộc compile-time.
 
 ## Cursor learned
 
