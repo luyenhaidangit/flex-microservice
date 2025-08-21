@@ -6,7 +6,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
     public interface IUserService
     {
         // Query (approved)
-        Task<PagedResult<UserPagingDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request);
+        Task<PagedResult<UserPagingDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken cancellationToken);
         Task<UserDetailDto> GetApprovedUserByUserNameAsync(string userName);
         Task<List<UserChangeHistoryDto>> GetApprovedUserChangeHistoryAsync(string userName);
 

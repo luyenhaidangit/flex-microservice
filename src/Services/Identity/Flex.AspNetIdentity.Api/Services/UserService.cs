@@ -31,10 +31,9 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         #region Query - Approved
-        public async Task<PagedResult<UserPagingDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request)
+        public async Task<PagedResult<UserPagingDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken cancellationToken)
         {
-            var result = await _userRepository.GetApprovedUsersPagedAsync(request);
-
+            var result = await _userRepository.GetApprovedUsersPagedAsync(request, cancellationToken);
             return result;
         }
 

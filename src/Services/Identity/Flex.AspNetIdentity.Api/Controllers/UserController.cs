@@ -27,9 +27,9 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
         [HttpGet("approved")]
         [Authorize(Policy = "USERS.VIEW")]
-        public async Task<IActionResult> GetApprovedUsers([FromQuery] GetUsersPagingRequest request)
+        public async Task<IActionResult> GetApprovedUsers([FromQuery] GetUsersPagingRequest request, CancellationToken cancellationToken)
         {
-            var result = await _userAdminService.GetApprovedUsersPagedAsync(request);
+            var result = await _userAdminService.GetApprovedUsersPagedAsync(request, cancellationToken);
             return Ok(Result.Success(result));
         }
 
