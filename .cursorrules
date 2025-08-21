@@ -106,6 +106,7 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 ## Project-specific Lessons
 
 - Tránh xung đột tên `PagedResult<>` giữa `Flex.Shared.SeedWork.PagedResult<T>` và `System.Linq.Dynamic.Core.PagedResult<TSource>`: luôn fully-qualify `Flex.Shared.SeedWork.PagedResult<T>` trong chữ ký method hoặc loại bỏ `System.Linq.Dynamic.Core` khỏi `using`. Ưu tiên sử dụng `QueryableExtensions.ToPagedResultAsync(request)` để paging thay vì tự `OrderBy` với Dynamic LINQ khi không cần thiết.
+- Không xoá comment cũ nếu thay đổi code không làm thay đổi ý nghĩa comment; chỉ bổ sung comment mới khi cần làm rõ thay đổi. Giữ nguyên các template comment dạng "===== ... =====".
 
 ## Scratchpad Notes
 - UserRepository: dùng `ToPagedResultAsync` để tránh Dynamic LINQ và resolve ambiguous `PagedResult<>`.
