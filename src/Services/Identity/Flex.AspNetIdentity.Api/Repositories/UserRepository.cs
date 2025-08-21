@@ -19,7 +19,7 @@ namespace Flex.AspNetIdentity.Api.Repositories
 			_context = context;
 		}
 
-		public async Task<PagedResult<UserPagingDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default)
+		public async Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default)
 		{
 			var keyword = request.Keyword?.Trim().ToLowerInvariant();
 			int pageIndex = request.PageIndexValue;

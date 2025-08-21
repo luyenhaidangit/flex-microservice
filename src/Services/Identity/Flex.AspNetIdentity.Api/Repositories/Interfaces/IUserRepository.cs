@@ -8,7 +8,7 @@ namespace Flex.AspNetIdentity.Api.Repositories.Interfaces
 {
 	public interface IUserRepository : IRepositoryBase<User, long, IdentityDbContext>
     {
-		Task<PagedResult<UserPagingDto>> GetApprovedUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default);
+		Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default);
 		Task<bool> ExistsByUserNameAsync(string userName, CancellationToken ct = default);
 	}
 }

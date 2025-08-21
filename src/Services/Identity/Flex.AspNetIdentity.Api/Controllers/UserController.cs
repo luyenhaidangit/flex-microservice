@@ -1,6 +1,5 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models.User;
-using Flex.AspNetIdentity.Api.Services;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Authorization;
@@ -13,39 +12,37 @@ namespace Flex.AspNetIdentity.Api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     { 
-        private readonly UserManager<User> _userManager;
-        private readonly ILogger<AuthController> _logger;
+        private readonly ILogger<UserController> _logger;
         private readonly IUserService _userAdminService;
 
-        public UserController(UserManager<User> userManager, ILogger<AuthController> logger, IUserService userAdminService)
+        public UserController(ILogger<UserController> logger, IUserService userAdminService)
         {
-            _userManager = userManager;
             _logger = logger;
             _userAdminService = userAdminService;
         }
 
-        [HttpGet("approved")]
-        public async Task<IActionResult> GetApprovedUsers([FromQuery] GetUsersPagingRequest request, CancellationToken ct)
+        [HttpGet]
+        public async Task<IActionResult> GetUsers([FromQuery] GetUsersPagingRequest request, CancellationToken ct)
         {
-            var result = await _userAdminService.GetApprovedUsersPagedAsync(request, ct);
+            var result = await _userAdminService.GetUsersPagedAsync(request, ct);
             return Ok(Result.Success(result));
         }
 
-        [HttpGet("approved/{userName}")]
-        public async Task<IActionResult> GetApprovedUser(string userName, CancellationToken ct)
+        [HttpGet("{userName}")]
+        public async Task<IActionResult> GetUser(string userName, CancellationToken ct)
         {
             var result = await _userAdminService.GetUserByUserNameAsync(userName, ct);
             return Ok(Result.Success(result));
         }
 
-        [HttpGet("approved/{code}/history")]
+        [HttpGet("{code}/history")]
         public async Task<IActionResult> GetUserChangeHistory(string code)
         {
             var result = await _userAdminService.GetUserChangeHistoryAsync(code);
             return Ok(Result.Success(result));
         }
 
-        [HttpPut("approved/{userName}/roles")]
+        [HttpPut("{userName}/roles")]
         [Authorize(Policy = "USERS.ASSIGN_ROLE")]
         public async Task<IActionResult> AssignRoles(string userName, [FromBody] AssignRolesRequest req, CancellationToken ct)
         {
@@ -53,7 +50,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("approved/{userName}/lock")]
+        [HttpPost("{userName}/lock")]
         [Authorize(Policy = "USERS.LOCK")]
         public async Task<IActionResult> LockUser(string userName)
         {
@@ -61,7 +58,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("approved/{userName}/unlock")]
+        [HttpPost("{userName}/unlock")]
         [Authorize(Policy = "USERS.UNLOCK")]
         public async Task<IActionResult> UnlockUser(string userName)
         {
@@ -69,7 +66,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("approved/{userName}/reset-password")]
+        [HttpPost("{userName}/reset-password")]
         [Authorize(Policy = "USERS.RESET_PW")]
         public async Task<IActionResult> ResetPassword(string userName)
         {
@@ -85,7 +82,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(id));
         }
 
-        [HttpPost("approved/{userName}/update")]
+        [HttpPost("{userName}/update")]
         [Authorize(Policy = "USERS.UPDATE")]
         public async Task<IActionResult> Update(string userName, [FromBody] UpdateUserRequestDto dto)
         {
@@ -93,7 +90,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("approved/{userName}/delete")]
+        [HttpPost("{userName}/delete")]
         [Authorize(Policy = "USERS.DELETE")]
         public async Task<IActionResult> Delete(string userName, [FromBody] DeleteUserRequestDto dto)
         {
