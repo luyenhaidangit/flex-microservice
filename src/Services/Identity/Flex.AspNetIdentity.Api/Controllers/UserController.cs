@@ -13,10 +13,10 @@ namespace Flex.AspNetIdentity.Api.Controllers
         private readonly ILogger<UserController> _logger;
         private readonly IUserService _userService;
 
-        public UserController(ILogger<UserController> logger, IUserService userAdminService)
+        public UserController(ILogger<UserController> logger, IUserService userService)
         {
             _logger = logger;
-            _userService = userAdminService;
+            _userService = userService;
         }
 
         [HttpGet]
