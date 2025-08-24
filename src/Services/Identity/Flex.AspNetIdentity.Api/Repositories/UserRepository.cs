@@ -32,8 +32,8 @@ namespace Flex.AspNetIdentity.Api.Repositories
                       || EF.Functions.Like((u.Email ?? string.Empty).ToLower(), $"%{keyword}%")
                       || EF.Functions.Like((u.FullName ?? string.Empty).ToLower(), $"%{keyword}%"))
                 .WhereIf(request.BranchId.HasValue, u => u.BranchId == request.BranchId!.Value)
-                .WhereIf(request.IsLocked is true, u => u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow)
-                .WhereIf(request.IsLocked is false, u => !u.LockoutEnd.HasValue || u.LockoutEnd.Value.UtcDateTime <= DateTime.UtcNow);
+                .WhereIf(request.IsActive is true, u => u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow)
+                .WhereIf(request.IsActive is false, u => !u.LockoutEnd.HasValue || u.LockoutEnd.Value.UtcDateTime <= DateTime.UtcNow);
 
             var total = await query.CountAsync(ct);
             var raw = await query

@@ -6,7 +6,7 @@ namespace Flex.AspNetIdentity.Api.Models.User
     {
         public string? Keyword { get; set; }
         public long? BranchId { get; set; }
-        public bool? IsLocked { get; set; }
+        public bool? IsActive { get; set; }
 
         protected override Dictionary<string, string> OrderByMappings => new()
         {
