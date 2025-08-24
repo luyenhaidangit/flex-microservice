@@ -1,5 +1,6 @@
-using Flex.System.Api.Models;
+using Flex.Shared.DTOs.Common;
 using Flex.Shared.SeedWork;
+using Flex.System.Api.Models;
 using Flex.System.Api.Models.Branch;
 
 namespace Flex.System.Api.Services.Interfaces
@@ -10,6 +11,7 @@ namespace Flex.System.Api.Services.Interfaces
         Task<PagedResult<BranchApprovedItemDto>> GetApprovedBranchesPagedAsync(GetBranchPagingRequest request);
         Task<BranchDetailDto> GetApprovedBranchByCodeAsync(string code);
         Task<List<BranchChangeHistoryDto>> GetApprovedBranchChangeHistoryAsync(string code);
+        Task<List<OptionDto>> GetBranchesForFilterAsync();
         
         // Command
         Task<long> CreateBranchRequestAsync(CreateBranchRequestDto request);

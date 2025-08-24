@@ -48,6 +48,16 @@ namespace Flex.System.Api.Controllers
         }
 
         /// <summary>
+        /// Get all approved and active branches for filter dropdown.
+        /// </summary>
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetBranchesForFilter()
+        {
+            var result = await _branchService.GetBranchesForFilterAsync();
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
         /// Create branch request.
         /// </summary>
         [HttpPost("requests/create")]

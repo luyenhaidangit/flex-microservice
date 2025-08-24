@@ -1,4 +1,5 @@
 using Flex.Infrastructure.EF;
+using Flex.Shared.DTOs.Common;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Flex.System.Api.Entities;
@@ -130,6 +131,22 @@ namespace Flex.System.Api.Services
             }).ToList();
 
             return historyItems;
+        }
+
+        public async Task<List<OptionDto>> GetBranchesForFilterAsync()
+        {
+            var branches = await _branchRepository.FindAll()
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .Select(x => new OptionDto
+                {
+                    Id = x.Id,
+                    Name = x.Name
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return branches;
         }
         #endregion
 

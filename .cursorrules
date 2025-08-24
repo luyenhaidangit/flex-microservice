@@ -168,30 +168,26 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - `Controllers/<Entity>Controller.cs`
 
 # Scratchpad
-Goal: Triển khai chức năng Quản lý Người sử dụng (User Management) theo mô hình maker-checker, thống nhất với Role Management.
+Goal: Triển khai API lấy danh sách chi nhánh cho filter dropdown trong User Management
 
-[X] Discovery: Rà soát Identity/Role, entity `User`, `UserRequestHeader/Data`, validator hiện có
-[ ] Design: API spec Users (approved CRUD immediate, assign-roles, lock/unlock, reset-password). KHÔNG dùng USER_REQUEST_*.
-[X] DTO & Validators: `CreateUserRequestDto`, `UpdateUserRequestDto`, `DeleteUserRequestDto`, `GetUsersPagingRequest`, `AssignRolesRequest` (FluentValidation)
-[X] Service: `UserAdminService` (query approved + commands immediate)
-[X] Controller: đảm bảo `Route("api/users")`, gắn policy `USERS.*`, chuẩn hoá response `Ok(Result.Success(...))`
-[X] DI: Đăng ký `IUserAdminService`
-[ ] Auth token: thêm claims Permission vào JWT ở `AuthController.Login`
-[ ] RoleService: hoàn thiện `UpdateRolePermissionsAsync` (add lại claims sau khi remove)
-[ ] Validation branch: implement `IBranchService.IsBranchExistsAsync` và rule cho create/update
-[ ] Security: audit log thao tác admin, rate limit cho lock/unlock/reset/assign-roles; 2FA optional
-[ ] UI spec: Form tối giản, không nhập password; nút gửi link đặt mật khẩu
-[ ] Migration: Seed quyền `USERS.*` (SKIP theo yêu cầu; chỉ thực hiện khi được yêu cầu cụ thể)
+[X] Discovery: Phân tích cấu trúc hiện tại của BranchService, BranchController, entity Branch
+[X] Design: Thiết kế API endpoint cho filter dropdown (danh sách đơn giản, không phân trang)
+[X] Implementation: Thêm method vào IBranchService và BranchService
+[X] Controller: Thêm endpoint mới vào BranchController
+[ ] Testing: Kiểm tra API hoạt động đúng
 
 Progress notes:
-[X] Refactor entity `User` bỏ DataAnnotations; dùng `UserConfiguration` cho mapping
-[X] Loại bỏ DataAnnotations khỏi `Entities/Role.cs` để chỉ dùng Fluent API
-[ ] Đồng bộ mapping/tên bảng Identity: dùng UPPER_SNAKE_CASE cho `USER_LOGINS`, `USER_TOKENS`, `USER_CLAIMS`, `ROLE_CLAIMS`, `USER_ROLES`; tạo migration rename tương ứng
-[ ] Đồng bộ kiểu dữ liệu boolean -> `CHAR(1)` với `BoolToStringYNConverter` cho `USERS`: `EMAIL_CONFIRMED`, `PHONE_NUMBER_CONFIRMED`, `TWO_FACTOR_ENABLED`, `LOCKOUT_ENABLED`; tạo migration alter
-[ ] Bổ sung cột `ROLES` theo entity (`CODE`, `IS_ACTIVE`, `DESCRIPTION`, `STATUS`) bằng migration
-[ ] Rà soát các entity Identity còn DataAnnotations (nếu có) và chuyển hết sang configuration
+[X] Phân tích cấu trúc hiện tại: BranchService đã có `GetApprovedBranchesPagedAsync` nhưng cần thêm method đơn giản cho filter
+[X] Thiết kế API: Endpoint `/api/branch/filter` trả về danh sách đơn giản `{Id, Code, Name, IsActive}`
 
 Notes:
-- Không trộn DataAnnotations vào DTO mới; chỉ dùng FluentValidation cho validate input
-- Sử dụng `UserManager`/`RoleManager` để tạo user khi approve; lưu `UserRequest*` cho pending
-- Trạng thái người dùng dùng `IsActive` + `Lockout`; không xóa cứng
+- Sử dụng pattern hiện có: chỉ lấy chi nhánh đã duyệt (Status = Authorised) và đang hoạt động (IsActive = true)
+- API filter không cần phân trang, trả về tất cả chi nhánh phù hợp
+- Tái sử dụng logic query từ `GetApprovedBranchesPagedAsync` nhưng bỏ pagination
+- Đã tạo file test HTTP: `test_branch_filter_api.http` để kiểm tra API
+
+**API Endpoint đã triển khai:**
+- **Route:** `GET /api/branch/filter`
+- **Response:** `List<BranchFilterDto>` với `{Id, Name}` (gọn và nhanh)
+- **Logic:** Chỉ lấy chi nhánh đã duyệt và đang hoạt động, sắp xếp theo Name
+- **Performance:** Sử dụng `AsNoTracking()` để tối ưu memory, chỉ select 2 trường cần thiết
