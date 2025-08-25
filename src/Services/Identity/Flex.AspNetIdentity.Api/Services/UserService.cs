@@ -3,6 +3,7 @@ using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
+using Flex.Infrastructure.EF;
 using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,10 +32,39 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         #region Query
-        public async Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken cancellationToken)
+        public async Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct)
         {
-            var result = await _userRepository.GetUsersPagedAsync(request, cancellationToken);
-            return result;
+            var keyword = request.Keyword?.Trim().ToLowerInvariant();
+            int pageIndex = request.PageIndexValue;
+            int pageSize = request.PageSizeValue;
+
+            var query = _userRepository.FindAll().AsNoTracking()
+                .WhereIf(!string.IsNullOrEmpty(keyword),
+                    u => EF.Functions.Like((u.UserName ?? string.Empty).ToLower(), $"%{keyword}%")
+                      || EF.Functions.Like((u.Email ?? string.Empty).ToLower(), $"%{keyword}%")
+                      || EF.Functions.Like((u.FullName ?? string.Empty).ToLower(), $"%{keyword}%"))
+                .WhereIf(request.BranchId.HasValue, u => u.BranchId == request.BranchId!.Value);
+
+            var total = await query.CountAsync(ct);
+            var raw = await query
+                .OrderBy(u => u.Id)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new { u.UserName, u.FullName, u.Email, u.PhoneNumber, u.BranchId, u.LockoutEnd })
+                .ToListAsync(ct);
+
+            var items = raw.Select(u => new UserPagingDto
+            {
+                UserName = u.UserName ?? string.Empty,
+                FullName = u.FullName,
+                Email = u.Email,
+                PhoneNumber = u.PhoneNumber,
+                BranchName = "",
+                IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
+                IsActive = true
+            }).ToList();
+
+            return PagedResult<UserPagingDto>.Create(pageIndex, pageSize, total, items);
         }
 
         public async Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken ct)
@@ -52,7 +82,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 FullName = user.FullName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                BranchId = user.BranchId,
+                BranchName = "",
                 IsLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
                 IsActive = true
             };

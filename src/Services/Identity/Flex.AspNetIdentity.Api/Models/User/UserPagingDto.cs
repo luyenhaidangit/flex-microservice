@@ -6,7 +6,7 @@
         public string? FullName { get; set; }
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
-        public long? BranchId { get; set; }
+        public string BranchName { get; set; }
         public bool IsLocked { get; set; }
         public bool IsActive { get; set; }
     }

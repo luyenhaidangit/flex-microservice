@@ -7,7 +7,6 @@ using Flex.Infrastructure.Common.Repositories;
 using Flex.Infrastructure.EF;
 using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 
 namespace Flex.AspNetIdentity.Api.Repositories
 {
@@ -19,41 +18,6 @@ namespace Flex.AspNetIdentity.Api.Repositories
 		{
 			_context = context;
 		}
-
-        public async Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct = default)
-        {
-            var keyword = request.Keyword?.Trim().ToLowerInvariant();
-            int pageIndex = request.PageIndexValue;
-            int pageSize = request.PageSizeValue;
-
-            var query = _context.Set<User>().AsNoTracking()
-                .WhereIf(!string.IsNullOrEmpty(keyword),
-                    u => EF.Functions.Like((u.UserName ?? string.Empty).ToLower(), $"%{keyword}%")
-                      || EF.Functions.Like((u.Email ?? string.Empty).ToLower(), $"%{keyword}%")
-                      || EF.Functions.Like((u.FullName ?? string.Empty).ToLower(), $"%{keyword}%"))
-                .WhereIf(request.BranchId.HasValue, u => u.BranchId == request.BranchId!.Value);
-
-            var total = await query.CountAsync(ct);
-            var raw = await query
-                .OrderBy(u => u.Id)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .Select(u => new { u.UserName, u.FullName, u.Email, u.PhoneNumber, u.BranchId, u.LockoutEnd })
-                .ToListAsync(ct);
-
-            var items = raw.Select(u => new UserPagingDto
-            {
-                UserName = u.UserName ?? string.Empty,
-                FullName = u.FullName,
-                Email = u.Email,
-                PhoneNumber = u.PhoneNumber,
-                BranchId = u.BranchId,
-                IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
-                IsActive = true
-            }).ToList();
-
-            return PagedResult<UserPagingDto>.Create(pageIndex, pageSize, total, items);
-        }
 
         public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken ct = default)
 		{
