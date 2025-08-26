@@ -1,0 +1,11 @@
+﻿syntax = "proto3";
+
+package mybank.common;
+
+option csharp_namespace = "MyBank.Contracts.Common";
+
+import "google/rpc/status.proto";
+import "google/rpc/error_details.proto";
+
+// Gợi ý: Server trả về Status với details như BadRequest, PreconditionFailure, QuotaFailure...
+// Trên .NET có thể map qua Grpc.Core.RpcException(Status) với trailers cho details.

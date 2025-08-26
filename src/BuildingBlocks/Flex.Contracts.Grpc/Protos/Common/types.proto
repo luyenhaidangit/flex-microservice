@@ -1,0 +1,34 @@
+﻿syntax = "proto3";
+
+package mybank.common;
+
+option csharp_namespace = "MyBank.Contracts.Common";
+
+import "google/protobuf/timestamp.proto";
+
+message Uuid {
+  string value = 1; // UUID v4 dạng string
+}
+
+message Money {
+  string currency_code = 1; // ISO 4217, vd: "VND", "USD"
+  int64 units = 2;          // phần nguyên
+  int32 nanos = 3;          // phần lẻ (nanoseconds of units)
+}
+
+message Decimal {
+  // Biểu diễn an toàn cho số thập phân (tuỳ dự án có thể bỏ nếu đủ với Money)
+  string value = 1; // "123.4567"
+}
+
+message Pagination {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message AuditInfo {
+  string created_by = 1;
+  google.protobuf.Timestamp create_time = 2;
+  string updated_by = 3;
+  google.protobuf.Timestamp update_time = 4;
+}
