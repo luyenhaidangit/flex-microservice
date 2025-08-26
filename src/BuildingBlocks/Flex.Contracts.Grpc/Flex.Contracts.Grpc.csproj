@@ -6,12 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Branch\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="Branch/branch.proto" GrpcServices="None" />
-  </ItemGroup>
-
 </Project>
