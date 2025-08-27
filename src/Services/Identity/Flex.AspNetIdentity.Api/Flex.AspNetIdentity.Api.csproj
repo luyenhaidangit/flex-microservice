@@ -28,10 +28,6 @@
     <ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
   </ItemGroup>
 
-	<ItemGroup>
-		<Protobuf Include="..\..\..\Services\System\Flex.System.Api\Protos\branch.proto" GrpcServices="Client" />
-	</ItemGroup>
-
   <!-- <PropertyGroup>
     <PostBuildEvent>
 		if "%SIGNTOOL%"=="" set "SIGNTOOL=C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe"
