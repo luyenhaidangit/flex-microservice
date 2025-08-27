@@ -101,6 +101,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Contracts.Grpc", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Gateway.Ocelot", "src\ApiGateways\Flex.Gateway.Ocelot\Flex.Gateway.Ocelot.csproj", "{A238B482-F998-4883-87A3-68DBDC2E747B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Gateway.Yarp", "src\ApiGateways\Flex.Gateway.Yarp\Flex.Gateway.Yarp.csproj", "{4624CEF1-5E64-40FE-AB71-3211EF257CCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,6 +225,10 @@ Global
 		{A238B482-F998-4883-87A3-68DBDC2E747B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A238B482-F998-4883-87A3-68DBDC2E747B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A238B482-F998-4883-87A3-68DBDC2E747B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4624CEF1-5E64-40FE-AB71-3211EF257CCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4624CEF1-5E64-40FE-AB71-3211EF257CCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4624CEF1-5E64-40FE-AB71-3211EF257CCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4624CEF1-5E64-40FE-AB71-3211EF257CCD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -271,6 +277,7 @@ Global
 		{3946B20D-5AE0-8645-C99C-BB471BE70C8A} = {6930348E-6306-444F-9C44-7D59D69428DD}
 		{8E7202CB-8AA8-40F9-BC1F-7D09EABB9B05} = {6930348E-6306-444F-9C44-7D59D69428DD}
 		{A238B482-F998-4883-87A3-68DBDC2E747B} = {5A507416-1EA0-4D0F-BE59-D1D1FD91A3C7}
+		{4624CEF1-5E64-40FE-AB71-3211EF257CCD} = {5A507416-1EA0-4D0F-BE59-D1D1FD91A3C7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}
