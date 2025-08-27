@@ -5,11 +5,11 @@ using Flex.Shared.Constants;
 using Flex.Shared.Options;
 using Flex.Shared.Extensions;
 using Flex.Infrastructure.Swashbuckle;
-using Flex.OcelotApiGateway.Constants;
+using Flex.Gateway.Ocelot.Constants;
 using Flex.Security;
-using Flex.OcelotApiGateway.Models;
+using Flex.Gateway.Ocelot.Models;
 
-namespace Flex.OcelotApiGateway.Extensions
+namespace Flex.Gateway.Ocelot.Extensions
 {
     public static class ServiceExtensions
     {

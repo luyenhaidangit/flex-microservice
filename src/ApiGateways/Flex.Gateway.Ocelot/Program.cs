@@ -1,6 +1,6 @@
 using Serilog;
 using Flex.SeriLog;
-using Flex.OcelotApiGateway.Extensions;
+using Flex.Gateway.Ocelot.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;

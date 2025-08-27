@@ -1,9 +1,9 @@
 ﻿using Flex.Infrastructure.Middlewares;
-using Flex.OcelotApiGateway.Constants;
+using Flex.Gateway.Ocelot.Constants;
 using Ocelot.Middleware;
 using Serilog;
 
-namespace Flex.OcelotApiGateway.Extensions
+namespace Flex.Gateway.Ocelot.Extensions
 {
     public static class ApplicationExtensions
     {

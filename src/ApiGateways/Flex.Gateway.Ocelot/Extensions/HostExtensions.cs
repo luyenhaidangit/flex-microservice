@@ -1,4 +1,4 @@
-﻿namespace Flex.OcelotApiGateway.Extensions
+﻿namespace Flex.Gateway.Ocelot.Extensions
 {
     public static class HostExtensions
     {

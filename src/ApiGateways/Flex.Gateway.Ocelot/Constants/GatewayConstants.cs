@@ -1,4 +1,4 @@
-﻿namespace Flex.OcelotApiGateway.Constants
+﻿namespace Flex.Gateway.Ocelot.Constants
 {
     public class GatewayConstants
     {

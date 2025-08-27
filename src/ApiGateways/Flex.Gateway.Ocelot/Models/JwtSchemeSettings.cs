@@ -1,4 +1,4 @@
-﻿namespace Flex.OcelotApiGateway.Models
+﻿namespace Flex.Gateway.Ocelot.Models
 {
     public class JwtSchemeSettings
     {
