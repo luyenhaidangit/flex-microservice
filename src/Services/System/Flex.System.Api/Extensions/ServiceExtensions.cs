@@ -10,6 +10,7 @@ using Flex.Infrastructure.EntityFrameworkCore.Oracle;
 using Flex.System.Api.Services.Interfaces;
 using Flex.System.Api.Services;
 using Flex.Infrastructure.Redis;
+using Flex.System.Api.Grpc;
 
 namespace Flex.System.Api.Extensions
 {
@@ -46,7 +47,7 @@ namespace Flex.System.Api.Extensions
             services.AddHttpContextAccessor();
 
             // Grpc
-            //services.AddGrpc();
+            services.AddGrpc();
 
             return services;
         }
@@ -60,7 +61,8 @@ namespace Flex.System.Api.Extensions
                            .AddScoped<IBranchRepository, BranchRepository>()
                            .AddScoped<IBranchRequestRepository, BranchRequestRepository>()
                            .AddScoped<IBranchService, BranchService>()
-                           .AddScoped<IUserService, UserService>();
+                           .AddScoped<IUserService, UserService>()
+                           .AddScoped<BranchGrpcService>();
         }
         #endregion
     }

@@ -148,6 +148,39 @@ namespace Flex.System.Api.Services
 
             return branches;
         }
+
+        public async Task<Dictionary<string, BranchDetailDto>> GetBranchesByCodesAsync(IEnumerable<string> codes)
+        {
+            if (codes == null || !codes.Any())
+            {
+                return new Dictionary<string, BranchDetailDto>();
+            }
+
+            var codeList = codes.Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
+            if (!codeList.Any())
+            {
+                return new Dictionary<string, BranchDetailDto>();
+            }
+
+            var branches = await _branchRepository.FindAll()
+                .Where(x => codeList.Contains(x.Code) && 
+                           x.Status == RequestStatusConstant.Authorised && 
+                           x.IsActive)
+                .Select(x => new BranchDetailDto
+                {
+                    Id = x.Id,
+                    Code = x.Code,
+                    Name = x.Name,
+                    Description = x.Description ?? string.Empty,
+                    Status = x.Status,
+                    IsActive = x.IsActive,
+                    BranchType = x.BranchType
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return branches.ToDictionary(x => x.Code, x => x);
+        }
         #endregion
 
         #region Command

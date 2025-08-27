@@ -168,26 +168,33 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - `Controllers/<Entity>Controller.cs`
 
 # Scratchpad
-Goal: Triển khai API lấy danh sách chi nhánh cho filter dropdown trong User Management
+Goal: Chỉnh sửa BranchService.cs để hỗ trợ BranchGrpc
 
-[X] Discovery: Phân tích cấu trúc hiện tại của BranchService, BranchController, entity Branch
-[X] Design: Thiết kế API endpoint cho filter dropdown (danh sách đơn giản, không phân trang)
-[X] Implementation: Thêm method vào IBranchService và BranchService
-[X] Controller: Thêm endpoint mới vào BranchController
-[ ] Testing: Kiểm tra API hoạt động đúng
+[X] Discovery: Phân tích cấu trúc hiện tại của BranchService, BranchGrpcService, và proto file
+[X] Analysis: Hiểu yêu cầu gRPC - BatchGetBranches method cần implement
+[X] Implementation: Thêm method vào IBranchService và BranchService để hỗ trợ gRPC
+[X] Implementation: Implement BatchGetBranches trong BranchGrpcService
+[X] Configuration: Cấu hình gRPC trong ServiceExtensions, ApplicationExtensions, và HostExtensions
+[X] Testing: Tạo file test Python để kiểm tra gRPC service
+[ ] Testing: Kiểm tra gRPC service hoạt động đúng
 
 Progress notes:
-[X] Phân tích cấu trúc hiện tại: BranchService đã có `GetApprovedBranchesPagedAsync` nhưng cần thêm method đơn giản cho filter
-[X] Thiết kế API: Endpoint `/api/branch/filter` trả về danh sách đơn giản `{Id, Code, Name, IsActive}`
+[X] Phân tích cấu trúc hiện tại: 
+- BranchService.cs đã có đầy đủ logic CRUD và query
+- BranchGrpcService.cs chưa implement method nào
+- Proto file định nghĩa BatchGetBranches method cần lấy nhiều branch theo codes
+- Cần thêm method vào IBranchService để hỗ trợ gRPC
+
+[X] Implementation completed:
+- Thêm method `GetBranchesByCodesAsync` vào IBranchService và BranchService
+- Implement `BatchGetBranches` trong BranchGrpcService với error handling
+- Cấu hình gRPC trong DI container và middleware
+- Cấu hình Kestrel để hỗ trợ HTTP/2 trên port 5005
+- Tạo file test Python để kiểm tra gRPC service
 
 Notes:
-- Sử dụng pattern hiện có: chỉ lấy chi nhánh đã duyệt (Status = Authorised) và đang hoạt động (IsActive = true)
-- API filter không cần phân trang, trả về tất cả chi nhánh phù hợp
-- Tái sử dụng logic query từ `GetApprovedBranchesPagedAsync` nhưng bỏ pagination
-- Đã tạo file test HTTP: `test_branch_filter_api.http` để kiểm tra API
-
-**API Endpoint đã triển khai:**
-- **Route:** `GET /api/branch/filter`
-- **Response:** `List<BranchFilterDto>` với `{Id, Name}` (gọn và nhanh)
-- **Logic:** Chỉ lấy chi nhánh đã duyệt và đang hoạt động, sắp xếp theo Name
-- **Performance:** Sử dụng `AsNoTracking()` để tối ưu memory, chỉ select 2 trường cần thiết
+- Proto file yêu cầu BatchGetBranches trả về map<string, Branch> và not_found_codes
+- Method `GetBranchesByCodesAsync` chỉ lấy chi nhánh đã duyệt (Status = Authorised) và đang hoạt động (IsActive = true)
+- gRPC service được cấu hình trên port 5005 với HTTP/2 protocol
+- Error handling trong gRPC service trả về RpcException với Internal status code
+- File test Python sẵn sàng để kiểm tra gRPC service sau khi build project

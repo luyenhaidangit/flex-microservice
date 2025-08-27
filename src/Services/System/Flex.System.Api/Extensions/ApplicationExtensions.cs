@@ -1,5 +1,6 @@
 ﻿using Flex.Infrastructure.Middlewares;
 using Serilog;
+using Flex.System.Api.Grpc;
 
 namespace Flex.System.Api.Extensions
 {
@@ -26,7 +27,7 @@ namespace Flex.System.Api.Extensions
             app.UseRouting();
 
             // Grpc
-            //app.MapGrpcService<BranchGrpcService>();
+            app.MapGrpcService<BranchGrpcService>();
 
             app.MapControllers();
         }

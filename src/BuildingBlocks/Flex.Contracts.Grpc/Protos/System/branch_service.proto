@@ -1,1 +1,26 @@
-syntax = "proto3";
+﻿syntax = "proto3";
+
+package flex.system.grpc.services;
+option csharp_namespace = "Flex.System.Grpc.Services";
+
+// Dtos
+message Branch {
+  string code = 1;
+  string name = 2;
+}
+
+// Input Define
+message BatchGetBranchesRequest{
+	repeated string codes = 1;
+}
+
+// Output Define
+message BatchGetBranchesResponse {
+  map<string, Branch> branches_by_code = 1;
+  repeated string not_found_codes = 2;
+}
+
+// Service Define
+service BranchService {
+  rpc BatchGetBranches(BatchGetBranchesRequest) returns (BatchGetBranchesResponse);
+}
