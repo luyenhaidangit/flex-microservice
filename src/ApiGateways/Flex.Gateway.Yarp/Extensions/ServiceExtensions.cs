@@ -20,10 +20,12 @@ namespace Flex.Gateway.Yarp.Extensions
 
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            var reverseProxySettings = configuration.GetSection("ReverseProxy");
+
             // Add YARP Reverse Proxy
             services.AddReverseProxy()
-                .LoadFromConfig(configuration.GetSection("ReverseProxy"))
-                .AddTransforms<GatewayTransforms>();
+                    .LoadFromConfig(reverseProxySettings)
+                    .AddTransforms<GatewayTransforms>();
 
             // Add gRPC support
             services.AddGrpc();
