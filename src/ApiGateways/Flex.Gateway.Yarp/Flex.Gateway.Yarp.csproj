@@ -30,10 +30,6 @@
     <!-- Rate Limiting - Sử dụng version có sẵn -->
     <PackageReference Include="Microsoft.AspNetCore.RateLimiting" Version="7.0.0-rc.2.22476.2" />
     
-    <!-- Health Checks -->
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.6" />
-    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.1.0" />
-    
     <!-- OpenAPI -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
   </ItemGroup>
