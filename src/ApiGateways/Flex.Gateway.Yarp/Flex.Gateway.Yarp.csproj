@@ -7,7 +7,46 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- YARP Reverse Proxy -->
+    <PackageReference Include="Yarp.ReverseProxy" Version="2.1.0" />
+    
+    <!-- gRPC Support -->
+    <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.72.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    
+    <!-- Authentication & Authorization -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="9.0.6" />
+    
+    <!-- Observability -->
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
+    
+    <!-- Logging -->
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    
+    <!-- Rate Limiting - Sử dụng version có sẵn -->
+    <PackageReference Include="Microsoft.AspNetCore.RateLimiting" Version="7.0.0-rc.2.22476.2" />
+    
+    <!-- Health Checks -->
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.6" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.1.0" />
+    
+    <!-- OpenAPI -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference to shared contracts -->
+    <ProjectReference Include="..\..\BuildingBlocks\Flex.Contracts.Grpc\Flex.Contracts.Grpc.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\Flex.Shared\Flex.Shared.csproj" />
   </ItemGroup>
 
 </Project>

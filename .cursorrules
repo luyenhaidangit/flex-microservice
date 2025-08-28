@@ -168,33 +168,73 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - `Controllers/<Entity>Controller.cs`
 
 # Scratchpad
-Goal: Chỉnh sửa BranchService.cs để hỗ trợ BranchGrpc
+Goal: Thiết kế API Gateway Flex.Gateway.Yarp cho giao tiếp gRPC
 
-[X] Discovery: Phân tích cấu trúc hiện tại của BranchService, BranchGrpcService, và proto file
-[X] Analysis: Hiểu yêu cầu gRPC - BatchGetBranches method cần implement
-[X] Implementation: Thêm method vào IBranchService và BranchService để hỗ trợ gRPC
-[X] Implementation: Implement BatchGetBranches trong BranchGrpcService
-[X] Configuration: Cấu hình gRPC trong ServiceExtensions, ApplicationExtensions, và HostExtensions
-[X] Testing: Tạo file test Python để kiểm tra gRPC service
-[ ] Testing: Kiểm tra gRPC service hoạt động đúng
+[X] Discovery: Phân tích cấu trúc hiện tại của Flex.Gateway.Yarp và các service gRPC
+[X] Analysis: Hiểu yêu cầu thiết kế - API Gateway với YARP hỗ trợ gRPC
+[X] Architecture: Thiết kế kiến trúc tổng thể cho Gateway
+[X] Implementation: Cấu hình YARP cho routing và load balancing
+[X] Security: Thiết kế authentication và authorization
+[X] Observability: Tích hợp logging, metrics, tracing
+[X] Performance: Tối ưu hiệu năng và scalability
+[X] Testing: Chiến lược kiểm thử toàn diện
+[X] Documentation: Tài liệu hóa thiết kế và hướng dẫn triển khai
+[X] Bug Fixes: Sửa lỗi NuGet packages và dependencies
 
 Progress notes:
-[X] Phân tích cấu trúc hiện tại: 
-- BranchService.cs đã có đầy đủ logic CRUD và query
-- BranchGrpcService.cs chưa implement method nào
-- Proto file định nghĩa BatchGetBranches method cần lấy nhiều branch theo codes
-- Cần thêm method vào IBranchService để hỗ trợ gRPC
+[X] Phân tích cấu trúc hiện tại:
+- Flex.Gateway.Yarp hiện tại chỉ là template cơ bản với Program.cs đơn giản
+- Chưa có YARP package, chỉ có OpenAPI
+- Các service gRPC đã được cấu hình (System API có BranchGrpcService)
+- Có Flex.Gateway.Ocelot đã được cấu hình với routing cho các service
+- Hệ thống có 9 services chính: System, Securities, Ordering, Job, Inventory, Investor, Integration, Identity, Basket
+- Identity service có JWT configuration sẵn
+- gRPC services được cấu hình trên port 5005 với HTTP/2
+
+[X] Kiến trúc tổng thể:
+- Client → Flex.Gateway.Yarp → Microservices (gRPC)
+- Gateway làm điểm truy cập duy nhất
+- Hỗ trợ SSL termination, authentication tập trung
+- Tích hợp với Identity Service cho JWT validation
+- Observability với OpenTelemetry
 
 [X] Implementation completed:
-- Thêm method `GetBranchesByCodesAsync` vào IBranchService và BranchService
-- Implement `BatchGetBranches` trong BranchGrpcService với error handling
-- Cấu hình gRPC trong DI container và middleware
-- Cấu hình Kestrel để hỗ trợ HTTP/2 trên port 5005
-- Tạo file test Python để kiểm tra gRPC service
+- Thêm các package cần thiết: YARP, gRPC, Authentication, OpenTelemetry, Serilog, Rate Limiting
+- Cấu hình YARP routing cho tất cả 9 services với HTTP/2 support
+- Implement authentication với JWT Bearer token
+- Tích hợp OpenTelemetry cho observability
+- Tạo middleware cho error handling và logging
+- Cấu hình Kestrel cho HTTP/2 và performance optimization
+- Tạo GatewayController cho management endpoints
+- Tạo Dockerfile cho containerization
+- Tạo test script Python để kiểm tra gRPC functionality
+- Tạo README với hướng dẫn đầy đủ
+
+[X] Bug Fixes completed:
+- Sửa lỗi NuGet package versions không tương thích
+- Loại bỏ OpenTelemetry.Instrumentation.GrpcNetClient (không có stable version)
+- Loại bỏ OpenTelemetry.Exporter.Prometheus.AspNetCore (không có stable version)
+- Cập nhật Microsoft.AspNetCore.RateLimiting sang version có sẵn
+- Cập nhật ServiceExtensions và ApplicationExtensions để loại bỏ dependencies không có
+- Tạo test script đơn giản hơn không cần protobuf files
+- Cập nhật documentation để phản ánh các thay đổi
+
+[X] Các thành phần chính đã thiết kế:
+1. ✅ Routing và Load Balancing với YARP
+2. ✅ Authentication & Authorization (JWT, API Key)
+3. ✅ Security (HTTPS, Rate Limiting, SSL Termination)
+4. ✅ Observability (Logging, Metrics, Distributed Tracing)
+5. ✅ Performance Optimization (HTTP/2, Connection Pooling)
+6. ✅ CI/CD Pipeline (Dockerfile, Kubernetes manifests)
+7. ✅ Testing Strategy (Functional, Performance, Chaos)
+8. ✅ Documentation và Deployment Guide
 
 Notes:
-- Proto file yêu cầu BatchGetBranches trả về map<string, Branch> và not_found_codes
-- Method `GetBranchesByCodesAsync` chỉ lấy chi nhánh đã duyệt (Status = Authorised) và đang hoạt động (IsActive = true)
-- gRPC service được cấu hình trên port 5005 với HTTP/2 protocol
-- Error handling trong gRPC service trả về RpcException với Internal status code
-- File test Python sẵn sàng để kiểm tra gRPC service sau khi build project
+- Gateway hỗ trợ routing cho tất cả 9 services với cấu hình HTTP/2
+- JWT authentication tích hợp với Identity Service
+- OpenTelemetry cho observability với OTLP exporter
+- Rate limiting và security features đầy đủ
+- Test script Python sẵn sàng để kiểm tra functionality
+- Documentation đầy đủ cho development và deployment
+- Docker và Kubernetes ready
+- Đã sửa tất cả lỗi NuGet packages và dependencies
