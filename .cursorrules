@@ -180,6 +180,7 @@ Goal: Thiết kế API Gateway Flex.Gateway.Yarp cho giao tiếp gRPC
 [X] Testing: Chiến lược kiểm thử toàn diện
 [X] Documentation: Tài liệu hóa thiết kế và hướng dẫn triển khai
 [X] Bug Fixes: Sửa lỗi NuGet packages và dependencies
+[X] Standardization: Đồng bộ hóa với pattern của các dự án khác
 
 Progress notes:
 [X] Phân tích cấu trúc hiện tại:
@@ -219,6 +220,15 @@ Progress notes:
 - Tạo test script đơn giản hơn không cần protobuf files
 - Cập nhật documentation để phản ánh các thay đổi
 
+[X] Standardization completed:
+- Đồng bộ Program.cs với pattern của các dự án khác
+- Sử dụng Flex.SeriLog thay vì Serilog trực tiếp
+- Đổi tên methods: AddGatewayServices → AddInfrastructure, UseGatewayPipeline → UseInfrastructure
+- Thêm AddConfigurationSettings method theo pattern
+- Đổi tên ConfigureGatewayHost → AddAppConfigurations
+- Cập nhật cấu trúc try-catch-finally theo pattern chuẩn
+- Thêm reference đến Flex.SeriLog project
+
 [X] Các thành phần chính đã thiết kế:
 1. ✅ Routing và Load Balancing với YARP
 2. ✅ Authentication & Authorization (JWT, API Key)
@@ -228,6 +238,7 @@ Progress notes:
 6. ✅ CI/CD Pipeline (Dockerfile, Kubernetes manifests)
 7. ✅ Testing Strategy (Functional, Performance, Chaos)
 8. ✅ Documentation và Deployment Guide
+9. ✅ Standardization với pattern của hệ thống
 
 Notes:
 - Gateway hỗ trợ routing cho tất cả 9 services với cấu hình HTTP/2
@@ -238,3 +249,278 @@ Notes:
 - Documentation đầy đủ cho development và deployment
 - Docker và Kubernetes ready
 - Đã sửa tất cả lỗi NuGet packages và dependencies
+- Đã đồng bộ hóa hoàn toàn với pattern của các dự án khác trong hệ thống
+
+# Playbook: Triển khai Service mới theo Pattern chuẩn Flex
+
+## Mục tiêu
+Chuẩn hoá quy trình tạo service mới trong hệ thống Flex, đảm bảo tính nhất quán và dễ bảo trì.
+
+## Pattern chuẩn cho Service mới
+
+### 1. Cấu trúc thư mục
+```
+src/Services/[ServiceName]/Flex.[ServiceName].Api/
+├── Controllers/
+├── Extensions/
+│   ├── ApplicationExtensions.cs
+│   ├── ServiceExtensions.cs
+│   └── HostExtensions.cs (nếu cần)
+├── Program.cs
+├── appsettings.json
+├── appsettings.Development.json
+└── Flex.[ServiceName].Api.csproj
+```
+
+### 2. Program.cs - Pattern chuẩn
+```csharp
+using Serilog;
+using Flex.SeriLog;
+using Flex.[ServiceName].Api.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
+
+builder.AddAppConfigurations();
+
+SeriLogger.Configure(builder);
+Log.Information($"Start {builder.Environment.ApplicationName} up");
+
+try
+{
+    builder.Services.AddConfigurationSettings(configuration);
+    builder.Services.AddInfrastructure(configuration);
+
+    var app = builder.Build();
+
+    app.UseInfrastructure();
+
+    app.Run();
+}
+
+catch (Exception ex)
+{
+    string type = ex.GetType().Name;
+    if (type.Equals("StopTheHostException", StringComparison.Ordinal)) throw;
+
+    Log.Fatal(ex, $"Unhandled exception: {ex.Message}");
+}
+finally
+{
+    Log.Information($"Shutdown {builder.Environment.ApplicationName} complete");
+    Log.CloseAndFlush();
+}
+```
+
+### 3. ServiceExtensions.cs - Pattern chuẩn
+```csharp
+namespace Flex.[ServiceName].Api.Extensions
+{
+    public static class ServiceExtensions
+    {
+        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Bind configuration settings nếu cần
+            return services;
+        }
+
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Add services to the container.
+            services.AddControllers().ApplyJsonSettings();
+
+            services.AddEndpointsApiExplorer();
+
+            services.ConfigureSwagger();
+
+            services.ConfigureRouteOptions();
+            services.ConfigureValidationErrorResponse();
+
+            // Register services DI container
+            services.AddInfrastructureServices();
+
+            // Database (nếu cần)
+            services.ConfigureServiceDbContext<[ServiceName]DbContext>(configuration);
+
+            // AutoMapper
+            services.AddAutoMapper(AssemblyReference.Assembly);
+
+            // Http Accessor
+            services.AddHttpContextAccessor();
+
+            // Grpc (nếu cần)
+            services.AddGrpc();
+
+            return services;
+        }
+
+        #region Infrastructure
+        private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+        {
+            // Register repositories, services, etc.
+            return services;
+        }
+        #endregion
+    }
+}
+```
+
+### 4. ApplicationExtensions.cs - Pattern chuẩn
+```csharp
+using Flex.Infrastructure.Middlewares;
+using Serilog;
+
+namespace Flex.[ServiceName].Api.Extensions
+{
+    public static class ApplicationExtensions
+    {
+        public static void UseInfrastructure(this WebApplication app)
+        {
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+            }
+
+            // Logging
+            app.UseSerilogRequestLogging();
+
+            app.UseMiddleware<ErrorWrappingMiddleware>();
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseRouting();
+
+            // Grpc (nếu cần)
+            app.MapGrpcService<[ServiceName]GrpcService>();
+
+            app.MapControllers();
+        }
+    }
+}
+```
+
+### 5. HostExtensions.cs - Pattern chuẩn (nếu cần)
+```csharp
+namespace Flex.[ServiceName].Api.Extensions
+{
+    public static class HostExtensions
+    {
+        public static void AddAppConfigurations(this WebApplicationBuilder builder)
+        {
+            var env = builder.Environment;
+
+            // Adds application configurations from JSON files and environment variables.
+            builder.Configuration
+               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+               .AddEnvironmentVariables();
+        }
+    }
+}
+```
+
+### 6. Project file - Pattern chuẩn
+```xml
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Core packages -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+    
+    <!-- Infrastructure packages -->
+    <PackageReference Include="Flex.Infrastructure" Version="1.0.0" />
+    <PackageReference Include="Flex.Infrastructure.EntityFrameworkCore" Version="1.0.0" />
+    <PackageReference Include="Flex.Infrastructure.EntityFrameworkCore.Oracle" Version="1.0.0" />
+    <PackageReference Include="Flex.Infrastructure.Redis" Version="1.0.0" />
+    <PackageReference Include="Flex.Infrastructure.Swashbuckle" Version="1.0.0" />
+    
+    <!-- Shared packages -->
+    <PackageReference Include="Flex.Shared" Version="1.0.0" />
+    
+    <!-- Module packages -->
+    <PackageReference Include="Flex.SeriLog" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Project references -->
+    <ProjectReference Include="..\..\BuildingBlocks\Flex.Shared\Flex.Shared.csproj" />
+    <ProjectReference Include="..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
+  </ItemGroup>
+
+</Project>
+```
+
+## Quy trình triển khai Service mới
+
+### Bước 1: Tạo cấu trúc thư mục
+1. Tạo thư mục `src/Services/[ServiceName]/`
+2. Tạo project `Flex.[ServiceName].Api`
+3. Tạo cấu trúc thư mục con theo pattern
+
+### Bước 2: Cấu hình Project file
+1. Sử dụng .NET 9.0
+2. Thêm các package cần thiết
+3. Thêm project references
+
+### Bước 3: Tạo Extensions
+1. **ServiceExtensions.cs**: Cấu hình DI và services
+2. **ApplicationExtensions.cs**: Cấu hình middleware pipeline
+3. **HostExtensions.cs**: Cấu hình host (nếu cần)
+
+### Bước 4: Cấu hình Program.cs
+1. Sử dụng pattern chuẩn với try-catch-finally
+2. Sử dụng Flex.SeriLog
+3. Gọi các extension methods theo thứ tự
+
+### Bước 5: Cấu hình appsettings
+1. `appsettings.json`: Cấu hình chung
+2. `appsettings.Development.json`: Cấu hình development
+
+### Bước 6: Thêm vào Solution
+1. Thêm project vào Flex.sln
+2. Cấu hình dependencies
+
+## Lưu ý quan trọng
+
+### 1. Naming Convention
+- Service name: PascalCase (ví dụ: Flex.System.Api)
+- Namespace: `Flex.[ServiceName].Api`
+- Extensions namespace: `Flex.[ServiceName].Api.Extensions`
+
+### 2. Dependencies
+- Luôn sử dụng Flex.SeriLog thay vì Serilog trực tiếp
+- Sử dụng Flex.Infrastructure packages
+- Reference Flex.Shared cho common functionality
+
+### 3. Error Handling
+- Sử dụng ErrorWrappingMiddleware
+- Xử lý StopTheHostException
+- Logging với correlation ID
+
+### 4. Configuration
+- Sử dụng AddAppConfigurations pattern
+- Bind settings trong AddConfigurationSettings
+- Environment-specific configuration
+
+### 5. Middleware Order
+1. SerilogRequestLogging
+2. ErrorWrappingMiddleware
+3. HttpsRedirection
+4. Authentication
+5. Authorization
+6. Routing
+7. Endpoints
+
+## Template sẵn sàng
+
+Có thể copy từ Flex.System.Api hoặc Flex.Investor.Api làm template cơ bản và customize theo nhu cầu cụ thể của service mới.

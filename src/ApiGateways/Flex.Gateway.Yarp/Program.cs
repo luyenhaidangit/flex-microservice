@@ -1,30 +1,36 @@
-using Flex.Gateway.Yarp.Extensions;
 using Serilog;
+using Flex.SeriLog;
+using Flex.Gateway.Yarp.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
-// Configure host and Kestrel
-builder.ConfigureGatewayHost();
+builder.AddAppConfigurations();
 
-// Add services to the container
-builder.Services.AddGatewayServices(builder.Configuration);
+SeriLogger.Configure(builder);
+Log.Information($"Start {builder.Environment.ApplicationName} up");
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline
-app.UseGatewayPipeline();
-
-// Start the application
 try
 {
-    Log.Information("Starting Flex.Gateway.Yarp");
+    builder.Services.AddConfigurationSettings(configuration);
+    builder.Services.AddInfrastructure(configuration);
+
+    var app = builder.Build();
+
+    app.UseInfrastructure();
+
     app.Run();
 }
+
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Application terminated unexpectedly");
+    string type = ex.GetType().Name;
+    if (type.Equals("StopTheHostException", StringComparison.Ordinal)) throw;
+
+    Log.Fatal(ex, $"Unhandled exception: {ex.Message}");
 }
 finally
 {
+    Log.Information($"Shutdown {builder.Environment.ApplicationName} complete");
     Log.CloseAndFlush();
 }

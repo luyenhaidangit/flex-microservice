@@ -4,7 +4,7 @@ namespace Flex.Gateway.Yarp.Extensions
 {
     public static class HostExtensions
     {
-        public static void ConfigureGatewayHost(this WebApplicationBuilder builder)
+        public static void AddAppConfigurations(this WebApplicationBuilder builder)
         {
             var env = builder.Environment;
 

@@ -27,11 +27,6 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
     
-    <!-- Logging -->
-    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    
     <!-- Rate Limiting - Sử dụng version có sẵn -->
     <PackageReference Include="Microsoft.AspNetCore.RateLimiting" Version="7.0.0-rc.2.22476.2" />
     
@@ -47,6 +42,7 @@
     <!-- Reference to shared contracts -->
     <ProjectReference Include="..\..\BuildingBlocks\Flex.Contracts.Grpc\Flex.Contracts.Grpc.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\Flex.Shared\Flex.Shared.csproj" />
+    <ProjectReference Include="..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
   </ItemGroup>
 
 </Project>

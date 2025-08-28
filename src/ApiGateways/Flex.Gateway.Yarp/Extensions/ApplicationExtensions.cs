@@ -7,7 +7,7 @@ namespace Flex.Gateway.Yarp.Extensions
 {
     public static class ApplicationExtensions
     {
-        public static void UseGatewayPipeline(this WebApplication app)
+        public static void UseInfrastructure(this WebApplication app)
         {
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

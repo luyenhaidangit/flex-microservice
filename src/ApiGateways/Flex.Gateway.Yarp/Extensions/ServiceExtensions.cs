@@ -13,7 +13,12 @@ namespace Flex.Gateway.Yarp.Extensions
 {
     public static class ServiceExtensions
     {
-        public static IServiceCollection AddGatewayServices(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            return services;
+        }
+
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Add YARP Reverse Proxy
             services.AddReverseProxy()
