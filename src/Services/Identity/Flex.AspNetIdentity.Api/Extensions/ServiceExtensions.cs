@@ -4,6 +4,7 @@ using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
+using Flex.AspNetIdentity.Api.Interceptors;
 using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.EntityFrameworkCore.Oracle;
 using Flex.Infrastructure.Common;
@@ -13,8 +14,13 @@ using Flex.Security;
 using Flex.Shared.Authorization;
 using Flex.Shared.Constants;
 using Flex.Shared.Extensions;
+using Flex.System.Grpc.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Grpc.Net.Client.Configuration;
+using Grpc.Core;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -31,7 +37,6 @@ namespace Flex.AspNetIdentity.Api.Extensions
         {
             // Bind JwtSettings settings
             var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigKeyConstants.JwtSettings);
-            var systemUrlGrpc = configuration.GetRequiredValue<string>(ConfigKeyConstants.GrpcSettings_SystemUrl);
 
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
@@ -57,27 +62,92 @@ namespace Flex.AspNetIdentity.Api.Extensions
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);
 
-            // Configure gRPC client
-            //services.AddGrpcClient<System.Grpc.BranchService.BranchServiceClient>(options =>
-            //{
-            //    options.Address = new Uri(systemUrlGrpc);
-            //}).ConfigureGrpcChannelOptions();
+            // Configure gRPC clients
+            services.ConfigureGrpcClients(configuration);
+
+            // OpenTelemetry
+            services.AddOpenTelemetry()
+                .WithTracing(t => t.AddGrpcClientInstrumentation());
+                //.WithMetrics(m => m.AddGrpcClientInstrumentation());
 
             return services;
         }
 
-        //public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-        //{
-        //    services.AddScoped<IBranchService, BranchService>();
-        //    services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>();
+        private static IServiceCollection ConfigureGrpcClients(this IServiceCollection services, IConfiguration configuration)
+        {
+            var cfg = configuration;
 
-        //    services.AddHttpClient("SystemApi", client =>
-        //    {
-        //        client.BaseAddress = new Uri("http://system-api/");
-        //    });
+            // Common SocketsHttpHandler cho HTTP/2
+            SocketsHttpHandler CreateHandler()
+            {
+                var g = cfg.GetSection("Grpc:Http2");
+                return new SocketsHttpHandler
+                {
+                    PooledConnectionIdleTimeout = TimeSpan.FromSeconds(g.GetValue<int>("PooledConnectionIdleTimeoutSeconds", 120)),
+                    KeepAlivePingDelay = TimeSpan.FromSeconds(g.GetValue<int>("KeepAlivePingDelaySeconds", 20)),
+                    KeepAlivePingTimeout = TimeSpan.FromSeconds(g.GetValue<int>("KeepAlivePingTimeoutSeconds", 10)),
+                    EnableMultipleHttp2Connections = g.GetValue("EnableMultipleHttp2Connections", true)
+                };
+            }
 
-        //    return services;
-        //}
+            // ServiceConfig với Retry/Hedging (cho SystemService)
+            var sysRetry = cfg.GetSection("Grpc:SystemService:Retry");
+            var serviceConfig = new ServiceConfig
+            {
+                MethodConfigs =
+                {
+                    new MethodConfig
+                    {
+                        Names = { MethodName.Default },
+                        RetryPolicy = new RetryPolicy
+                        {
+                            MaxAttempts = sysRetry.GetValue<int?>("MaxAttempts") ?? 4,
+                            InitialBackoff = TimeSpan.Parse(sysRetry.GetValue<string>("InitialBackoff") ?? "00:00:00.2"),
+                            MaxBackoff = TimeSpan.Parse(sysRetry.GetValue<string>("MaxBackoff") ?? "00:00:02"),
+                            BackoffMultiplier = sysRetry.GetValue<double?>("BackoffMultiplier") ?? 2.0,
+                            RetryableStatusCodes = {
+                                Grpc.Core.StatusCode.Unavailable,
+                                Grpc.Core.StatusCode.DeadlineExceeded
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Interceptors
+            //services.AddSingleton<ClientLoggingInterceptor>();
+            services.AddSingleton<AuthHeaderInterceptor>();
+            services.AddSingleton<CorrelationIdInterceptor>();
+
+            // SystemService client
+            services
+                .AddGrpcClient<BranchService.BranchServiceClient>((sp, o) =>
+                {
+                    o.Address = new Uri(cfg["Grpc:SystemService:Address"]!);
+                    o.ChannelOptionsActions.Add(ch =>
+                    {
+                        ch.Credentials = ChannelCredentials.SecureSsl; // TLS
+                        ch.ServiceConfig = serviceConfig;              // retry/hedging
+                    });
+                    //o.HttpHandler = CreateHandler();
+                })
+                .AddInterceptor<AuthHeaderInterceptor>()
+                .AddInterceptor<CorrelationIdInterceptor>();
+                //.AddInterceptor<ClientLoggingInterceptor>();
+
+            // Health check client
+            //services.AddGrpcClient<Health.HealthClient>((sp, o) =>
+            //{
+            //    o.Address = new Uri(cfg["Grpc:SystemService:Address"]!);
+            //    o.HttpHandler = CreateHandler();
+            //    o.ChannelOptionsActions.Add(ch => ch.Credentials = ChannelCredentials.SecureSsl);
+            //})
+            //.AddInterceptor<AuthHeaderInterceptor>()
+            //.AddInterceptor<CorrelationIdInterceptor>()
+            //.AddInterceptor<ClientLoggingInterceptor>();
+
+            return services;
+        }
 
         #region Infrastructure
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
@@ -98,42 +168,15 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserRequestRepository, UserRequestRepository>();
 
+            // gRPC Gateway Services
+            services.AddScoped<ISystemGateway, SystemGateway>();
+            //services.AddScoped<GrpcHealthProbe>();
+
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
             return services;
         }
-        //private static bool ConfigureGrpcChannelOptions(this IHttpClientBuilder builder)
-        //{
-        //    var methodConfigs = new MethodConfig
-        //    {
-        //        Names = { MethodName.Default },
-        //        RetryPolicy = new RetryPolicy
-        //        {
-        //            MaxAttempts = 5,
-        //            InitialBackoff = TimeSpan.FromSeconds(1),
-        //            MaxBackoff = TimeSpan.FromSeconds(5),
-        //            BackoffMultiplier = 1.5,
-        //            RetryableStatusCodes =
-        //            {
-        //                // Whatever status codes we want to look for
-        //                StatusCode.Unauthenticated, StatusCode.NotFound, StatusCode.Unavailable,
-        //            }
-        //        }
-        //    };
-
-        //    builder.ConfigureChannel(options =>
-        //    {
-        //        options.ServiceConfig = new ServiceConfig
-        //        {
-        //            MethodConfigs = { methodConfigs }
-        //        };
-        //    });
-
-        //    return true;
-        //}
-
-        // Removed ASP.NET Identity registration because User no longer derives from IdentityUser
         #endregion
     }
 }

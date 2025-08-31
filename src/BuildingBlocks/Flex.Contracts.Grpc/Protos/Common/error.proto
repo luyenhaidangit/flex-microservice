@@ -1,8 +1,8 @@
 ﻿syntax = "proto3";
 
-package mybank.common;
+package flex.common;
 
-option csharp_namespace = "MyBank.Contracts.Common";
+option csharp_namespace = "Flex.Contracts.Common";
 
 import "google/rpc/status.proto";
 import "google/rpc/error_details.proto";

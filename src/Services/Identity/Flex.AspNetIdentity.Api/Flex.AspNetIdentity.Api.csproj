@@ -7,12 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+	<PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
 	<PackageReference Include="Google.Protobuf" Version="3.32.0" />
-	  <PackageReference Include="Grpc.Tools" Version="2.72.0">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
+	<PackageReference Include="Grpc.Tools" Version="2.72.0">
+        <PrivateAssets>all</PrivateAssets>
+		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
+	<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+	<PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.12.0-beta.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
@@ -26,6 +28,11 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.Security\Flex.Security.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Contracts.Grpc\Flex.Contracts.Grpc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\..\..\BuildingBlocks\Flex.Contracts.Grpc\Protos\System\branch_service.proto" GrpcServices="Client" ProtoRoot="..\..\..\BuildingBlocks\Flex.Contracts.Grpc\Protos" />
   </ItemGroup>
 
   <!-- <PropertyGroup>
@@ -41,5 +48,4 @@
 		"%SIGNTOOL%" sign /f $(SolutionDir)\SignCert.pfx /p FSSCFLEX /fd SHA256 /a C:\Users\Admin\Desktop\Flex\flex-microservice\src\Services\Identity\Flex.AspNetIdentity.Api\bin\Debug\net9.0\Flex.AspNetIdentity.Api.exe
 	</PostBuildEvent>
   </PropertyGroup> -->
-
 </Project>

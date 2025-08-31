@@ -168,297 +168,121 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - `Controllers/<Entity>Controller.cs`
 
 # Scratchpad
-Goal: Thiết kế API Gateway Flex.Gateway.Yarp cho giao tiếp gRPC
+Goal: Xây dựng base gRPC client cho Flex.AspNetIdentity.Api theo bộ khung chuẩn
 
-[X] Discovery: Phân tích cấu trúc hiện tại của Flex.Gateway.Yarp và các service gRPC
-[X] Analysis: Hiểu yêu cầu thiết kế - API Gateway với YARP hỗ trợ gRPC
-[X] Architecture: Thiết kế kiến trúc tổng thể cho Gateway
-[X] Implementation: Cấu hình YARP cho routing và load balancing
-[X] Security: Thiết kế authentication và authorization
-[X] Observability: Tích hợp logging, metrics, tracing
-[X] Performance: Tối ưu hiệu năng và scalability
-[X] Testing: Chiến lược kiểm thử toàn diện
-[X] Documentation: Tài liệu hóa thiết kế và hướng dẫn triển khai
-[X] Bug Fixes: Sửa lỗi NuGet packages và dependencies
-[X] Standardization: Đồng bộ hóa với pattern của các dự án khác
+[X] Discovery: Phân tích cấu trúc hiện tại của Flex.AspNetIdentity.Api
+[X] Analysis: Hiểu yêu cầu - xây dựng base gRPC client theo bộ khung chuẩn
+[X] Implementation: Cập nhật project file với các package gRPC cần thiết
+[X] Configuration: Cập nhật appsettings.json với cấu hình gRPC
+[X] Interceptors: Tạo các interceptor cho logging, auth, correlation ID
+[X] Service Registration: Đăng ký gRPC clients với DI container
+[X] Gateway Layer: Tạo các gateway service cho gRPC calls
+[X] Health Check: Tích hợp health check cho gRPC services
+[X] Testing: Kiểm tra functionality của gRPC client
+[X] Proto Files: Cập nhật namespace và include tất cả proto files vào project
 
 Progress notes:
 [X] Phân tích cấu trúc hiện tại:
-- Flex.Gateway.Yarp hiện tại chỉ là template cơ bản với Program.cs đơn giản
-- Chưa có YARP package, chỉ có OpenAPI
-- Các service gRPC đã được cấu hình (System API có BranchGrpcService)
-- Có Flex.Gateway.Ocelot đã được cấu hình với routing cho các service
-- Hệ thống có 9 services chính: System, Securities, Ordering, Job, Inventory, Investor, Integration, Identity, Basket
-- Identity service có JWT configuration sẵn
-- gRPC services được cấu hình trên port 5005 với HTTP/2
+- Flex.AspNetIdentity.Api đã có Grpc.AspNetCore, Google.Protobuf, Grpc.Tools
+- Có cấu hình GrpcSettings:SystemUrl trong appsettings.json
+- Có comment code gRPC client cũ (đã bị comment out)
+- Có cấu trúc Extensions/ServiceExtensions.cs theo pattern chuẩn
+- Có System service với BranchService.proto sẵn sàng
 
-[X] Kiến trúc tổng thể:
-- Client → Flex.Gateway.Yarp → Microservices (gRPC)
-- Gateway làm điểm truy cập duy nhất
-- Hỗ trợ SSL termination, authentication tập trung
-- Tích hợp với Identity Service cho JWT validation
-- Observability với OpenTelemetry
+[X] Yêu cầu thiết kế:
+- Xây dựng base gRPC client theo bộ khung chuẩn đã cung cấp
+- Hỗ trợ System service (BranchService) và các service khác trong tương lai
+- Tích hợp với hệ thống authentication và logging hiện có
+- Tuân thủ pattern chuẩn của Flex system
 
 [X] Implementation completed:
-- Thêm các package cần thiết: YARP, gRPC, Authentication, OpenTelemetry, Serilog, Rate Limiting
-- Cấu hình YARP routing cho tất cả 9 services với HTTP/2 support
-- Implement authentication với JWT Bearer token
-- Tích hợp OpenTelemetry cho observability
-- Tạo middleware cho error handling và logging
-- Cấu hình Kestrel cho HTTP/2 và performance optimization
-- Tạo GatewayController cho management endpoints
-- Tạo Dockerfile cho containerization
-- Tạo test script Python để kiểm tra gRPC functionality
-- Tạo README với hướng dẫn đầy đủ
+1. ✅ Cập nhật project file với Grpc.Net.ClientFactory và OpenTelemetry packages
+2. ✅ Cập nhật appsettings.json với cấu hình gRPC chi tiết
+3. ✅ Tạo các interceptor: ClientLoggingInterceptor, AuthHeaderInterceptor, CorrelationIdInterceptor
+4. ✅ Cập nhật ServiceExtensions.cs để đăng ký gRPC clients
+5. ✅ Tạo SystemGateway service để gọi BranchService
+6. ✅ Tích hợp health check cho gRPC services
+7. ✅ Tạo test controller và Python test script
+8. ✅ Cập nhật Flex.System.Api.csproj để include tất cả proto files
+9. ✅ Sửa namespace trong Common proto files từ MyBank thành Flex
 
-[X] Bug Fixes completed:
-- Sửa lỗi NuGet package versions không tương thích
-- Loại bỏ OpenTelemetry.Instrumentation.GrpcNetClient (không có stable version)
-- Loại bỏ OpenTelemetry.Exporter.Prometheus.AspNetCore (không có stable version)
-- Cập nhật Microsoft.AspNetCore.RateLimiting sang version có sẵn
-- Cập nhật ServiceExtensions và ApplicationExtensions để loại bỏ dependencies không có
-- Tạo test script đơn giản hơn không cần protobuf files
-- Cập nhật documentation để phản ánh các thay đổi
-
-[X] Standardization completed:
-- Đồng bộ Program.cs với pattern của các dự án khác
-- Sử dụng Flex.SeriLog thay vì Serilog trực tiếp
-- Đổi tên methods: AddGatewayServices → AddInfrastructure, UseGatewayPipeline → UseInfrastructure
-- Thêm AddConfigurationSettings method theo pattern
-- Đổi tên ConfigureGatewayHost → AddAppConfigurations
-- Cập nhật cấu trúc try-catch-finally theo pattern chuẩn
-- Thêm reference đến Flex.SeriLog project
-
-[X] Các thành phần chính đã thiết kế:
-1. ✅ Routing và Load Balancing với YARP
-2. ✅ Authentication & Authorization (JWT, API Key)
-3. ✅ Security (HTTPS, Rate Limiting, SSL Termination)
-4. ✅ Observability (Logging, Metrics, Distributed Tracing)
-5. ✅ Performance Optimization (HTTP/2, Connection Pooling)
-6. ✅ CI/CD Pipeline (Dockerfile, Kubernetes manifests)
-7. ✅ Testing Strategy (Functional, Performance, Chaos)
-8. ✅ Documentation và Deployment Guide
-9. ✅ Standardization với pattern của hệ thống
+[X] Các thành phần chính đã triển khai:
+1. ✅ gRPC Client Factory với DI container
+2. ✅ Interceptors cho logging, auth, correlation ID
+3. ✅ Retry policy với exponential backoff
+4. ✅ HTTP/2 support với keepalive và connection pooling
+5. ✅ TLS security cho tất cả gRPC calls
+6. ✅ Health check cho gRPC services
+7. ✅ OpenTelemetry integration cho tracing và metrics
+8. ✅ Error handling với domain exceptions
+9. ✅ Test endpoints và Python test script
+10. ✅ Documentation đầy đủ
+11. ✅ Proto files configuration đúng namespace
 
 Notes:
-- Gateway hỗ trợ routing cho tất cả 9 services với cấu hình HTTP/2
-- JWT authentication tích hợp với Identity Service
-- OpenTelemetry cho observability với OTLP exporter
-- Rate limiting và security features đầy đủ
-- Test script Python sẵn sàng để kiểm tra functionality
-- Documentation đầy đủ cho development và deployment
-- Docker và Kubernetes ready
-- Đã sửa tất cả lỗi NuGet packages và dependencies
-- Đã đồng bộ hóa hoàn toàn với pattern của các dự án khác trong hệ thống
+- Base gRPC client đã được triển khai hoàn chỉnh theo bộ khung chuẩn
+- Hỗ trợ System service với BranchService
+- Tích hợp với JWT authentication và Flex.SeriLog
+- Tuân thủ pattern chuẩn của Flex system
+- Sẵn sàng để mở rộng cho các service khác
+- Có test script Python để kiểm tra functionality
+- Documentation đầy đủ cho development và maintenance
+- Proto files đã được cập nhật với namespace Flex.Contracts.Common
+- Flex.System.Api.csproj đã include tất cả proto files cần thiết
 
-# Playbook: Triển khai Service mới theo Pattern chuẩn Flex
+# Playbook: Luồng triển khai chức năng quản lý (ví dụ: User)
 
-## Mục tiêu
-Chuẩn hoá quy trình tạo service mới trong hệ thống Flex, đảm bảo tính nhất quán và dễ bảo trì.
+- Mục tiêu: Chuẩn hoá quy trình thêm một module quản lý theo mô hình maker-checker, tái sử dụng tối đa hạ tầng sẵn có.
 
-## Pattern chuẩn cho Service mới
+- 1) Entities
+  - Khai báo entity chính: `<Entity>` (ví dụ `User`). Không dùng DataAnnotations; ràng buộc bằng FluentValidation/EF Fluent API.
+  - Khai báo entity yêu cầu duyệt: `<Entity>Request : RequestBase<long>` (ví dụ `UserRequest`).
 
-### 1. Cấu trúc thư mục
-```
-src/Services/[ServiceName]/Flex.[ServiceName].Api/
-├── Controllers/
-├── Extensions/
-│   ├── ApplicationExtensions.cs
-│   ├── ServiceExtensions.cs
-│   └── HostExtensions.cs (nếu cần)
-├── Program.cs
-├── appsettings.json
-├── appsettings.Development.json
-└── Flex.[ServiceName].Api.csproj
-```
+- 2) EF Core Configurations
+  - `<Entity>Configuration : IEntityTypeConfiguration<...>`: đặt tên bảng UPPER_SNAKE_CASE số nhiều (ví dụ `USERS`), cấu hình cột/kiểu dữ liệu, index, quan hệ.
+  - `<Entity>RequestConfiguration : RequestBaseConfiguration<<Entity>Request, long>`: `builder.ToTable("<ENTITY>_REQUESTS")` (ví dụ `USER_REQUESTS`).
+  - Tận dụng `RequestBaseConfiguration` để map sẵn các cột chung: `ACTION`, `STATUS`, `REQUESTED_DATA`, `MAKER_ID`, `REQUESTED_DATE`, ...
 
-### 2. Program.cs - Pattern chuẩn
-```csharp
-using Serilog;
-using Flex.SeriLog;
-using Flex.[ServiceName].Api.Extensions;
+- 3) DbContext
+  - Thêm `DbSet<<Entity>>` và `DbSet<<Entity>Request>` nếu cần truy vấn trực tiếp; `ApplyConfigurationsFromAssembly` sẽ tự áp dụng cấu hình.
 
-var builder = WebApplication.CreateBuilder(args);
-var configuration = builder.Configuration;
+- 4) Repository
+  - Interface: `I<Entity>Repository` (mở rộng theo nhu cầu nghiệp vụ) và/hoặc `I<Entity>RequestRepository` nếu cần thao tác riêng.
+  - Implementation: kế thừa `RepositoryBase<TEntity, TKey, IdentityDbContext>` (ví dụ `RepositoryBase<UserRequest, long, IdentityDbContext>`).
 
-builder.AddAppConfigurations();
+- 5) DTOs & Validators
+  - Tạo DTO cho create/update/delete/query. Chỉ dùng FluentValidation (không trộn DataAnnotations).
+  - Quy ước: Request DTO cho maker tạo pending; Approved/Immediate DTO cho thao tác không cần duyệt.
 
-SeriLogger.Configure(builder);
-Log.Information($"Start {builder.Environment.ApplicationName} up");
+- 6) Service (Application layer)
+  - Interface: `I<Entity>Service` (và `I<Entity>AdminService` nếu tách CRUD immediate vs admin).
+  - Thực thi maker-checker: thao tác cần duyệt -> ghi `<Entity>Request`; thao tác immediate -> dùng repository/manager thực thi trực tiếp.
+  - Sử dụng `UserManager`/`RoleManager` cho entity thuộc Identity khi cần.
 
-try
-{
-    builder.Services.AddConfigurationSettings(configuration);
-    builder.Services.AddInfrastructure(configuration);
+- 7) Controller (API)
+  - Route: `api/<entities>`; gắn policy theo `Permissions.<AREA>.<ACTION>` (ví dụ `USERS.READ`, `USERS.CREATE`, ...).
+  - Expose endpoint cho CRUD, approve/reject (nếu có request), các thao tác đặc thù (ví dụ assign-roles, lock/unlock...).
 
-    var app = builder.Build();
+- 8) Đăng ký DI
+  - `ServiceExtensions.AddInfrastructureServices`: `services.AddScoped<I<Entity>Service, EntityService>();`
+  - Đăng ký repository tương ứng; AutoMapper profile; validators `AddValidatorsFromAssembly` nếu áp dụng.
+  - Đảm bảo `AddEntityFrameworkStores<IdentityDbContext>()` cho các entity Identity.
 
-    app.UseInfrastructure();
+- 9) Migration & Tên bảng/kiểu dữ liệu
+  - Chuẩn hoá bảng: UPPER_SNAKE_CASE số nhiều; bảng request: `<ENTITY>_REQUESTS`.
+  - Áp dụng converter nếu cần (ví dụ boolean -> `CHAR(1)` Y/N).
+  - Tạo migration, chạy migrate trong pipeline khởi động.
 
-    app.Run();
-}
+- 10) Bổ sung
+  - Logging/Audit cho thao tác admin; rate limit các endpoint nhạy cảm; 2FA nếu cần.
+  - Mapping AutoMapper từ DTO -> entity/request và ngược lại.
 
-catch (Exception ex)
-{
-    string type = ex.GetType().Name;
-    if (type.Equals("StopTheHostException", StringComparison.Ordinal)) throw;
-
-    Log.Fatal(ex, $"Unhandled exception: {ex.Message}");
-}
-finally
-{
-    Log.Information($"Shutdown {builder.Environment.ApplicationName} complete");
-    Log.CloseAndFlush();
-}
-```
-
-### 3. ServiceExtensions.cs - Pattern chuẩn
-```csharp
-namespace Flex.[ServiceName].Api.Extensions
-{
-    public static class ServiceExtensions
-    {
-        public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
-        {
-            // Bind configuration settings nếu cần
-            return services;
-        }
-
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
-        {
-            // Add services to the container.
-            services.AddControllers().ApplyJsonSettings();
-
-            services.AddEndpointsApiExplorer();
-
-            services.ConfigureSwagger();
-
-            services.ConfigureRouteOptions();
-            services.ConfigureValidationErrorResponse();
-
-            // Register services DI container
-            services.AddInfrastructureServices();
-
-            // Database (nếu cần)
-            services.ConfigureServiceDbContext<[ServiceName]DbContext>(configuration);
-
-            // AutoMapper
-            services.AddAutoMapper(AssemblyReference.Assembly);
-
-            // Http Accessor
-            services.AddHttpContextAccessor();
-
-            // Grpc (nếu cần)
-            services.AddGrpc();
-
-            return services;
-        }
-
-        #region Infrastructure
-        private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
-        {
-            // Register repositories, services, etc.
-            return services;
-        }
-        #endregion
-    }
-}
-```
-
-### 4. ApplicationExtensions.cs - Pattern chuẩn
-```csharp
-using Flex.Infrastructure.Middlewares;
-using Serilog;
-
-namespace Flex.[ServiceName].Api.Extensions
-{
-    public static class ApplicationExtensions
-    {
-        public static void UseInfrastructure(this WebApplication app)
-        {
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
-
-            // Logging
-            app.UseSerilogRequestLogging();
-
-            app.UseMiddleware<ErrorWrappingMiddleware>();
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseRouting();
-
-            // Grpc (nếu cần)
-            app.MapGrpcService<[ServiceName]GrpcService>();
-
-            app.MapControllers();
-        }
-    }
-}
-```
-
-### 5. HostExtensions.cs - Pattern chuẩn (nếu cần)
-```csharp
-namespace Flex.[ServiceName].Api.Extensions
-{
-    public static class HostExtensions
-    {
-        public static void AddAppConfigurations(this WebApplicationBuilder builder)
-        {
-            var env = builder.Environment;
-
-            // Adds application configurations from JSON files and environment variables.
-            builder.Configuration
-               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-               .AddEnvironmentVariables();
-        }
-    }
-}
-```
-
-### 6. Project file - Pattern chuẩn
-```xml
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <!-- Core packages -->
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
-    
-    <!-- Infrastructure packages -->
-    <PackageReference Include="Flex.Infrastructure" Version="1.0.0" />
-    <PackageReference Include="Flex.Infrastructure.EntityFrameworkCore" Version="1.0.0" />
-    <PackageReference Include="Flex.Infrastructure.EntityFrameworkCore.Oracle" Version="1.0.0" />
-    <PackageReference Include="Flex.Infrastructure.Redis" Version="1.0.0" />
-    <PackageReference Include="Flex.Infrastructure.Swashbuckle" Version="1.0.0" />
-    
-    <!-- Shared packages -->
-    <PackageReference Include="Flex.Shared" Version="1.0.0" />
-    
-    <!-- Module packages -->
-    <PackageReference Include="Flex.SeriLog" Version="1.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Project references -->
-    <ProjectReference Include="..\..\BuildingBlocks\Flex.Shared\Flex.Shared.csproj" />
-    <ProjectReference Include="..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
-  </ItemGroup>
-
-</Project>
-```
+- Gợi ý cấu trúc file (ví dụ trong Identity module)
+  - `Entities/<Entity>.cs`, `Entities/<Entity>Request.cs`
+  - `Persistence/Configurations/<Entity>Configuration.cs`, `.../<Entity>RequestConfiguration.cs`
+  - `Repositories/Interfaces/I<Entity>Repository.cs`, `Repositories/<Entity>Repository.cs`
+  - `Services/I<Entity>Service.cs`, `Services/<Entity>Service.cs`
+  - `Controllers/<Entity>Controller.cs`
 
 ## Quy trình triển khai Service mới
 
