@@ -5,12 +5,14 @@ namespace Flex.Security
 {
     public class JwtSettings
     {
+        [Required, MinLength(32)]
+        public string SecretKey { get; set; } = string.Empty;
+
         [Required]
-        public string SecretKey { get; set; }
+        public string Issuer { get; set; } = string.Empty;
 
-        public string Issuer { get; set; }
-
-        public string Audience { get; set; }
+        [Required]
+        public string Audience { get; set; } = string.Empty;
 
         public int ExpiryInMinutes { get; set; } = 60;
 

@@ -14,10 +14,12 @@ namespace Flex.Security
     {
         public static IServiceCollection AddJwtTokenSecurity(this IServiceCollection services, IConfiguration configuration, bool isCheckBlacklist = true)
         {
+            var redisConnectionString = configuration.GetConnectionString(RedisConstants.RedisConnectionKey) ?? string.Empty;
+
             if (isCheckBlacklist)
             {
                 services.AddSingleton<IConnectionMultiplexer>(sp =>
-                ConnectionMultiplexer.Connect(configuration.GetConnectionString(RedisConstants.RedisConnectionKey)));
+                ConnectionMultiplexer.Connect(redisConnectionString));
 
                 services.AddSingleton<IJwtTokenBlacklistService, JwtTokenBlacklistService>();
             } 
@@ -32,11 +34,12 @@ namespace Flex.Security
         public static IServiceCollection AddAuthenticationJwtToken(this IServiceCollection services, IConfiguration configuration, bool isCheckBlacklist = true)
         {
             var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigKeyConstants.JwtSettings);
+            var redisConnectionString = configuration.GetConnectionString(RedisConstants.RedisConnectionKey) ?? string.Empty;
 
             if (isCheckBlacklist)
             {
                 services.AddSingleton<IConnectionMultiplexer>(sp =>
-                ConnectionMultiplexer.Connect(configuration.GetConnectionString(RedisConstants.RedisConnectionKey)));
+                ConnectionMultiplexer.Connect(redisConnectionString));
 
                 services.AddSingleton<IJwtTokenBlacklistService, JwtTokenBlacklistService>();
 
