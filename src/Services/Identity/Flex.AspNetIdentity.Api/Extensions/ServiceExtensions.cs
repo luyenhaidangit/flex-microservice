@@ -68,19 +68,19 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>));
             services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
 
-            // Services
-            services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<ICurrentUserService, CurrentUserService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-
             // Repositories
             services.AddScoped<IRoleRequestRepository, RoleRequestRepository>();
             services.AddScoped<IPermissionRepository, PermissionRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserRequestRepository, UserRequestRepository>();
 
-            // gRPC Gateway Services
+            // Services
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+            // Integrations
             services.AddScoped<IBranchIntegrationService, BranchGrpcService>();
 
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
