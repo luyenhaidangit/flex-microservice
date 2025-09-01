@@ -80,11 +80,9 @@ namespace Flex.AspNetIdentity.Api.Services
             {
                 UserName = u.UserName ?? string.Empty,
                 FullName = u.FullName,
-                Email = u.Email,
-                PhoneNumber = u.PhoneNumber,
+                Email = u.Email ?? "",
                 BranchName = u.BranchId > 0 && branches.TryGetValue(u.BranchId, out var branchName) ? branchName : "",
-                IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
-                IsActive = true
+                IsActive = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
             }).ToList();
 
             // ===== Return result =====
