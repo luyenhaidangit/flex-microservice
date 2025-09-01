@@ -168,7 +168,46 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - `Controllers/<Entity>Controller.cs`
 
 # Scratchpad
-Goal: Xây dựng base gRPC client cho Flex.AspNetIdentity.Api theo bộ khung chuẩn
+Goal: Triển khai API xem danh sách yêu cầu cho UserController theo pattern RoleController
+
+[X] Phân tích cấu trúc RoleController để tham khảo
+[X] Tạo các DTO cần thiết cho User requests:
+  - UserPendingPagingDto: DTO cho danh sách pending requests
+  - GetUserRequestsPagingRequest: Request cho phân trang
+  - UserRequestDetailDto: DTO cho chi tiết request
+  - UserDetailDataDto: DTO cho dữ liệu user trong request
+  - UserRequestApprovalResultDto: DTO cho kết quả approve/reject
+  - ApproveUserRequestDto: DTO cho approve request
+  - RejectUserRequestDto: DTO cho reject request
+
+[X] Cập nhật IUserService interface với các method mới:
+  - GetPendingUserRequestsPagedAsync: Lấy danh sách pending requests
+  - GetPendingUserRequestByIdAsync: Lấy chi tiết request
+  - ApprovePendingUserRequestAsync: Approve request
+  - RejectPendingUserRequestAsync: Reject request
+
+[X] Triển khai các method trong UserService:
+  - Xử lý phân trang và tìm kiếm
+  - Parse JSON data từ RequestedData
+  - Xử lý approve/reject với validation
+  - Helper methods để extract data từ JSON
+
+[X] Thêm các endpoint vào UserController:
+  - GET /api/users/requests/pending: Danh sách pending requests
+  - GET /api/users/requests/pending/{requestId}: Chi tiết request
+  - POST /api/users/requests/pending/{requestId}/approve: Approve request
+  - POST /api/users/requests/pending/{requestId}/reject: Reject request
+
+[X] Kiểm tra compilation và fix lỗi
+
+Implementation details:
+- Tuân thủ pattern của RoleController
+- Sử dụng RequestStatusConstant và RequestTypeConstant
+- Xử lý JSON parsing an toàn với try-catch
+- Validation đầy đủ cho tất cả endpoints
+- Error handling với proper HTTP status codes
+- Logging cho các thao tác quan trọng
+- Tích hợp với existing UserService methods
 
 [X] Discovery: Phân tích cấu trúc hiện tại của Flex.AspNetIdentity.Api
 [X] Analysis: Hiểu yêu cầu - xây dựng base gRPC client theo bộ khung chuẩn

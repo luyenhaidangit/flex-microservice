@@ -1,12 +1,14 @@
 using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
-using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.Infrastructure.EF;
 using Flex.Shared.SeedWork;
+using Flex.Shared.SeedWork.Workflow.Constants;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -88,6 +90,50 @@ namespace Flex.AspNetIdentity.Api.Services
             }).ToList();
 
             return PagedResult<UserPagingDto>.Create(pageIndex, pageSize, total, items);
+        }
+
+        /// <summary>
+        /// Get all pending user requests with pagination.
+        /// </summary>
+        public async Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken ct)
+        {
+            // ===== Process request parameters =====
+            var keyword = request?.Keyword?.Trim().ToLower();
+            var requestType = request?.Type?.Trim().ToUpper();
+            int pageIndex = Math.Max(1, request.PageIndex ?? 1);
+            int pageSize = Math.Max(1, request.PageSize ?? 10);
+
+            // ===== Build query =====
+            var pendingQuery = _userRequestRepository.FindAll()
+                .Where(r => r.Status == RequestStatusConstant.Unauthorised)
+                .WhereIf(!string.IsNullOrEmpty(keyword),
+                    r => EF.Functions.Like(r.RequestedData.ToLower(), $"%{keyword}%"))
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
+                    r => r.Action == requestType)
+                .AsNoTracking()
+                .Select(r => new UserPendingPagingDto
+                {
+                    RequestId = r.Id,
+                    UserName = ExtractUserNameFromRequestData(r.RequestedData),
+                    FullName = ExtractFullNameFromRequestData(r.RequestedData),
+                    Email = ExtractEmailFromRequestData(r.RequestedData),
+                    PhoneNumber = ExtractPhoneNumberFromRequestData(r.RequestedData),
+                    RequestType = r.Action,
+                    //RequestedBy = r.CreatedBy,
+                    //RequestedDate = r.CreatedDate
+                });
+
+            // ===== Execute query =====
+            var total = await pendingQuery.CountAsync();
+            var items = await pendingQuery
+                .OrderByDescending(dto => dto.RequestedDate)
+                .ThenBy(dto => dto.RequestId)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // ===== Return result =====
+            return PagedResult<UserPendingPagingDto>.Create(pageIndex, pageSize, total, items);
         }
 
         public async Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken ct)
@@ -294,6 +340,371 @@ namespace Flex.AspNetIdentity.Api.Services
             user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
             await _dbContext.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Get pending user request detail by request ID.
+        /// </summary>
+        public async Task<UserRequestDetailDto> GetPendingUserRequestByIdAsync(long requestId)
+        {
+            // ===== Get request data =====
+            var request = await _userRequestRepository.FindAll()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null)
+            {
+                throw new ArgumentException($"User request with ID {requestId} not found.");
+            }
+
+            var result = new UserRequestDetailDto
+            {
+                RequestId = request.Id.ToString(),
+                Type = request.Action,
+                //CreatedBy = request.CreatedBy ?? string.Empty,
+                //CreatedDate = request.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+
+            // ===== Process request data based on action type =====
+            switch (request.Action)
+            {
+                case RequestTypeConstant.Create:
+                    ProcessCreateUserRequestData(request, result);
+                    break;
+                case RequestTypeConstant.Update:
+                    await ProcessUpdateUserRequestData(request, result);
+                    break;
+                case RequestTypeConstant.Delete:
+                    await ProcessDeleteUserRequestData(request, result);
+                    break;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Approve pending user request by ID.
+        /// </summary>
+        public async Task<UserRequestApprovalResultDto> ApprovePendingUserRequestAsync(long requestId, string? comment = null)
+        {
+            // ===== Get request data =====
+            var request = await _userRequestRepository.FindAll()
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null)
+            {
+                throw new ArgumentException($"User request with ID {requestId} not found.");
+            }
+
+            if (request.Status != RequestStatusConstant.Unauthorised)
+            {
+                throw new ArgumentException($"User request with ID {requestId} is not in pending status.");
+            }
+
+            // ===== Process approval based on action type =====
+            long? createdUserId = null;
+            switch (request.Action)
+            {
+                case RequestTypeConstant.Create:
+                    createdUserId = await ProcessCreateUserApproval(request);
+                    break;
+                case RequestTypeConstant.Update:
+                    await ProcessUpdateUserApproval(request);
+                    break;
+                case RequestTypeConstant.Delete:
+                    await ProcessDeleteUserApproval(request);
+                    break;
+            }
+
+            // ===== Update request status =====
+            //request.Status = RequestStatusConstant.Authorised;
+            //request.ApprovedBy = "SYSTEM"; // TODO: Get from current user context
+            //request.ApprovedDate = DateTime.UtcNow;
+            //request.Comment = comment;
+
+            //await _userRequestRepository.UpdateAsync(request);
+            //await _unitOfWork.SaveChangesAsync();
+
+            return new UserRequestApprovalResultDto
+            {
+                RequestId = requestId,
+                RequestType = request.Action,
+                Status = RequestStatusConstant.Authorised,
+                //ApprovedBy = request.ApprovedBy,
+                //ApprovedDate = request.ApprovedDate.Value,
+                Comment = comment,
+                CreatedUserId = createdUserId
+            };
+        }
+
+        /// <summary>
+        /// Reject pending user request by ID.
+        /// </summary>
+        public async Task<UserRequestApprovalResultDto> RejectPendingUserRequestAsync(long requestId, string? reason = null)
+        {
+            // ===== Get request data =====
+            var request = await _userRequestRepository.FindAll()
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null)
+            {
+                throw new ArgumentException($"User request with ID {requestId} not found.");
+            }
+
+            if (request.Status != RequestStatusConstant.Unauthorised)
+            {
+                throw new ArgumentException($"User request with ID {requestId} is not in pending status.");
+            }
+
+            // ===== Update request status =====
+            request.Status = RequestStatusConstant.Rejected;
+            //request.ApprovedBy = "SYSTEM"; // TODO: Get from current user context
+            //request.ApprovedDate = DateTime.UtcNow;
+            //request.Comment = reason;
+
+            //await _userRequestRepository.UpdateAsync(request);
+            //await _unitOfWork.SaveChangesAsync();
+
+            return new UserRequestApprovalResultDto
+            {
+                RequestId = requestId,
+                RequestType = request.Action,
+                Status = RequestStatusConstant.Rejected,
+                //ApprovedBy = request.ApprovedBy,
+                //ApprovedDate = request.ApprovedDate.Value,
+                Comment = reason
+            };
+        }
+
+        #region Private Helper Methods for User Requests
+
+        private static string ExtractUserNameFromRequestData(string requestData)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(requestData);
+                return data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static string ExtractFullNameFromRequestData(string requestData)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(requestData);
+                return data?.GetValueOrDefault("FullName")?.ToString() ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static string ExtractEmailFromRequestData(string requestData)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(requestData);
+                return data?.GetValueOrDefault("Email")?.ToString() ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static string ExtractPhoneNumberFromRequestData(string requestData)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(requestData);
+                return data?.GetValueOrDefault("PhoneNumber")?.ToString() ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static void ProcessCreateUserRequestData(UserRequest request, UserRequestDetailDto result)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
+                result.NewData = new UserDetailDataDto
+                {
+                    UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
+                    FullName = data?.GetValueOrDefault("FullName")?.ToString(),
+                    Email = data?.GetValueOrDefault("Email")?.ToString(),
+                    PhoneNumber = data?.GetValueOrDefault("PhoneNumber")?.ToString(),
+                    BranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : null
+                };
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex, "Failed to process create user request data for request {RequestId}", request.Id);
+            }
+        }
+
+        private async Task ProcessUpdateUserRequestData(UserRequest request, UserRequestDetailDto result)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
+                var userName = data?.GetValueOrDefault("UserName")?.ToString();
+                
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    // Get current user data
+                    var currentUser = await _userRepository.FindAll()
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(u => u.UserName == userName);
+
+                    if (currentUser != null)
+                    {
+                        result.OldData = new UserDetailDataDto
+                        {
+                            UserName = currentUser.UserName ?? string.Empty,
+                            FullName = currentUser.FullName,
+                            Email = currentUser.Email,
+                            PhoneNumber = currentUser.PhoneNumber,
+                            BranchId = currentUser.BranchId
+                        };
+                    }
+                }
+
+                result.NewData = new UserDetailDataDto
+                {
+                    UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
+                    FullName = data?.GetValueOrDefault("FullName")?.ToString(),
+                    Email = data?.GetValueOrDefault("Email")?.ToString(),
+                    PhoneNumber = data?.GetValueOrDefault("PhoneNumber")?.ToString(),
+                    BranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : null
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process update user request data for request {RequestId}", request.Id);
+            }
+        }
+
+        private async Task ProcessDeleteUserRequestData(UserRequest request, UserRequestDetailDto result)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
+                var userName = data?.GetValueOrDefault("UserName")?.ToString();
+                
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    // Get current user data
+                    var currentUser = await _userRepository.FindAll()
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(u => u.UserName == userName);
+
+                    if (currentUser != null)
+                    {
+                        result.OldData = new UserDetailDataDto
+                        {
+                            UserName = currentUser.UserName ?? string.Empty,
+                            FullName = currentUser.FullName,
+                            Email = currentUser.Email,
+                            PhoneNumber = currentUser.PhoneNumber,
+                            BranchId = currentUser.BranchId
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process delete user request data for request {RequestId}", request.Id);
+            }
+        }
+
+        private async Task<long> ProcessCreateUserApproval(UserRequest request)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<CreateUserRequestDto>(request.RequestedData);
+                if (data == null)
+                {
+                    throw new ArgumentException("Invalid request data for user creation.");
+                }
+
+                // Create user using existing method
+                var userId = await CreateUserAsync(data, "");
+                
+                // Parse userId to long if it's a string
+                if (long.TryParse(userId, out var userIdLong))
+                {
+                    return userIdLong;
+                }
+                
+                return 0; // Fallback
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process create user approval for request {RequestId}", request.Id);
+                throw;
+            }
+        }
+
+        private async Task ProcessUpdateUserApproval(UserRequest request)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<UpdateUserRequestDto>(request.RequestedData);
+                if (data == null)
+                {
+                    throw new ArgumentException("Invalid request data for user update.");
+                }
+
+                var userName = ExtractUserNameFromRequestData(request.RequestedData);
+                if (string.IsNullOrEmpty(userName))
+                {
+                    throw new ArgumentException("UserName is required for user update.");
+                }
+
+                // Update user using existing method
+                await UpdateUserAsync(userName, data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process update user approval for request {RequestId}", request.Id);
+                throw;
+            }
+        }
+
+        private async Task ProcessDeleteUserApproval(UserRequest request)
+        {
+            try
+            {
+                var data = JsonSerializer.Deserialize<DeleteUserRequestDto>(request.RequestedData);
+                if (data == null)
+                {
+                    throw new ArgumentException("Invalid request data for user deletion.");
+                }
+
+                var userName = ExtractUserNameFromRequestData(request.RequestedData);
+                if (string.IsNullOrEmpty(userName))
+                {
+                    throw new ArgumentException("UserName is required for user deletion.");
+                }
+
+                // Delete user using existing method
+                await DeleteUserAsync(userName, data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process delete user approval for request {RequestId}", request.Id);
+                throw;
+            }
+        }
+
+        #endregion
         #endregion
     }
 }
