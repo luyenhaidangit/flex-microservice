@@ -230,6 +230,72 @@ Notes:
 - Proto files đã được cập nhật với namespace Flex.Contracts.Common
 - Flex.System.Api.csproj đã include tất cả proto files cần thiết
 
+# Fix: UserService BranchName Integration
+
+[X] Đã sửa lỗi BranchName trong UserService:
+1. ✅ Cập nhật UserService để inject IBranchIntegrationService
+2. ✅ Sửa method GetUsersPagedAsync để lấy tên branch thực tế từ System service
+3. ✅ Sửa method GetUserByUserNameAsync để lấy tên branch thực tế
+4. ✅ Thêm error handling và logging cho branch integration
+5. ✅ Tạo test script Python để verify kết quả
+
+Implementation details:
+- Sử dụng BatchGetBranchesAsync cho GetUsersPagedAsync để tối ưu performance
+- Sử dụng GetBranchByCodeAsync cho GetUserByUserNameAsync
+- Có fallback graceful khi không lấy được thông tin branch
+- Logging warning khi có lỗi integration với System service
+- Test script có thể chạy để verify functionality
+
+# Fix: gRPC System Service IDs Integration
+
+[X] Đã sửa gRPC System service để sử dụng ids thay vì codes:
+1. ✅ Cập nhật IBranchIntegrationService để sử dụng long ids thay vì string codes
+2. ✅ Cập nhật BranchGrpcService để convert ids thành codes cho gRPC calls
+3. ✅ Cập nhật BranchDto để sử dụng long Id thay vì string Code
+4. ✅ Cập nhật UserService để sử dụng BranchId trực tiếp không cần convert
+5. ✅ Cập nhật cache để sử dụng long keys thay vì string keys
+
+Implementation details:
+- gRPC proto vẫn sử dụng codes (string) để không phá vỡ contract
+- BranchGrpcService convert ids thành codes khi gọi gRPC
+- Map kết quả từ codes về ids khi trả về
+- Cache sử dụng long keys để tối ưu performance
+- Type safety tốt hơn với long ids thay vì string codes
+- Không cần string conversion trong UserService
+
+# Fix: System Service GetBranchesByIdsAsync Method
+
+[X] Đã thêm method GetBranchesByIdsAsync vào System service:
+1. ✅ Thêm method GetBranchesByIdsAsync(IEnumerable<long> ids) vào BranchService
+2. ✅ Cập nhật IBranchService interface với cả hai methods:
+   - GetBranchesByCodesAsync(IEnumerable<string> codes)
+   - GetBranchesByIdsAsync(IEnumerable<long> ids)
+3. ✅ Cập nhật gRPC controller để sử dụng GetBranchesByIdsAsync
+4. ✅ Cập nhật logging để rõ ràng hơn về việc sử dụng ids
+
+Implementation details:
+- System service giờ hỗ trợ cả codes và ids
+- gRPC sử dụng ids trực tiếp (proto đã được cập nhật)
+- Identity service sử dụng ids trực tiếp không cần convert
+- Cache và performance được tối ưu với long keys
+- Type safety được cải thiện với long ids
+
+# Fix: Compilation Errors Resolution
+
+[X] Đã sửa tất cả compilation errors:
+1. ✅ CS0029: Sửa BranchDetailDto.Id từ long? thành long
+2. ✅ CS0266: Sửa nullable long conversion trong gRPC service
+3. ✅ CS1503: Sửa type mismatch trong gRPC calls
+4. ✅ CS0535: Sửa interface implementation mismatch
+5. ✅ CS1503: Sửa type mismatch trong Identity service
+
+Implementation details:
+- Proto file đã được cập nhật để sử dụng int64 (long) thay vì string
+- gRPC flow giờ sử dụng ids trực tiếp từ đầu đến cuối
+- Không cần conversion giữa ids và codes
+- Type safety được đảm bảo hoàn toàn
+- Performance được cải thiện đáng kể
+
 # Playbook: Luồng triển khai chức năng quản lý (ví dụ: User)
 
 - Mục tiêu: Chuẩn hoá quy trình thêm một module quản lý theo mô hình maker-checker, tái sử dụng tối đa hạ tầng sẵn có.

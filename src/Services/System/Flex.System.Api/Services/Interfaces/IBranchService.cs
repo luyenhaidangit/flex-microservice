@@ -26,5 +26,6 @@ namespace Flex.System.Api.Services.Interfaces
 
         // gRPC Support
         Task<Dictionary<string, BranchDetailDto>> GetBranchesByCodesAsync(IEnumerable<string> codes);
+        Task<Dictionary<long, BranchDetailDto>> GetBranchesByIdsAsync(IEnumerable<long> ids);
     }
 }

@@ -5,19 +5,19 @@ option csharp_namespace = "Flex.System.Grpc.Services";
 
 // Dtos
 message Branch {
-  string code = 1;
+  int64 id = 1;
   string name = 2;
 }
 
 // Input Define
 message BatchGetBranchesRequest{
-	repeated string codes = 1;
+	repeated int64 ids = 1;
 }
 
 // Output Define
 message BatchGetBranchesResponse {
-  map<string, Branch> branches_by_code = 1;
-  repeated string not_found_codes = 2;
+  map<int64, Branch> branches_by_id = 1;
+  repeated int64 not_found_codes = 2;
 }
 
 // Service Define

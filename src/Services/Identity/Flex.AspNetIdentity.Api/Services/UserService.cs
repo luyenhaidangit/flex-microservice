@@ -3,6 +3,7 @@ using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
+using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.Infrastructure.EF;
 using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
@@ -16,19 +17,22 @@ namespace Flex.AspNetIdentity.Api.Services
         private readonly IUserRepository _userRepository;
         private readonly IUserRequestRepository _userRequestRepository;
         private readonly ICurrentUserService _userService;
+        private readonly IBranchIntegrationService _branchIntegrationService;
 
         public UserService(
             ILogger<UserService> logger,
             IdentityDbContext dbContext,
             ICurrentUserService userService,
             IUserRepository userRepository,
-            IUserRequestRepository userRequestRepository)
+            IUserRequestRepository userRequestRepository,
+            IBranchIntegrationService branchIntegrationService)
         {
             _logger = logger;
             _dbContext = dbContext;
             _userService = userService;
             _userRepository = userRepository;
             _userRequestRepository = userRequestRepository;
+            _branchIntegrationService = branchIntegrationService;
         }
 
         #region Query
@@ -53,13 +57,32 @@ namespace Flex.AspNetIdentity.Api.Services
                 .Select(u => new { u.UserName, u.FullName, u.Email, u.PhoneNumber, u.BranchId, u.LockoutEnd })
                 .ToListAsync(ct);
 
+            // Lấy danh sách branch ids từ users
+            var branchIds = raw.Where(u => u.BranchId > 0).Select(u => u.BranchId).Distinct().ToList();
+            
+            // Lấy thông tin branches từ System service
+            var branches = new Dictionary<long, string>();
+            if (branchIds.Any())
+            {
+                try
+                {
+                    var branchDtos = await _branchIntegrationService.BatchGetBranchesAsync(branchIds, ct);
+                    branches = branchDtos.ToDictionary(b => b.Id, b => b.Name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to retrieve branch information for users");
+                    // Tiếp tục với branch names rỗng nếu không lấy được thông tin
+                }
+            }
+
             var items = raw.Select(u => new UserPagingDto
             {
                 UserName = u.UserName ?? string.Empty,
                 FullName = u.FullName,
                 Email = u.Email,
                 PhoneNumber = u.PhoneNumber,
-                BranchName = "",
+                BranchName = u.BranchId > 0 && branches.TryGetValue(u.BranchId, out var branchName) ? branchName : "",
                 IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
                 IsActive = true
             }).ToList();
@@ -76,15 +99,38 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new Exception($"User '{userName}' not found.");
             };
 
+            // Lấy tên branch từ System service
+            string branchName = "";
+            if (user.BranchId > 0)
+            {
+                try
+                {
+                    var branch = await _branchIntegrationService.GetBranchByIdAsync(user.BranchId, ct);
+                    branchName = branch?.Name ?? "";
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to retrieve branch information for user {UserName} with BranchId {BranchId}", userName, user.BranchId);
+                    // Tiếp tục với branch name rỗng nếu không lấy được thông tin
+                }
+            }
+
+            // Lấy roles của user
+            var roles = await _dbContext.Set<UserRole>()
+                .Where(ur => ur.UserId == user.Id)
+                .Join(_dbContext.Set<Role>(), ur => ur.RoleId, r => r.Id, (ur, r) => r.Code)
+                .ToListAsync(ct);
+
             return new UserDetailDto
             {
                 UserName = user.UserName ?? string.Empty,
                 FullName = user.FullName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                BranchName = "",
+                BranchName = branchName,
                 IsLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
-                IsActive = true
+                IsActive = true,
+                Roles = roles
             };
         }
 

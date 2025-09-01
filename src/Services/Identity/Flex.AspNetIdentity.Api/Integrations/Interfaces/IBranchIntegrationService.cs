@@ -8,19 +8,19 @@ namespace Flex.AspNetIdentity.Api.Integrations.Interfaces
     public interface IBranchIntegrationService
     {
         /// <summary>
-        /// Get list of branches by branch codes
+        /// Get list of branches by branch ids
         /// </summary>
-        Task<IReadOnlyList<BranchDto>> BatchGetBranchesAsync(IEnumerable<string> codes, CancellationToken ct = default);
+        Task<IReadOnlyList<BranchDto>> BatchGetBranchesAsync(IEnumerable<long> ids, CancellationToken ct = default);
 
         /// <summary>
-        /// Get branch information by code
+        /// Get branch information by id
         /// </summary>
-        Task<BranchDto?> GetBranchByCodeAsync(string code, CancellationToken ct = default);
+        Task<BranchDto?> GetBranchByIdAsync(long id, CancellationToken ct = default);
 
         /// <summary>
         /// Check if branch exists
         /// </summary>
-        Task<bool> BranchExistsAsync(string code, CancellationToken ct = default);
+        Task<bool> BranchExistsAsync(long id, CancellationToken ct = default);
 
         /// <summary>
         /// Get all branches list (if endpoint available)

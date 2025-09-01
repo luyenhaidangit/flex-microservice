@@ -17,27 +17,27 @@ namespace Flex.System.Api.Grpc
         {
             try
             {
-                // ===== Get branches by codes =====
-                var branchesByCode = await _branchService.GetBranchesByCodesAsync(request.Codes);
+                // ===== Get branches by ids =====
+                var branchesById = await _branchService.GetBranchesByIdsAsync(request.Ids);
 
                 // ===== Build response =====
                 var response = new BatchGetBranchesResponse();
 
                 // ===== Add found branches =====
-                foreach (var kvp in branchesByCode)
+                foreach (var kvp in branchesById)
                 {
                     var branch = new Branch
                     {
-                        Code = kvp.Value.Code,
+                        Id = kvp.Value.Id,
                         Name = kvp.Value.Name
                     };
-                    response.BranchesByCode.Add(kvp.Key, branch);
+                    response.BranchesById.Add(kvp.Key, branch);
                 }
 
-                // ===== Add not found codes =====
-                var foundCodes = branchesByCode.Keys.ToHashSet();
-                var notFoundCodes = request.Codes.Where(code => !foundCodes.Contains(code)).ToList();
-                response.NotFoundCodes.AddRange(notFoundCodes);
+                // ===== Add not found ids =====
+                var foundIds = branchesById.Keys.ToHashSet();
+                var notFoundIds = request.Ids.Where(id => !foundIds.Contains(id)).ToList();
+                response.NotFoundCodes.AddRange(notFoundIds);
 
                 return response;
             }
