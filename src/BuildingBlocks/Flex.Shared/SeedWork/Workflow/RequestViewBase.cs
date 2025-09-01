@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace Flex.Shared.SeedWork.Workflow
 {
     /// <summary>
@@ -18,11 +16,6 @@ namespace Flex.Shared.SeedWork.Workflow
         public long EntityId { get; set; }
 
         /// <summary>
-        /// Request status (UNAUTHORISED, AUTHORISED, REJECTED)
-        /// </summary>
-        public string Status { get; set; } = string.Empty;
-
-        /// <summary>
         /// Request action (CREATE, UPDATE, DELETE)
         /// </summary>
         public string Action { get; set; } = string.Empty;
@@ -30,21 +23,11 @@ namespace Flex.Shared.SeedWork.Workflow
         /// <summary>
         /// User who created the request
         /// </summary>
-        public string CreatedBy { get; set; } = string.Empty;
+        public string RequestedBy { get; set; } = string.Empty;
 
         /// <summary>
         /// Date when request was created
         /// </summary>
-        public DateTime CreatedDate { get; set; }
-
-        /// <summary>
-        /// User who approved/rejected the request
-        /// </summary>
-        public string? ApproveBy { get; set; }
-
-        /// <summary>
-        /// Date when request was approved/rejected
-        /// </summary>
-        public DateTime? ApproveDate { get; set; }
+        public DateTime RequestedDate { get; set; }
     }
 }

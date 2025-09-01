@@ -13,7 +13,7 @@ namespace Flex.AspNetIdentity.Api.Models.User
         public string? FullName { get; set; }
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
-        public string RequestType { get; set; } = default!;
+        public string Action { get; set; } = default!;
         public string? RequestedBy { get; set; }
         public DateTime? RequestedDate { get; set; }
     }

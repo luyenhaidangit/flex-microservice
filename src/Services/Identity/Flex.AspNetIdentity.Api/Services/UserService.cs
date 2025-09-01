@@ -116,9 +116,9 @@ namespace Flex.AspNetIdentity.Api.Services
                 .Select(r => new UserPendingPagingDto
                 {
                     RequestId = r.Id,
-                    RequestType = r.Action,
-                    RequestedBy = r.CreatedBy,
-                    RequestedDate = r.CreatedDate,
+                    Action = r.Action,
+                    RequestedBy = r.RequestedBy,
+                    RequestedDate = r.RequestedDate,
                     UserName = r.UserName,
                     FullName = r.FullName,
                     Email = r.Email,
