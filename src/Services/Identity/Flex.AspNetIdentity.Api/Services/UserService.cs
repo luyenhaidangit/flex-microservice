@@ -38,12 +38,18 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         #region Query
+
+        /// <summary>
+        /// Get all approved users with pagination.
+        /// </summary>
         public async Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct)
         {
+            // ===== Process request parameters =====
             var keyword = request.Keyword?.Trim().ToLowerInvariant();
             int pageIndex = request.PageIndexValue;
             int pageSize = request.PageSizeValue;
 
+            // ===== Build query =====
             var query = _userRepository.FindAll().AsNoTracking()
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     u => EF.Functions.Like((u.UserName ?? string.Empty).ToLower(), $"%{keyword}%")
@@ -51,6 +57,7 @@ namespace Flex.AspNetIdentity.Api.Services
                       || EF.Functions.Like((u.FullName ?? string.Empty).ToLower(), $"%{keyword}%"))
                 .WhereIf(request.BranchId.HasValue, u => u.BranchId == request.BranchId!.Value);
 
+            // ===== Execute query =====
             var total = await query.CountAsync(ct);
             var raw = await query
                 .OrderBy(u => u.Id)
@@ -59,10 +66,8 @@ namespace Flex.AspNetIdentity.Api.Services
                 .Select(u => new { u.UserName, u.FullName, u.Email, u.PhoneNumber, u.BranchId, u.LockoutEnd })
                 .ToListAsync(ct);
 
-            // Lấy danh sách branch ids từ users
+            // ===== Get branch information =====
             var branchIds = raw.Where(u => u.BranchId > 0).Select(u => u.BranchId).Distinct().ToList();
-            
-            // Lấy thông tin branches từ System service
             var branches = new Dictionary<long, string>();
             if (branchIds.Any())
             {
@@ -74,10 +79,10 @@ namespace Flex.AspNetIdentity.Api.Services
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "Failed to retrieve branch information for users");
-                    // Tiếp tục với branch names rỗng nếu không lấy được thông tin
                 }
             }
 
+            // ===== Build result =====
             var items = raw.Select(u => new UserPagingDto
             {
                 UserName = u.UserName ?? string.Empty,
@@ -89,6 +94,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 IsActive = true
             }).ToList();
 
+            // ===== Return result =====
             return PagedResult<UserPagingDto>.Create(pageIndex, pageSize, total, items);
         }
 
@@ -119,8 +125,6 @@ namespace Flex.AspNetIdentity.Api.Services
                     Email = ExtractEmailFromRequestData(r.RequestedData),
                     PhoneNumber = ExtractPhoneNumberFromRequestData(r.RequestedData),
                     RequestType = r.Action,
-                    //RequestedBy = r.CreatedBy,
-                    //RequestedDate = r.CreatedDate
                 });
 
             // ===== Execute query =====
@@ -136,8 +140,12 @@ namespace Flex.AspNetIdentity.Api.Services
             return PagedResult<UserPendingPagingDto>.Create(pageIndex, pageSize, total, items);
         }
 
+        /// <summary>
+        /// Get approved user by username.
+        /// </summary>
         public async Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken ct)
         {
+            // ===== Find user by username =====
             var user = await _userRepository.FindAll().AsNoTracking().FirstOrDefaultAsync(u => u.UserName.ToLowerInvariant() == userName.ToLowerInvariant(), ct);
 
             if(user == null)
@@ -145,7 +153,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new Exception($"User '{userName}' not found.");
             };
 
-            // Lấy tên branch từ System service
+            // ===== Get branch information =====
             string branchName = "";
             if (user.BranchId > 0)
             {
@@ -157,16 +165,16 @@ namespace Flex.AspNetIdentity.Api.Services
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "Failed to retrieve branch information for user {UserName} with BranchId {BranchId}", userName, user.BranchId);
-                    // Tiếp tục với branch name rỗng nếu không lấy được thông tin
                 }
             }
 
-            // Lấy roles của user
+            // ===== Get user roles =====
             var roles = await _dbContext.Set<UserRole>()
                 .Where(ur => ur.UserId == user.Id)
                 .Join(_dbContext.Set<Role>(), ur => ur.RoleId, r => r.Id, (ur, r) => r.Code)
                 .ToListAsync(ct);
 
+            // ===== Return result =====
             return new UserDetailDto
             {
                 UserName = user.UserName ?? string.Empty,
@@ -180,9 +188,12 @@ namespace Flex.AspNetIdentity.Api.Services
             };
         }
 
+        /// <summary>
+        /// Get user change history by username.
+        /// </summary>
         public async Task<List<UserChangeHistoryDto>> GetUserChangeHistoryAsync(string userName)
         {
-            // ===== Find user with code =====
+            // ===== Find user with username =====
             var user = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower());
 
             if (user == null)
@@ -210,6 +221,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 .AsNoTracking()
                 .ToListAsync();
 
+            // ===== Build result =====
             var historyItems = requests.Select((req, idx) => new UserChangeHistoryDto
             {
                 Id = req.Id,
@@ -227,21 +239,29 @@ namespace Flex.AspNetIdentity.Api.Services
         #endregion
 
         #region Commands on approved
+
+        /// <summary>
+        /// Assign roles to user.
+        /// </summary>
         public async Task AssignRolesAsync(string userName, IEnumerable<string> roleCodes, CancellationToken ct = default)
         {
+            // ===== Find user =====
             var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower(), ct)
                        ?? throw new Exception($"User '{userName}' not found.");
 
+            // ===== Get role IDs =====
             var codeSet = roleCodes?.Select(c => c?.Trim()).Where(c => !string.IsNullOrWhiteSpace(c)).ToHashSet(StringComparer.OrdinalIgnoreCase)
                           ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var roles = await _dbContext.Set<Role>().Where(r => codeSet.Contains(r.Code)).Select(r => new { r.Id }).ToListAsync(ct);
 
+            // ===== Calculate role changes =====
             var existing = await _dbContext.Set<UserRole>().Where(ur => ur.UserId == user.Id).Select(ur => ur.RoleId).ToListAsync(ct);
             var target = roles.Select(r => r.Id).ToHashSet();
 
             var toRemove = existing.Where(id => !target.Contains(id)).ToList();
             var toAdd = target.Where(id => !existing.Contains(id)).ToList();
 
+            // ===== Apply changes =====
             if (toRemove.Count > 0)
             {
                 var removeEntities = await _dbContext.Set<UserRole>().Where(ur => ur.UserId == user.Id && toRemove.Contains(ur.RoleId)).ToListAsync(ct);
@@ -256,8 +276,12 @@ namespace Flex.AspNetIdentity.Api.Services
             await _dbContext.SaveChangesAsync(ct);
         }
 
+        /// <summary>
+        /// Lock user account.
+        /// </summary>
         public async Task LockAsync(string userName, string? reason = null)
         {
+            // ===== Find and lock user =====
             var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
             user.LockoutEnabled = true;
@@ -265,32 +289,44 @@ namespace Flex.AspNetIdentity.Api.Services
             await _dbContext.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Unlock user account.
+        /// </summary>
         public async Task UnlockAsync(string userName)
         {
+            // ===== Find and unlock user =====
             var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
             user.LockoutEnd = null;
             await _dbContext.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Reset user password.
+        /// </summary>
         public async Task<string> ResetPasswordAsync(string userName)
         {
+            // ===== Find user and generate reset code =====
             var user = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
-            // Không dùng Identity token provider nữa; tạm thời sinh mã ngẫu nhiên để gửi ngoài hệ thống
             return Guid.NewGuid().ToString("N");
         }
         #endregion
 
         #region Create/Update/Delete immediate with audit comment
+
+        /// <summary>
+        /// Create user immediately.
+        /// </summary>
         public async Task<string> CreateUserAsync(CreateUserRequestDto dto, string? comment = null)
         {
-            // Validate role codes
+            // ===== Validate role codes =====
             var roleIds = await _dbContext.Set<Role>()
                 .Where(r => dto.RoleCodes.Contains(r.Code))
                 .Select(r => r.Id)
                 .ToListAsync();
 
+            // ===== Create user =====
             var user = new User
             {
                 UserName = dto.UserName,
@@ -303,6 +339,7 @@ namespace Flex.AspNetIdentity.Api.Services
             await _dbContext.Set<User>().AddAsync(user);
             await _dbContext.SaveChangesAsync();
 
+            // ===== Assign roles =====
             if (roleIds.Count > 0)
             {
                 var maps = roleIds.Select(id => new UserRole { UserId = user.Id, RoleId = id });
@@ -313,8 +350,12 @@ namespace Flex.AspNetIdentity.Api.Services
             return user.UserName ?? string.Empty;
         }
 
+        /// <summary>
+        /// Update user immediately.
+        /// </summary>
         public async Task UpdateUserAsync(string userName, UpdateUserRequestDto dto)
         {
+            // ===== Find and update user =====
             var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
 
@@ -325,17 +366,21 @@ namespace Flex.AspNetIdentity.Api.Services
 
             await _dbContext.SaveChangesAsync();
 
+            // ===== Update roles if specified =====
             if (dto.RoleCodes != null)
             {
                 await AssignRolesAsync(userName, dto.RoleCodes);
             }
         }
 
+        /// <summary>
+        /// Delete user immediately.
+        /// </summary>
         public async Task DeleteUserAsync(string userName, DeleteUserRequestDto dto)
         {
+            // ===== Find and soft-delete user =====
             var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
                        ?? throw new Exception($"User '{userName}' not found.");
-            // Soft-delete bằng lock
             user.LockoutEnabled = true;
             user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
             await _dbContext.SaveChangesAsync();
@@ -356,12 +401,11 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ArgumentException($"User request with ID {requestId} not found.");
             }
 
+            // ===== Build base result =====
             var result = new UserRequestDetailDto
             {
                 RequestId = request.Id.ToString(),
                 Type = request.Action,
-                //CreatedBy = request.CreatedBy ?? string.Empty,
-                //CreatedDate = request.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
             };
 
             // ===== Process request data based on action type =====
@@ -415,22 +459,12 @@ namespace Flex.AspNetIdentity.Api.Services
                     break;
             }
 
-            // ===== Update request status =====
-            //request.Status = RequestStatusConstant.Authorised;
-            //request.ApprovedBy = "SYSTEM"; // TODO: Get from current user context
-            //request.ApprovedDate = DateTime.UtcNow;
-            //request.Comment = comment;
-
-            //await _userRequestRepository.UpdateAsync(request);
-            //await _unitOfWork.SaveChangesAsync();
-
+            // ===== Return result =====
             return new UserRequestApprovalResultDto
             {
                 RequestId = requestId,
                 RequestType = request.Action,
                 Status = RequestStatusConstant.Authorised,
-                //ApprovedBy = request.ApprovedBy,
-                //ApprovedDate = request.ApprovedDate.Value,
                 Comment = comment,
                 CreatedUserId = createdUserId
             };
@@ -455,22 +489,12 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ArgumentException($"User request with ID {requestId} is not in pending status.");
             }
 
-            // ===== Update request status =====
-            request.Status = RequestStatusConstant.Rejected;
-            //request.ApprovedBy = "SYSTEM"; // TODO: Get from current user context
-            //request.ApprovedDate = DateTime.UtcNow;
-            //request.Comment = reason;
-
-            //await _userRequestRepository.UpdateAsync(request);
-            //await _unitOfWork.SaveChangesAsync();
-
+            // ===== Return result =====
             return new UserRequestApprovalResultDto
             {
                 RequestId = requestId,
                 RequestType = request.Action,
                 Status = RequestStatusConstant.Rejected,
-                //ApprovedBy = request.ApprovedBy,
-                //ApprovedDate = request.ApprovedDate.Value,
                 Comment = reason
             };
         }
@@ -545,7 +569,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to process create user request data for request {RequestId}", request.Id);
+                // Log error if needed
             }
         }
 
@@ -558,7 +582,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 
                 if (!string.IsNullOrEmpty(userName))
                 {
-                    // Get current user data
+                    // ===== Get current user data =====
                     var currentUser = await _userRepository.FindAll()
                         .AsNoTracking()
                         .FirstOrDefaultAsync(u => u.UserName == userName);
@@ -600,7 +624,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 
                 if (!string.IsNullOrEmpty(userName))
                 {
-                    // Get current user data
+                    // ===== Get current user data =====
                     var currentUser = await _userRepository.FindAll()
                         .AsNoTracking()
                         .FirstOrDefaultAsync(u => u.UserName == userName);
@@ -628,22 +652,23 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             try
             {
+                // ===== Deserialize and validate data =====
                 var data = JsonSerializer.Deserialize<CreateUserRequestDto>(request.RequestedData);
                 if (data == null)
                 {
                     throw new ArgumentException("Invalid request data for user creation.");
                 }
 
-                // Create user using existing method
+                // ===== Create user =====
                 var userId = await CreateUserAsync(data, "");
                 
-                // Parse userId to long if it's a string
+                // ===== Parse userId to long =====
                 if (long.TryParse(userId, out var userIdLong))
                 {
                     return userIdLong;
                 }
                 
-                return 0; // Fallback
+                return 0;
             }
             catch (Exception ex)
             {
@@ -656,6 +681,7 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             try
             {
+                // ===== Deserialize and validate data =====
                 var data = JsonSerializer.Deserialize<UpdateUserRequestDto>(request.RequestedData);
                 if (data == null)
                 {
@@ -668,7 +694,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     throw new ArgumentException("UserName is required for user update.");
                 }
 
-                // Update user using existing method
+                // ===== Update user =====
                 await UpdateUserAsync(userName, data);
             }
             catch (Exception ex)
@@ -682,6 +708,7 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             try
             {
+                // ===== Deserialize and validate data =====
                 var data = JsonSerializer.Deserialize<DeleteUserRequestDto>(request.RequestedData);
                 if (data == null)
                 {
@@ -694,7 +721,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     throw new ArgumentException("UserName is required for user deletion.");
                 }
 
-                // Delete user using existing method
+                // ===== Delete user =====
                 await DeleteUserAsync(userName, data);
             }
             catch (Exception ex)
