@@ -1,5 +1,6 @@
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.Infrastructure.EntityFrameworkCore.Configurations;
+using Flex.Infrastructure.EntityFrameworkCore.Converters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -49,7 +50,7 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
                 .HasMaxLength(100);
 
             // Audit fields
-            builder.ConfigureAuditFields();
+            //builder.ConfigureAuditFields();
 
             // Indexes
             builder.HasIndex(x => x.Code)

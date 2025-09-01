@@ -13,18 +13,15 @@ namespace Flex.AspNetIdentity.Api.EventHandlers
     public class BranchCreatedEventHandler : IConsumer<BranchCreatedEvent>
     {
         private readonly IBranchCacheRepository _branchCacheRepository;
-        private readonly IUnitOfWork<IdentityDbContext> _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<BranchCreatedEventHandler> _logger;
 
         public BranchCreatedEventHandler(
             IBranchCacheRepository branchCacheRepository,
-            IUnitOfWork<IdentityDbContext> unitOfWork,
             IMapper mapper,
             ILogger<BranchCreatedEventHandler> logger)
         {
             _branchCacheRepository = branchCacheRepository ?? throw new ArgumentNullException(nameof(branchCacheRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -59,8 +56,8 @@ namespace Flex.AspNetIdentity.Api.EventHandlers
                     LastSyncedBy = message.CreatedBy
                 };
 
-                await _branchCacheRepository.AddAsync(branchCache);
-                await _unitOfWork.SaveChangesAsync();
+                await _branchCacheRepository.CreateAsync(branchCache);
+                await _branchCacheRepository.SaveChangesAsync();
 
                 _logger.LogInformation("Successfully created branch cache for BranchId: {BranchId}, Code: {Code}", 
                     message.BranchId, message.Code);

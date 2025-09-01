@@ -12,18 +12,15 @@ namespace Flex.AspNetIdentity.Api.EventHandlers
     public class BranchDeletedEventHandler : IConsumer<BranchDeletedEvent>
     {
         private readonly IBranchCacheRepository _branchCacheRepository;
-        private readonly IUnitOfWork<IdentityDbContext> _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<BranchDeletedEventHandler> _logger;
 
         public BranchDeletedEventHandler(
             IBranchCacheRepository branchCacheRepository,
-            IUnitOfWork<IdentityDbContext> unitOfWork,
             IMapper mapper,
             ILogger<BranchDeletedEventHandler> logger)
         {
             _branchCacheRepository = branchCacheRepository ?? throw new ArgumentNullException(nameof(branchCacheRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -46,8 +43,8 @@ namespace Flex.AspNetIdentity.Api.EventHandlers
                 }
 
                 // Xóa branch cache
-                _branchCacheRepository.Delete(existingBranch);
-                await _unitOfWork.SaveChangesAsync();
+                await _branchCacheRepository.DeleteAsync(existingBranch);
+                await _branchCacheRepository.SaveChangesAsync();
 
                 _logger.LogInformation("Successfully deleted branch cache for BranchId: {BranchId}, Code: {Code}", 
                     message.BranchId, message.Code);

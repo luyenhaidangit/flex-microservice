@@ -608,8 +608,8 @@ namespace Flex.System.Api.Services
             // Publish BranchCreatedEvent
             var branchCreatedEvent = new BranchCreatedEvent
             {
-                Id = Guid.NewGuid(),
-                CreationDate = DateTime.UtcNow,
+                //Id = Guid.NewGuid(),
+                //CreationDate = DateTime.UtcNow,
                 BranchId = createdId,
                 Code = branch.Code,
                 Name = branch.Name,
@@ -648,8 +648,8 @@ namespace Flex.System.Api.Services
             // Publish BranchUpdatedEvent
             var branchUpdatedEvent = new BranchUpdatedEvent
             {
-                Id = Guid.NewGuid(),
-                CreationDate = DateTime.UtcNow,
+                //Id = Guid.NewGuid(),
+                //CreationDate = DateTime.UtcNow,
                 BranchId = branch.Id,
                 Code = branch.Code,
                 Name = branch.Name,
@@ -679,8 +679,8 @@ namespace Flex.System.Api.Services
             // Publish BranchDeletedEvent
             var branchDeletedEvent = new BranchDeletedEvent
             {
-                Id = Guid.NewGuid(),
-                CreationDate = DateTime.UtcNow,
+                //Id = Guid.NewGuid(),
+                //CreationDate = DateTime.UtcNow,
                 BranchId = branch.Id,
                 Code = branch.Code,
                 DeletedDate = DateTime.UtcNow,

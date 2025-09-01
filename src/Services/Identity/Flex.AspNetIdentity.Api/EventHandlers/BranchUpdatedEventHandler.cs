@@ -12,18 +12,15 @@ namespace Flex.AspNetIdentity.Api.EventHandlers
     public class BranchUpdatedEventHandler : IConsumer<BranchUpdatedEvent>
     {
         private readonly IBranchCacheRepository _branchCacheRepository;
-        private readonly IUnitOfWork<IdentityDbContext> _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<BranchUpdatedEventHandler> _logger;
 
         public BranchUpdatedEventHandler(
             IBranchCacheRepository branchCacheRepository,
-            IUnitOfWork<IdentityDbContext> unitOfWork,
             IMapper mapper,
             ILogger<BranchUpdatedEventHandler> logger)
         {
             _branchCacheRepository = branchCacheRepository ?? throw new ArgumentNullException(nameof(branchCacheRepository));
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -56,7 +53,7 @@ namespace Flex.AspNetIdentity.Api.EventHandlers
                         LastSyncedBy = message.UpdatedBy
                     };
 
-                    await _branchCacheRepository.AddAsync(newBranchCache);
+                    await _branchCacheRepository.CreateAsync(newBranchCache);
                 }
                 else
                 {
@@ -69,10 +66,10 @@ namespace Flex.AspNetIdentity.Api.EventHandlers
                     existingBranch.LastSyncedAt = DateTime.UtcNow;
                     existingBranch.LastSyncedBy = message.UpdatedBy;
 
-                    _branchCacheRepository.Update(existingBranch);
+                    await _branchCacheRepository.UpdateAsync(existingBranch);
                 }
 
-                await _unitOfWork.SaveChangesAsync();
+                await _branchCacheRepository.SaveChangesAsync();
 
                 _logger.LogInformation("Successfully updated branch cache for BranchId: {BranchId}, Code: {Code}", 
                     message.BranchId, message.Code);

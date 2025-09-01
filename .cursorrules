@@ -102,6 +102,27 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - When using seaborn styles in matplotlib, use 'seaborn-v0_8' instead of 'seaborn' as the style name due to recent seaborn version changes
 - Use 'gpt-4o' as the model name for OpenAI's GPT-4 with vision capabilities
 - When searching for recent news, use the current year (2025) instead of previous years, or simply use the "recent" keyword to get the latest information
+- **CRITICAL**: Luôn kiểm tra và thêm đầy đủ `using` directives khi tạo file C# mới. Đặc biệt chú ý:
+  - `using Flex.Contracts.Domains.Interfaces;` cho `IRepositoryBase`
+  - `using Flex.Infrastructure.Common.Repositories;` cho repository base classes
+  - `using Flex.AspNetIdentity.Api.Persistence;` cho DbContext
+  - `using Flex.AspNetIdentity.Api.Entities;` cho entities
+  - `using Microsoft.EntityFrameworkCore;` cho EF Core operations
+  - `using MassTransit;` cho message bus operations
+  - `using AutoMapper;` cho mapping operations
+  - `using Microsoft.Extensions.Logging;` cho logging
+- **CRITICAL**: Sử dụng đúng method names cho Repository pattern:
+  - `CreateAsync()` thay vì `AddAsync()` cho việc thêm entity mới
+  - `UpdateAsync()` cho việc cập nhật entity
+  - `DeleteAsync()` cho việc xóa entity
+  - `GetByIdAsync()` cho việc lấy entity theo ID
+- **CRITICAL**: Khi repository cung cấp phương thức `SaveChangesAsync()`, hãy sử dụng `await repository.SaveChangesAsync();` thay vì `await unitOfWork.SaveChangesAsync();` để lưu các thay đổi liên quan đến repository đó.
+- **CRITICAL**: Repository pattern trong project này yêu cầu:
+  - Constructor nhận 2 parameters: `(IdentityDbContext context, IUnitOfWork<IdentityDbContext> unitOfWork)`
+  - Gọi base constructor: `: base(context, unitOfWork)`
+  - Khai báo private field: `private readonly IdentityDbContext _context;`
+  - Gán context trong constructor: `_context = context;`
+  - Sử dụng `_context` thay vì access trực tiếp từ base class
 
 ## Project-specific Lessons
 
