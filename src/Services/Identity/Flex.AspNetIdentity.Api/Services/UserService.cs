@@ -6,10 +6,13 @@ using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
+using Flex.Shared.Enums.General;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
+using Google.Rpc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using System.Xml.Linq;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -112,14 +115,10 @@ namespace Flex.AspNetIdentity.Api.Services
                 .AsNoTracking()
                 .Select(r => new UserPendingPagingDto
                 {
-                    Id = r.Id,
-                    EntityId = r.EntityId,
-                    Status = r.Status,
-                    Action = r.Action,
-                    CreatedBy = r.CreatedBy,
-                    CreatedDate = r.CreatedDate,
-                    ApproveBy = r.ApproveBy,
-                    ApproveDate = r.ApproveDate,
+                    RequestId = r.Id,
+                    RequestType = r.Action,
+                    RequestedBy = r.CreatedBy,
+                    RequestedDate = r.CreatedDate,
                     UserName = r.UserName,
                     FullName = r.FullName,
                     Email = r.Email,
@@ -129,8 +128,8 @@ namespace Flex.AspNetIdentity.Api.Services
             // ===== Execute query =====
             var total = await pendingQuery.CountAsync();
             var items = await pendingQuery
-                .OrderByDescending(dto => dto.CreatedDate)
-                .ThenBy(dto => dto.Id)
+                .OrderByDescending(dto => dto.RequestedDate)
+                .ThenBy(dto => dto.RequestId)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
