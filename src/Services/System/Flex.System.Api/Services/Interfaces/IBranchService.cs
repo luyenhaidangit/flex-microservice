@@ -24,8 +24,7 @@ namespace Flex.System.Api.Services.Interfaces
         Task<BranchApprovalResultDto> ApprovePendingBranchRequestAsync(long requestId, string? comment = null);
         Task<BranchApprovalResultDto> RejectPendingBranchRequestAsync(long requestId, string? reason = null);
 
-        // gRPC Support
-        Task<Dictionary<string, BranchDetailDto>> GetBranchesByCodesAsync(IEnumerable<string> codes);
+        // gRPC
         Task<Dictionary<long, BranchDetailDto>> GetBranchesByIdsAsync(IEnumerable<long> ids);
     }
 }
