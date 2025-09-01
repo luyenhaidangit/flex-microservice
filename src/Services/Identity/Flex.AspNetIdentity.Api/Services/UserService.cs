@@ -1,4 +1,5 @@
 using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Entities.Views;
 using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
@@ -100,27 +101,36 @@ namespace Flex.AspNetIdentity.Api.Services
             int pageIndex = request.PageIndexValue;
             int pageSize = request.PageSizeValue;
 
-            // ===== Build query =====
-            var pendingQuery = _userRequestRepository.FindAll()
-                .Where(r => r.Status == RequestStatusConstant.Unauthorised)
-                .WhereIf(!string.IsNullOrEmpty(keyword), r => EF.Functions.Like(r.RequestedData.ToLower(), $"%{keyword}%"))
-                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All, r => r.Action == requestType)
+            // ===== Build query using view =====
+            var pendingQuery = _userRequestRepository.GetAllUserRequests()
+                .WhereIf(!string.IsNullOrEmpty(keyword), 
+                    r => EF.Functions.Like(r.UserName.ToLower(), $"%{keyword}%") ||
+                         EF.Functions.Like(r.FullName.ToLower(), $"%{keyword}%") ||
+                         EF.Functions.Like(r.Email.ToLower(), $"%{keyword}%"))
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All, 
+                    r => r.Action == requestType)
                 .AsNoTracking()
                 .Select(r => new UserPendingPagingDto
                 {
-                    RequestId = r.Id,
-                    UserName = ExtractUserNameFromRequestData(r.RequestedData),
-                    FullName = ExtractFullNameFromRequestData(r.RequestedData),
-                    Email = ExtractEmailFromRequestData(r.RequestedData),
-                    PhoneNumber = ExtractPhoneNumberFromRequestData(r.RequestedData),
-                    RequestType = r.Action,
+                    Id = r.Id,
+                    EntityId = r.EntityId,
+                    Status = r.Status,
+                    Action = r.Action,
+                    CreatedBy = r.CreatedBy,
+                    CreatedDate = r.CreatedDate,
+                    ApproveBy = r.ApproveBy,
+                    ApproveDate = r.ApproveDate,
+                    UserName = r.UserName,
+                    FullName = r.FullName,
+                    Email = r.Email,
+                    PhoneNumber = r.PhoneNumber
                 });
 
             // ===== Execute query =====
             var total = await pendingQuery.CountAsync();
             var items = await pendingQuery
-                .OrderByDescending(dto => dto.RequestedDate)
-                .ThenBy(dto => dto.RequestId)
+                .OrderByDescending(dto => dto.CreatedDate)
+                .ThenBy(dto => dto.Id)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -722,5 +732,3 @@ namespace Flex.AspNetIdentity.Api.Services
         #endregion
     }
 }
-
-

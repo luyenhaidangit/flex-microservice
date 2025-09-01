@@ -18,11 +18,10 @@ namespace Flex.AspNetIdentity.Api.Repositories
 			_context = dbContext;
 		}
 
-		public IQueryable<ProposedUser> GetBranchCombinedQuery()
+		public IQueryable<UserRequestView> GetAllUserRequests()
 		{
-			return _context.Set<ProposedUser>().AsNoTracking();
+			return _context.Set<UserRequestView>().AsNoTracking();
 		}
 	}
 }
-
 

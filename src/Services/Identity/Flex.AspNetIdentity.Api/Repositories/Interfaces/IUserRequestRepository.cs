@@ -7,7 +7,7 @@ namespace Flex.AspNetIdentity.Api.Repositories.Interfaces
 {
 	public interface IUserRequestRepository : IRepositoryBase<UserRequest, long, IdentityDbContext>
 	{
-		IQueryable<ProposedUser> GetBranchCombinedQuery();
+		IQueryable<UserRequestView> GetAllUserRequests();
 	}
 }
 
