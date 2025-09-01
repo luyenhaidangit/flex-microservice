@@ -2,9 +2,9 @@
 
 namespace Flex.AspNetIdentity.Api.Grpc.Configurations
 {
-    public class GrpcClientSettings
+    public class GrpcSettings
     {
         [Required]
-        public string BranchService { get; set; } = string.Empty;
+        public string SystemUrl { get; set; } = string.Empty;
     }
 }

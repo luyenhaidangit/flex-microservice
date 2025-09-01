@@ -26,7 +26,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
-            services.AddOptions<GrpcClientSettings>().Bind(configuration.GetSection(ConfigKeyConstants.GrpcSettings)).ValidateDataAnnotations().ValidateOnStart();
+            services.AddOptions<GrpcSettings>().Bind(configuration.GetSection(ConfigKeyConstants.GrpcSettings)).ValidateDataAnnotations().ValidateOnStart();
 
             return services;
         }
@@ -91,11 +91,11 @@ namespace Flex.AspNetIdentity.Api.Extensions
         private static IServiceCollection ConfigureGrpcClients(this IServiceCollection services, IConfiguration configuration)
         {
             ;
-            var grpcSettings = configuration.GetRequiredSection<GrpcClientSettings>(ConfigKeyConstants.GrpcSettings);
+            var grpcSettings = configuration.GetRequiredSection<GrpcSettings>(ConfigKeyConstants.GrpcSettings);
 
             services.AddGrpcClient<BranchService.BranchServiceClient>(o =>
             {
-                o.Address = new Uri(grpcSettings.BranchService);
+                o.Address = new Uri(grpcSettings.SystemUrl);
             });
 
             return services;
