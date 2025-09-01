@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Flex.AspNetIdentity.Api.Entities;
-using Flex.AspNetIdentity.Api.Grpc.Configurations;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
@@ -18,6 +17,9 @@ using Flex.Shared.Authorization;
 using Flex.Shared.Constants;
 using Flex.Shared.Extensions;
 using Flex.System.Grpc.Services;
+using Flex.AspNetIdentity.Api.Integrations.Interfaces;
+using Flex.AspNetIdentity.Api.Integrations;
+using Flex.AspNetIdentity.Api.Integrations.Configurations;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -79,8 +81,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddScoped<IUserRequestRepository, UserRequestRepository>();
 
             // gRPC Gateway Services
-            services.AddScoped<ISystemGateway, SystemGateway>();
-            //services.AddScoped<GrpcHealthProbe>();
+            services.AddScoped<IBranchIntegrationService, BranchGrpcService>();
 
             services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();

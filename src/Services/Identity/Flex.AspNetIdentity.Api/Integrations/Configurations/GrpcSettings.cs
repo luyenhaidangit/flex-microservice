@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Flex.AspNetIdentity.Api.Grpc.Configurations
+namespace Flex.AspNetIdentity.Api.Integrations.Configurations
 {
     public class GrpcSettings
     {
