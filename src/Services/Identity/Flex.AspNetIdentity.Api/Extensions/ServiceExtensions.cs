@@ -1,26 +1,27 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Interceptors;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
-using Flex.AspNetIdentity.Api.Interceptors;
 using Flex.Contracts.Domains.Interfaces;
-using Flex.Infrastructure.EntityFrameworkCore.Oracle;
 using Flex.Infrastructure.Common;
 using Flex.Infrastructure.Common.Repositories;
+using Flex.Infrastructure.EntityFrameworkCore.Oracle;
+using Flex.Infrastructure.Json;
 using Flex.Infrastructure.Redis;
 using Flex.Security;
 using Flex.Shared.Authorization;
 using Flex.Shared.Constants;
 using Flex.Shared.Extensions;
 using Flex.System.Grpc.Services;
+using Grpc.Core;
+using Grpc.Net.Client.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Grpc.Net.Client.Configuration;
-using Grpc.Core;
-using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -36,11 +37,12 @@ namespace Flex.AspNetIdentity.Api.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Add services to the container.
-            services.AddControllers().ApplyJsonSettings();
+            services.AddControllers();
+            services.ConfigureJsonOptionsDefault();
             services.AddEndpointsApiExplorer();
-            services.AddOpenApi();
             services.AddHttpContextAccessor();
-
+            services.AddOpenApi();
+            services.AddAutoMapper(AssemblyReference.Assembly);
             services.ConfigureRouteOptions();
             services.ConfigureValidationErrorResponse();
 
@@ -49,15 +51,10 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             // Database
             services.ConfigureServiceDbContext<IdentityDbContext>(configuration, useWallet: true);
-
-            // Auth (JWT only) - remove ASP.NET Identity stores
-            services.AddAuthenticationJwtToken(configuration);
-
-            // Redis
             services.ConfigureStackExchangeRedisCache(configuration);
 
-            // AutoMapper
-            services.AddAutoMapper(AssemblyReference.Assembly);
+            // Auth
+            services.AddAuthenticationJwtToken(configuration);
 
             // Configure gRPC clients
             services.ConfigureGrpcClients(configuration);

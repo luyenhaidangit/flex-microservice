@@ -28,6 +28,7 @@ namespace Flex.System.Api.Extensions
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddHttpContextAccessor();
+            services.AddAutoMapper(AssemblyReference.Assembly);
             services.ConfigureJsonOptionsDefault();
             services.ConfigureSwagger();
             services.ConfigureRouteOptions();
@@ -39,9 +40,6 @@ namespace Flex.System.Api.Extensions
             // Database
             services.ConfigureServiceDbContext<SystemDbContext>(configuration, useWallet: true);
             services.ConfigureStackExchangeRedisCache(configuration);
-
-            // AutoMapper
-            services.AddAutoMapper(AssemblyReference.Assembly);
 
             // Grpc
             services.AddGrpc();
