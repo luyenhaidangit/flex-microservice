@@ -1,0 +1,41 @@
+using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Persistence;
+using Flex.AspNetIdentity.Api.Repositories.Interfaces;
+using Flex.Infrastructure.Common.Repositories;
+using Microsoft.EntityFrameworkCore;
+
+namespace Flex.AspNetIdentity.Api.Repositories
+{
+    public class BranchCacheRepository : RepositoryBase<BranchCache, long, IdentityDbContext>, IBranchCacheRepository
+    {
+        public BranchCacheRepository(IdentityDbContext context) : base(context)
+        {
+        }
+
+        public async Task<BranchCache?> GetByCodeAsync(string code)
+        {
+            return await _context.Set<BranchCache>()
+                .FirstOrDefaultAsync(x => x.Code == code);
+        }
+
+        public async Task<List<BranchCache>> GetActiveBranchesAsync()
+        {
+            return await _context.Set<BranchCache>()
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Name)
+                .ToListAsync();
+        }
+
+        public async Task<bool> ExistsByCodeAsync(string code)
+        {
+            return await _context.Set<BranchCache>()
+                .AnyAsync(x => x.Code == code);
+        }
+
+        public async Task<BranchCache?> GetByIdAsync(long id)
+        {
+            return await _context.Set<BranchCache>()
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
+    }
+}

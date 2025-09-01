@@ -12,6 +12,7 @@ using Flex.System.Api.Services;
 using Flex.Infrastructure.Redis;
 using Flex.System.Api.Grpc;
 using Flex.Infrastructure.Json;
+using MassTransit;
 
 namespace Flex.System.Api.Extensions
 {
@@ -44,6 +45,9 @@ namespace Flex.System.Api.Extensions
             // Grpc
             services.AddGrpc();
 
+            // RabbitMQ
+            services.ConfigureRabbitMQ(configuration);
+
             return services;
         }
 
@@ -56,8 +60,36 @@ namespace Flex.System.Api.Extensions
                            .AddScoped<IBranchRepository, BranchRepository>()
                            .AddScoped<IBranchRequestRepository, BranchRequestRepository>()
                            .AddScoped<IBranchService, BranchService>()
+                           .AddScoped<IBranchEventPublisher, BranchEventPublisher>()
                            .AddScoped<IUserService, UserService>()
                            .AddScoped<BranchGrpcService>();
+        }
+
+        private static IServiceCollection ConfigureRabbitMQ(this IServiceCollection services, IConfiguration configuration)
+        {
+            var rabbitMQConfig = configuration.GetSection("RabbitMQ");
+            
+            services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host(rabbitMQConfig["Host"], rabbitMQConfig["Port"], rabbitMQConfig["VirtualHost"], h =>
+                    {
+                        h.Username(rabbitMQConfig["Username"]);
+                        h.Password(rabbitMQConfig["Password"]);
+                    });
+
+                    // Configure retry policy
+                    cfg.UseMessageRetry(r => r.Interval(
+                        rabbitMQConfig.GetValue<int>("RetryCount"), 
+                        TimeSpan.Parse(rabbitMQConfig["RetryDelay"] ?? "00:00:05")));
+
+                    // Configure error handling
+                    cfg.UseInMemoryOutbox();
+                });
+            });
+
+            return services;
         }
         #endregion
     }

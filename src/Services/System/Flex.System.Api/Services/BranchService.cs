@@ -1,3 +1,4 @@
+using Flex.EventBus.Messages.IntegrationEvents.Events;
 using Flex.Infrastructure.EF;
 using Flex.Shared.DTOs.Common;
 using Flex.Shared.SeedWork;
@@ -19,17 +20,20 @@ namespace Flex.System.Api.Services
         private readonly IBranchRequestRepository _branchRequestRepository;
         private readonly IUserService _userService;
         private readonly SystemDbContext _dbContext;
+        private readonly IBranchEventPublisher _branchEventPublisher;
 
         public BranchService(
             IBranchRepository branchRepository,
             IBranchRequestRepository branchRequestRepository,
             IUserService userService,
-            SystemDbContext dbContext)
+            SystemDbContext dbContext,
+            IBranchEventPublisher branchEventPublisher)
         {
             _branchRepository = branchRepository;
             _branchRequestRepository = branchRequestRepository;
             _userService = userService;
             _dbContext = dbContext;
+            _branchEventPublisher = branchEventPublisher;
         }
 
         #region Query
@@ -600,6 +604,23 @@ namespace Flex.System.Api.Services
 
             var createdId = await _branchRepository.CreateAsync(branch);
             request.EntityId = createdId;
+
+            // Publish BranchCreatedEvent
+            var branchCreatedEvent = new BranchCreatedEvent
+            {
+                Id = Guid.NewGuid(),
+                CreationDate = DateTime.UtcNow,
+                BranchId = createdId,
+                Code = branch.Code,
+                Name = branch.Name,
+                BranchType = branch.BranchType,
+                IsActive = branch.IsActive,
+                Description = branch.Description,
+                CreatedDate = DateTime.UtcNow,
+                CreatedBy = request.MakerId
+            };
+
+            await _branchEventPublisher.PublishBranchCreatedAsync(branchCreatedEvent);
         }
 
         private async Task ProcessUpdateBranch(BranchRequest request)
@@ -623,6 +644,23 @@ namespace Flex.System.Api.Services
             branch.Status = RequestStatusConstant.Authorised;
 
             await _branchRepository.UpdateAsync(branch);
+
+            // Publish BranchUpdatedEvent
+            var branchUpdatedEvent = new BranchUpdatedEvent
+            {
+                Id = Guid.NewGuid(),
+                CreationDate = DateTime.UtcNow,
+                BranchId = branch.Id,
+                Code = branch.Code,
+                Name = branch.Name,
+                BranchType = branch.BranchType,
+                IsActive = branch.IsActive,
+                Description = branch.Description,
+                UpdatedDate = DateTime.UtcNow,
+                UpdatedBy = request.MakerId
+            };
+
+            await _branchEventPublisher.PublishBranchUpdatedAsync(branchUpdatedEvent);
         }
 
         private async Task ProcessDeleteBranch(BranchRequest request)
@@ -637,6 +675,19 @@ namespace Flex.System.Api.Services
             branch.Status = RequestStatusConstant.Authorised;
 
             await _branchRepository.DeleteAsync(branch);
+
+            // Publish BranchDeletedEvent
+            var branchDeletedEvent = new BranchDeletedEvent
+            {
+                Id = Guid.NewGuid(),
+                CreationDate = DateTime.UtcNow,
+                BranchId = branch.Id,
+                Code = branch.Code,
+                DeletedDate = DateTime.UtcNow,
+                DeletedBy = request.MakerId
+            };
+
+            await _branchEventPublisher.PublishBranchDeletedAsync(branchDeletedEvent);
         }
 
         private async Task RevertBranchStatusIfNeeded(BranchRequest request)
