@@ -71,15 +71,8 @@ namespace Flex.AspNetIdentity.Api.Services
             var branches = new Dictionary<long, string>();
             if (branchIds.Any())
             {
-                try
-                {
-                    var branchDtos = await _branchIntegrationService.BatchGetBranchesAsync(branchIds, ct);
-                    branches = branchDtos.ToDictionary(b => b.Id, b => b.Name);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to retrieve branch information for users");
-                }
+                var branchDtos = await _branchIntegrationService.BatchGetBranchesAsync(branchIds, ct);
+                branches = branchDtos.ToDictionary(b => b.Id, b => b.Name);
             }
 
             // ===== Build result =====
