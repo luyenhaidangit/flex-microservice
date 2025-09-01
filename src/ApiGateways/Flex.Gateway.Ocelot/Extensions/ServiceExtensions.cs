@@ -7,7 +7,7 @@ using Flex.Shared.Extensions;
 using Flex.Infrastructure.Swashbuckle;
 using Flex.Gateway.Ocelot.Constants;
 using Flex.Security;
-using Flex.Gateway.Ocelot.Models;
+using Flex.Infrastructure.Json;
 
 namespace Flex.Gateway.Ocelot.Extensions
 {
@@ -15,29 +15,16 @@ namespace Flex.Gateway.Ocelot.Extensions
     {
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions<Security.JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
-            services.AddOptions<JwtSchemeSettings>(GatewayConstants.AuthenticationProviderKey.AdminPortal)
-            .Bind(configuration.GetSection($"{ConfigKeyConstants.AuthenticationSchemes}:{GatewayConstants.AuthenticationProviderKey.AdminPortal}"))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
             return services;
         }
 
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            // Bind configuration settings
-            var jwtSettingsAdmin = configuration
-                .GetSection($"{ConfigKeyConstants.AuthenticationSchemes}:{GatewayConstants.AuthenticationProviderKey.AdminPortal}")
-                .Get<JwtSchemeSettings>()!;
-
             // Add services to the container.
-            services.AddControllers().ApplyJsonSettings();
-
+            services.AddControllers();
+            services.ConfigureJsonOptionsDefault();
             services.AddEndpointsApiExplorer();
-
             services.ConfigureSwagger();
-
             services.ConfigureRouteOptions();
             services.ConfigureValidationErrorResponse();
 
@@ -49,11 +36,6 @@ namespace Flex.Gateway.Ocelot.Extensions
 
             // Add Jwt authentication
             services.AddAuthenticationJwtToken(configuration);
-            //services.AddAuthentication()
-            //        .AddJwtBearer(GatewayConstants.AuthenticationProviderKey.AdminPortal, options => {
-            //            options.Authority = jwtSettingsAdmin.Authority;
-            //            options.Audience = jwtSettingsAdmin.Audience;
-            //        });
 
             // Configure Cors
             services.ConfigureCors(configuration);

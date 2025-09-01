@@ -24,6 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\BuildingBlocks\Flex.Infrastructure.Json\Flex.Infrastructure.Json.csproj" />
 		<ProjectReference Include="..\..\Modules\Flex.Security\Flex.Security.csproj" />
 		<ProjectReference Include="..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
 		<ProjectReference Include="..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />

@@ -27,7 +27,6 @@ namespace Flex.AspNetIdentity.Api.Extensions
     {
         public static IServiceCollection AddConfigurationSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
             services.AddOptions<GrpcSettings>().Bind(configuration.GetSection(ConfigKeyConstants.GrpcSettings)).ValidateDataAnnotations().ValidateOnStart();
 
             return services;

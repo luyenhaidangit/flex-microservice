@@ -33,6 +33,8 @@ namespace Flex.Security
 
         public static IServiceCollection AddAuthenticationJwtToken(this IServiceCollection services, IConfiguration configuration, bool isCheckBlacklist = true)
         {
+            services.AddOptions<JwtSettings>().Bind(configuration.GetSection(ConfigKeyConstants.JwtSettings)).ValidateDataAnnotations().ValidateOnStart();
+
             var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigKeyConstants.JwtSettings);
             var redisConnectionString = configuration.GetConnectionString(RedisConstants.RedisConnectionKey) ?? string.Empty;
 
