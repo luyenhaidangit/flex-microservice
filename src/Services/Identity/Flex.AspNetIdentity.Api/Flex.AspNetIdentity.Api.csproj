@@ -13,8 +13,6 @@
         <PrivateAssets>all</PrivateAssets>
 		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
-	<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
-	<PackageReference Include="OpenTelemetry.Instrumentation.GrpcNetClient" Version="1.12.0-beta.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
@@ -25,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.EntityFrameworkCore.Oracle\Flex.Infrastructure.EntityFrameworkCore.Oracle.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.Grpc.Client\Flex.Infrastructure.Grpc.Client.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.Json\Flex.Infrastructure.Json.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.Security\Flex.Security.csproj" />
