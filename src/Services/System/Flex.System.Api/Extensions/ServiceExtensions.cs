@@ -11,6 +11,7 @@ using Flex.System.Api.Services.Interfaces;
 using Flex.System.Api.Services;
 using Flex.Infrastructure.Redis;
 using Flex.System.Api.Grpc;
+using Flex.Infrastructure.Json;
 
 namespace Flex.System.Api.Extensions
 {
@@ -24,12 +25,10 @@ namespace Flex.System.Api.Extensions
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Add services to the container.
-            services.AddControllers().ApplyJsonSettings();
-
+            services.AddControllers();
             services.AddEndpointsApiExplorer();
-
+            services.ConfigureJsonOptionsDefault();
             services.ConfigureSwagger();
-
             services.ConfigureRouteOptions();
             services.ConfigureValidationErrorResponse();
 

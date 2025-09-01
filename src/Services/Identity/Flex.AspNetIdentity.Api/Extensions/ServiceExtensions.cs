@@ -35,9 +35,6 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            // Bind JwtSettings settings
-            var jwtSettings = configuration.GetRequiredSection<JwtSettings>(ConfigKeyConstants.JwtSettings);
-
             // Add services to the container.
             services.AddControllers().ApplyJsonSettings();
             services.AddEndpointsApiExplorer();
