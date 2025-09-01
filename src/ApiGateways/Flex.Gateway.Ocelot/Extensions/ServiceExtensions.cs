@@ -2,7 +2,6 @@
 using Ocelot.Provider.Polly;
 using Ocelot.Cache.CacheManager;
 using Flex.Shared.Constants;
-using Flex.Shared.Options;
 using Flex.Shared.Extensions;
 using Flex.Infrastructure.Swashbuckle;
 using Flex.Gateway.Ocelot.Constants;
