@@ -27,6 +27,7 @@ namespace Flex.System.Api.Extensions
             // Add services to the container.
             services.AddControllers();
             services.AddEndpointsApiExplorer();
+            services.AddHttpContextAccessor();
             services.ConfigureJsonOptionsDefault();
             services.ConfigureSwagger();
             services.ConfigureRouteOptions();
@@ -41,9 +42,6 @@ namespace Flex.System.Api.Extensions
 
             // AutoMapper
             services.AddAutoMapper(AssemblyReference.Assembly);
-
-            // Http Accessor
-            services.AddHttpContextAccessor();
 
             // Grpc
             services.AddGrpc();
