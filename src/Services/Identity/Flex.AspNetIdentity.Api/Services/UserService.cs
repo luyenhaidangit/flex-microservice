@@ -95,18 +95,16 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken ct)
         {
             // ===== Process request parameters =====
-            var keyword = request?.Keyword?.Trim().ToLower();
-            var requestType = request?.Type?.Trim().ToUpper();
-            int pageIndex = Math.Max(1, request.PageIndex ?? 1);
-            int pageSize = Math.Max(1, request.PageSize ?? 10);
+            var keyword = request.Keyword?.Trim().ToLowerInvariant();
+            var requestType = request.Type?.Trim().ToUpperInvariant();
+            int pageIndex = request.PageIndexValue;
+            int pageSize = request.PageSizeValue;
 
             // ===== Build query =====
             var pendingQuery = _userRequestRepository.FindAll()
                 .Where(r => r.Status == RequestStatusConstant.Unauthorised)
-                .WhereIf(!string.IsNullOrEmpty(keyword),
-                    r => EF.Functions.Like(r.RequestedData.ToLower(), $"%{keyword}%"))
-                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
-                    r => r.Action == requestType)
+                .WhereIf(!string.IsNullOrEmpty(keyword), r => EF.Functions.Like(r.RequestedData.ToLower(), $"%{keyword}%"))
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All, r => r.Action == requestType)
                 .AsNoTracking()
                 .Select(r => new UserPendingPagingDto
                 {
@@ -171,9 +169,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 UserName = user.UserName ?? string.Empty,
                 FullName = user.FullName,
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
                 BranchName = branchName,
-                IsLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
                 IsActive = true,
                 Roles = roles
             };
