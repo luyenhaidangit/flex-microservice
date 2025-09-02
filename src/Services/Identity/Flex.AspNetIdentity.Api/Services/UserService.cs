@@ -125,13 +125,13 @@ namespace Flex.AspNetIdentity.Api.Services
                 });
 
             // ===== Execute query =====
-            var total = await pendingQuery.CountAsync();
+            var total = await pendingQuery.CountAsync(ct);
             var items = await pendingQuery
                 .OrderByDescending(dto => dto.RequestedDate)
                 .ThenBy(dto => dto.RequestId)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(ct);
 
             // ===== Return result =====
             return PagedResult<UserPendingPagingDto>.Create(pageIndex, pageSize, total, items);
