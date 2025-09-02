@@ -79,6 +79,13 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
 
             builder.Property(u => u.BranchId).HasColumnName("BRANCH_ID");
 
+            builder.Property(u => u.IsActive)
+                   .HasColumnName("IS_ACTIVE")
+                   .HasColumnType("CHAR(1)")
+                   .HasConversion(new BoolToStringYNConverter())
+                   .HasMaxLength(1)
+                   .HasDefaultValue(true);
+
             // Indexes (the same convention as Role)
             builder.HasIndex(u => u.NormalizedUserName)
                    .HasDatabaseName("UX_USERS_NORMALIZED_USER_NAME")

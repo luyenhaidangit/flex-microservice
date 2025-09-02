@@ -67,7 +67,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 .OrderBy(u => u.Id)
                 .Skip((pageIndex - 1) * pageSize)
                 .Take(pageSize)
-                .Select(u => new { u.UserName, u.FullName, u.Email, u.PhoneNumber, u.BranchId, u.LockoutEnd })
+                .Select(u => new { u.UserName, u.FullName, u.Email, u.PhoneNumber, u.BranchId, u.LockoutEnd, u.IsActive })
                 .ToListAsync(ct);
 
             // ===== Get branch information =====
@@ -85,8 +85,8 @@ namespace Flex.AspNetIdentity.Api.Services
                 UserName = u.UserName ?? string.Empty,
                 FullName = u.FullName,
                 Email = u.Email ?? "",
-                BranchName = u.BranchId > 0 && branches.TryGetValue(u.BranchId, out var branchName) ? branchName : "",
-                IsActive = u.LockoutEnd.HasValue && u.LockoutEnd.Value.UtcDateTime > DateTime.UtcNow,
+                BranchName = branches.TryGetValue(u.BranchId, out var branchName) ? branchName : "",
+                IsActive = u.IsActive,
             }).ToList();
 
             // ===== Return result =====
@@ -178,7 +178,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 FullName = user.FullName,
                 Email = user.Email,
                 BranchName = branchName,
-                IsActive = true,
+                IsActive = user.IsActive,
                 Roles = roles
             };
         }
