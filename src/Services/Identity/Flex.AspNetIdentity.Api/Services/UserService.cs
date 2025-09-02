@@ -115,14 +115,13 @@ namespace Flex.AspNetIdentity.Api.Services
                 .AsNoTracking()
                 .Select(r => new UserPendingPagingDto
                 {
-                    RequestId = r.Id,
+                    RequestId = r.RequestId,
                     Action = r.Action,
                     RequestedBy = r.RequestedBy,
                     RequestedDate = r.RequestedDate,
                     UserName = r.UserName,
                     FullName = r.FullName,
-                    Email = r.Email,
-                    PhoneNumber = r.PhoneNumber
+                    Email = r.Email
                 });
 
             // ===== Execute query =====

@@ -8,7 +8,7 @@ namespace Flex.Shared.SeedWork.Workflow
         /// <summary>
         /// Request ID
         /// </summary>
-        public long Id { get; set; }
+        public long RequestId { get; set; }
 
         /// <summary>
         /// Entity ID that the request is for
