@@ -23,7 +23,7 @@ namespace Flex.AspNetIdentity.Api.Persistence
                 b => b.IsUnicode(false));
         }
 
-        #region DbSet
+        #region Tables
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<RoleClaim> RoleClaims { get; set; }
@@ -32,7 +32,7 @@ namespace Flex.AspNetIdentity.Api.Persistence
         public DbSet<BranchCache> BranchCaches { get; set; }
         #endregion
 
-        #region View
+        #region Views
         public DbSet<ProposedBranch> ProposedBranchs { get; set; }
         public DbSet<UserRequestView> UserRequestViews { get; set; }
         #endregion

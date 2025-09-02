@@ -16,6 +16,11 @@ namespace Flex.Shared.SeedWork.Workflow
         public long EntityId { get; set; }
 
         /// <summary>
+        /// Request status (PENDING, APPROVED, REJECTED)
+        /// </summary>
+        public string Status { get; set; } = string.Empty;
+
+        /// <summary>
         /// Request action (CREATE, UPDATE, DELETE)
         /// </summary>
         public string Action { get; set; } = string.Empty;
