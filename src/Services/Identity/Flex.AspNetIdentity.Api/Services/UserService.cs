@@ -49,7 +49,7 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct)
         {
             // ===== Process request parameters =====
-            var keyword = request.Keyword?.Trim().ToLowerInvariant();
+            var keyword = request.Keyword?.Trim().ToLower();
             int pageIndex = request.PageIndexValue;
             int pageSize = request.PageSizeValue;
 
@@ -99,7 +99,7 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken ct)
         {
             // ===== Process request parameters =====
-            var keyword = request.Keyword?.Trim().ToLowerInvariant();
+            var keyword = request.Keyword?.Trim().ToLower();
             var requestType = request.Type?.Trim().ToUpperInvariant();
             int pageIndex = request.PageIndexValue;
             int pageSize = request.PageSizeValue;
@@ -143,7 +143,7 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken ct)
         {
             // ===== Find user by username =====
-            var user = await _userRepository.FindAll().AsNoTracking().FirstOrDefaultAsync(u => u.UserName.ToLowerInvariant() == userName.ToLowerInvariant(), ct);
+            var user = await _userRepository.FindAll().AsNoTracking().FirstOrDefaultAsync(u => u.UserName.ToLower() == userName.ToLower(), ct);
 
             if(user == null)
             {
