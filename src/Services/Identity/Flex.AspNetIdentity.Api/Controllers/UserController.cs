@@ -40,14 +40,20 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(result));
         }
 
-        [HttpGet("{userName}")]
+        /// <summary>
+        /// Get approved user by user name.
+        /// </summary>
+        [HttpGet("approved/{userName}")]
         public async Task<IActionResult> GetUser(string userName, CancellationToken ct)
         {
             var result = await _userService.GetUserByUserNameAsync(userName, ct);
             return Ok(Result.Success(result));
         }
 
-        [HttpGet("{userName}/history")]
+        /// <summary>
+        /// Get approved user change history by user name.
+        /// </summary>
+        [HttpGet("approved/{userName}/history")]
         public async Task<IActionResult> GetUserChangeHistory(string userName)
         {
             var result = await _userService.GetUserChangeHistoryAsync(userName);
