@@ -350,11 +350,59 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         /// <summary>
-        /// Update user immediately.
+        /// Create update user request.
         /// </summary>
-        public async Task<long> CreateUpdateUserRequest(UpdateUserRequest request)
+        public async Task<long> UpdateUserRequestAsync(UpdateUserRequest request)
         {
-            
+            // ===== Validation =====
+            // ===== Check user exists =====
+            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName == request.UserName);
+            if (user == null)
+            {
+                throw new Exception($"User with username '{request.UserName}' does not exist.");
+            }
+
+            // ===== Check user request exists =====
+            if (user.Status == RequestStatusConstant.Unauthorised)
+            {
+                throw new Exception("A pending update request already exists for this user.");
+            }
+
+            // ===== Process =====
+            // ===== Create update user request =====
+            var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
+            var requestedJson = JsonSerializer.Serialize(request);
+            var userRequest = new UserRequest
+            {
+                Action = RequestTypeConstant.Update,
+                Status = RequestStatusConstant.Unauthorised,
+                EntityId = user.Id,
+                MakerId = requestedBy,
+                RequestedDate = DateTime.UtcNow,
+                RequestedData = requestedJson,
+                Comments = request.Comment ?? "Yêu cầu cập nhật người dùng."
+            };
+
+            // ===== Update status process user =====
+            user.Status = RequestStatusConstant.Unauthorised;
+
+            // ===== Transaction =====
+            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
+            try
+            {
+                await _userRequestRepository.CreateAsync(userRequest);
+                _dbContext.Update(user);
+                await _dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw new Exception("Failed to create update user request.");
+            }
+
+            return userRequest.Id;
         }
 
         /// <summary>
@@ -679,7 +727,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 }
 
                 // ===== Update user =====
-                await UpdateUserAsync(userName, data);
+                //await UpdateUserAsync(userName, data);
             }
             catch (Exception ex)
             {

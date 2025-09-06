@@ -70,12 +70,12 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Create a new user request.
+        /// Create update user request.
         /// </summary>
         [HttpPost("request/update")]
         public async Task<IActionResult> UpdateUserRequest([FromBody] UpdateUserRequest request)
         {
-            var id = await _userService.CreateUserRequestAsync(request);
+            var id = await _userService.UpdateUserRequestAsync(request);
             return Ok(Result.Success(id));
         }
 
@@ -103,13 +103,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(token));
         }
 
-        [HttpPost("{userName}/update")]
-        [Authorize(Policy = "USERS.UPDATE")]
-        public async Task<IActionResult> Update(string userName, [FromBody] UpdateUserRequest dto)
-        {
-            await _userService.UpdateUserAsync(userName, dto);
-            return Ok(Result.Success(message: "Update user success"));
-        }
 
         [HttpPost("{userName}/delete")]
         [Authorize(Policy = "USERS.DELETE")]

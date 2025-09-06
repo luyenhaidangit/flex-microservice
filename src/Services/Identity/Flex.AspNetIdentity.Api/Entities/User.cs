@@ -1,8 +1,9 @@
 ﻿using Flex.Contracts.Domains;
+using Flex.Shared.SeedWork.Workflow;
 
 namespace Flex.AspNetIdentity.Api.Entities
 {
-    public class User : EntityBase<long>
+    public class User : ApprovalEntityBase<long>
     {
         public string? UserName { get; set; }
         public string? NormalizedUserName { get; set; }

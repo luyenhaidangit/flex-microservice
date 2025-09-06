@@ -6,6 +6,6 @@ namespace Flex.Shared.SeedWork.Workflow
     public abstract class ApprovalEntityBase<TKey> : EntityBase<TKey>
     {
         [Column("STATUS")]
-        public required string Status { get; set; }
+        public string Status { get; set; } = default!;
     }
 }

@@ -7,6 +7,10 @@ namespace Flex.AspNetIdentity.Api.Validators
     {
         public UpdateUserRequestDtoValidator()
         {
+            RuleFor(x => x.UserName)
+                .NotEmpty().WithMessage("UserName is required")
+                .MaximumLength(256);
+
             RuleFor(x => x.FullName)
                 .MaximumLength(250);
 
@@ -16,6 +20,9 @@ namespace Flex.AspNetIdentity.Api.Validators
 
             RuleFor(x => x.PhoneNumber)
                 .MaximumLength(50).When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
+
+            RuleFor(x => x.Comment)
+                .MaximumLength(500).When(x => !string.IsNullOrWhiteSpace(x.Comment));
         }
     }
 }
