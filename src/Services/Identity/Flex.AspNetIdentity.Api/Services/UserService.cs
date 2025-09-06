@@ -313,7 +313,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Create user immediately.
         /// </summary>
-        public async Task<string> CreateUserAsync(CreateUserRequestDto dto, string? comment = null)
+        public async Task<string> CreateUserRequestAsync(CreateUserRequest dto, string? comment = null)
         {
             // ===== Validate role codes =====
             var roleIds = await _dbContext.Set<Role>()
@@ -648,14 +648,14 @@ namespace Flex.AspNetIdentity.Api.Services
             try
             {
                 // ===== Deserialize and validate data =====
-                var data = JsonSerializer.Deserialize<CreateUserRequestDto>(request.RequestedData);
+                var data = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
                 if (data == null)
                 {
                     throw new ArgumentException("Invalid request data for user creation.");
                 }
 
                 // ===== Create user =====
-                var userId = await CreateUserAsync(data, "");
+                var userId = await this.CreateUserRequestAsync(data, "");
                 
                 // ===== Parse userId to long =====
                 if (long.TryParse(userId, out var userIdLong))

@@ -7,10 +7,11 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
     {
         // Query
         Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken cancellationToken);
-        Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken cancellationToken);
         Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken cancellationToken);
         Task<List<UserChangeHistoryDto>> GetUserChangeHistoryAsync(string userName);
-
+        Task<string> CreateUserRequestAsync(CreateUserRequest dto, string? comment = null);
+        Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken cancellationToken);
+        
         // Commands on approved
         Task AssignRolesAsync(string userName, IEnumerable<string> roleCodes, CancellationToken ct = default);
         Task LockAsync(string userName, string? reason = null);
@@ -18,7 +19,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<string> ResetPasswordAsync(string userName); // return reset token or correlation id
 
         // Pending style using RoleRequests pattern replaced by immediate create/update/delete with audit comment
-        Task<string> CreateUserAsync(CreateUserRequestDto dto, string? comment = null);
+        
         Task UpdateUserAsync(string userName, UpdateUserRequestDto dto);
         Task DeleteUserAsync(string userName, DeleteUserRequestDto dto);
 

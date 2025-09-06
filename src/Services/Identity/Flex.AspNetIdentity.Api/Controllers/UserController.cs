@@ -1,9 +1,10 @@
-﻿using Flex.AspNetIdentity.Api.Models.User;
+﻿using Flex.AspNetIdentity.Api.Models.Role;
+using Flex.AspNetIdentity.Api.Models.User;
+using Flex.AspNetIdentity.Api.Services;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
@@ -23,20 +24,10 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// <summary>
         /// Get all user with pagination
         /// </summary>
-        [HttpGet]
+        [HttpGet("approved")]
         public async Task<IActionResult> GetUsers([FromQuery] GetUsersPagingRequest request, CancellationToken ct)
         {
             var result = await _userService.GetUsersPagedAsync(request, ct);
-            return Ok(Result.Success(result));
-        }
-
-        /// <summary>
-        /// Get all pending user requests with pagination
-        /// </summary>
-        [HttpGet("requests/pending")]
-        public async Task<IActionResult> GetPendingUserRequests([FromQuery] GetUserRequestsPagingRequest request, CancellationToken ct)
-        {
-            var result = await _userService.GetPendingUserRequestsPagedAsync(request, ct);
             return Ok(Result.Success(result));
         }
 
@@ -58,6 +49,26 @@ namespace Flex.AspNetIdentity.Api.Controllers
         {
             var result = await _userService.GetUserChangeHistoryAsync(userName);
             return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// Get all pending user requests with pagination.
+        /// </summary>
+        [HttpGet("request/pending")]
+        public async Task<IActionResult> GetPendingUserRequests([FromQuery] GetUserRequestsPagingRequest request, CancellationToken ct)
+        {
+            var result = await _userService.GetPendingUserRequestsPagedAsync(request, ct);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// Create a new user request.
+        /// </summary>
+        [HttpPost("request/create")]
+        public async Task<IActionResult> CreateUserRequest([FromBody] CreateUserRequest dto)
+        {
+            var id = await _userService.CreateUserRequestAsync(dto);
+            return Ok(Result.Success(id));
         }
 
         [HttpPut("{userName}/roles")]
@@ -90,14 +101,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
         {
             var token = await _userService.ResetPasswordAsync(userName);
             return Ok(Result.Success(token));
-        }
-
-        [HttpPost("requests/create")]
-        [Authorize(Policy = "USERS.CREATE")]
-        public async Task<IActionResult> Create([FromBody] CreateUserRequestDto dto)
-        {
-            var id = await _userService.CreateUserAsync(dto);
-            return Ok(Result.Success(id));
         }
 
         [HttpPost("{userName}/update")]

@@ -3,7 +3,7 @@ using Flex.AspNetIdentity.Api.Models.User;
 
 namespace Flex.AspNetIdentity.Api.Validators
 {
-    public class CreateUserRequestDtoValidator : AbstractValidator<CreateUserRequestDto>
+    public class CreateUserRequestDtoValidator : AbstractValidator<CreateUserRequest>
     {
         public CreateUserRequestDtoValidator()
         {
