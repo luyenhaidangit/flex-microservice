@@ -229,81 +229,6 @@ namespace Flex.AspNetIdentity.Api.Services
         }
         #endregion
 
-        #region Commands on approved
-
-        /// <summary>
-        /// Assign roles to user.
-        /// </summary>
-        public async Task AssignRolesAsync(string userName, IEnumerable<string> roleCodes, CancellationToken ct = default)
-        {
-            // ===== Find user =====
-            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower(), ct)
-                       ?? throw new Exception($"User '{userName}' not found.");
-
-            // ===== Get role IDs =====
-            var codeSet = roleCodes?.Select(c => c?.Trim()).Where(c => !string.IsNullOrWhiteSpace(c)).ToHashSet(StringComparer.OrdinalIgnoreCase)
-                          ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var roles = await _dbContext.Set<Role>().Where(r => codeSet.Contains(r.Code)).Select(r => new { r.Id }).ToListAsync(ct);
-
-            // ===== Calculate role changes =====
-            var existing = await _dbContext.Set<UserRole>().Where(ur => ur.UserId == user.Id).Select(ur => ur.RoleId).ToListAsync(ct);
-            var target = roles.Select(r => r.Id).ToHashSet();
-
-            var toRemove = existing.Where(id => !target.Contains(id)).ToList();
-            var toAdd = target.Where(id => !existing.Contains(id)).ToList();
-
-            // ===== Apply changes =====
-            if (toRemove.Count > 0)
-            {
-                var removeEntities = await _dbContext.Set<UserRole>().Where(ur => ur.UserId == user.Id && toRemove.Contains(ur.RoleId)).ToListAsync(ct);
-                _dbContext.Set<UserRole>().RemoveRange(removeEntities);
-            }
-            if (toAdd.Count > 0)
-            {
-                var addEntities = toAdd.Select(id => new UserRole { UserId = user.Id, RoleId = id });
-                await _dbContext.Set<UserRole>().AddRangeAsync(addEntities, ct);
-            }
-
-            await _dbContext.SaveChangesAsync(ct);
-        }
-
-        /// <summary>
-        /// Lock user account.
-        /// </summary>
-        public async Task LockAsync(string userName, string? reason = null)
-        {
-            // ===== Find and lock user =====
-            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
-                       ?? throw new Exception($"User '{userName}' not found.");
-            user.LockoutEnabled = true;
-            user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Unlock user account.
-        /// </summary>
-        public async Task UnlockAsync(string userName)
-        {
-            // ===== Find and unlock user =====
-            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
-                       ?? throw new Exception($"User '{userName}' not found.");
-            user.LockoutEnd = null;
-            await _dbContext.SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Reset user password.
-        /// </summary>
-        public async Task<string> ResetPasswordAsync(string userName)
-        {
-            // ===== Find user and generate reset code =====
-            var user = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
-                       ?? throw new Exception($"User '{userName}' not found.");
-            return Guid.NewGuid().ToString("N");
-        }
-        #endregion
-
         #region Create/Update/Delete immediate with audit comment
 
         /// <summary>
@@ -356,7 +281,7 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             // ===== Validation =====
             // ===== Check user exists =====
-            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName == request.UserName);
+            var user = await _userRepository.FindAll().AsNoTracking().FirstOrDefaultAsync(u => u.UserName == request.UserName);
             if (user == null)
             {
                 throw new Exception($"User with username '{request.UserName}' does not exist.");
@@ -408,7 +333,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Delete user immediately.
         /// </summary>
-        public async Task DeleteUserAsync(string userName, DeleteUserRequestDto dto)
+        public async Task DeleteUserAsync(string userName)
         {
             // ===== Find and soft-delete user =====
             var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())

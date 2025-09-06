@@ -79,36 +79,13 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(id));
         }
 
-        [HttpPost("{userName}/lock")]
-        [Authorize(Policy = "USERS.LOCK")]
-        public async Task<IActionResult> LockUser(string userName)
+        /// <summary>
+        /// Create deltete user request.
+        /// </summary>
+        [HttpPost("request/delete/{userName}")]
+        public async Task<IActionResult> DeleteUserRequest(string userName)
         {
-            await _userService.LockAsync(userName);
-            return Ok(Result.Success(message: "Lock user success"));
-        }
-
-        [HttpPost("{userName}/unlock")]
-        [Authorize(Policy = "USERS.UNLOCK")]
-        public async Task<IActionResult> UnlockUser(string userName)
-        {
-            await _userService.UnlockAsync(userName);
-            return Ok(Result.Success(message: "Unlock user success"));
-        }
-
-        [HttpPost("{userName}/reset-password")]
-        [Authorize(Policy = "USERS.RESET_PW")]
-        public async Task<IActionResult> ResetPassword(string userName)
-        {
-            var token = await _userService.ResetPasswordAsync(userName);
-            return Ok(Result.Success(token));
-        }
-
-
-        [HttpPost("{userName}/delete")]
-        [Authorize(Policy = "USERS.DELETE")]
-        public async Task<IActionResult> Delete(string userName, [FromBody] DeleteUserRequestDto dto)
-        {
-            await _userService.DeleteUserAsync(userName, dto);
+            await _userService.DeleteUserRequestAsync(userName);
             return Ok(Result.Success(message: "Delete user success"));
         }
 
