@@ -333,7 +333,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Delete user immediately.
         /// </summary>
-        public async Task DeleteUserAsync(string userName)
+        public async Task<long> DeleteUserRequestAsync(string userName)
         {
             // ===== Find and soft-delete user =====
             var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
@@ -341,6 +341,8 @@ namespace Flex.AspNetIdentity.Api.Services
             user.LockoutEnabled = true;
             user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
             await _dbContext.SaveChangesAsync();
+
+            return user.Id;
         }
 
         /// <summary>
@@ -666,7 +668,7 @@ namespace Flex.AspNetIdentity.Api.Services
             try
             {
                 // ===== Deserialize and validate data =====
-                var data = JsonSerializer.Deserialize<DeleteUserRequestDto>(request.RequestedData);
+                var data = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
                 if (data == null)
                 {
                     throw new ArgumentException("Invalid request data for user deletion.");
@@ -679,7 +681,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 }
 
                 // ===== Delete user =====
-                await DeleteUserAsync(userName, data);
+                //await DeleteUserAsync(userName, data);
             }
             catch (Exception ex)
             {
