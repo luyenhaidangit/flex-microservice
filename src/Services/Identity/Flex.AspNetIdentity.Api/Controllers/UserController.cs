@@ -1,6 +1,4 @@
-﻿using Flex.AspNetIdentity.Api.Models.Role;
-using Flex.AspNetIdentity.Api.Models.User;
-using Flex.AspNetIdentity.Api.Services;
+﻿using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Authorization;

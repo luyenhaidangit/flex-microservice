@@ -1,18 +1,16 @@
-using Flex.AspNetIdentity.Api.Entities;
+﻿using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Entities.Views;
 using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
+using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
-using Flex.Shared.Enums.General;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
-using Google.Rpc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using System.Xml.Linq;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -313,36 +311,44 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Create user immediately.
         /// </summary>
-        public async Task<string> CreateUserRequestAsync(CreateUserRequest dto, string? comment = null)
+        public async Task<long> CreateUserRequestAsync(CreateUserRequest request)
         {
-            // ===== Validate role codes =====
-            var roleIds = await _dbContext.Set<Role>()
-                .Where(r => dto.RoleCodes.Contains(r.Code))
-                .Select(r => r.Id)
-                .ToListAsync();
-
-            // ===== Create user =====
-            var user = new User
+            // ===== Validate request =====
+            // Check if user already exists
+            var existingUser = await _userRepository.FindAll().AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserName!.ToLower() == request.UserName.ToLower());
+            
+            if (existingUser != null)
             {
-                UserName = dto.UserName,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                BranchId = dto.BranchId ?? 0,
-                FullName = dto.FullName
-            };
-
-            await _dbContext.Set<User>().AddAsync(user);
-            await _dbContext.SaveChangesAsync();
-
-            // ===== Assign roles =====
-            if (roleIds.Count > 0)
-            {
-                var maps = roleIds.Select(id => new UserRole { UserId = user.Id, RoleId = id });
-                await _dbContext.Set<UserRole>().AddRangeAsync(maps);
-                await _dbContext.SaveChangesAsync();
+                throw new Exception($"User with username '{request.UserName}' already exists.");
             }
 
-            return user.UserName ?? string.Empty;
+            // Check if user request already exists with pending status
+            var existingPendingRequest = await _userRequestRepository.GetAllUserRequests()
+                .Where(ur => ur.UserName.ToLower() == request.UserName.ToLower() && ur.Status == RequestStatusConstant.Unauthorised)
+                .FirstOrDefaultAsync();
+            
+            if (existingPendingRequest != null)
+            {
+                throw new Exception($"A pending request with username '{request.UserName}' already exists.");
+            }
+
+            // ===== Process =====
+            var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
+            var requestedJson = JsonSerializer.Serialize(request);
+            var requestDto = new UserRequest
+            {
+                Action = RequestTypeConstant.Create,
+                Status = RequestStatusConstant.Unauthorised,
+                EntityId = 0,
+                MakerId = requestedBy,
+                RequestedDate = DateTime.UtcNow,
+                Comments = "Yêu cầu thêm mới người sử dụng.",
+                RequestedData = requestedJson
+            };
+            await _userRequestRepository.CreateAsync(requestDto);
+
+            return requestDto.Id;
         }
 
         /// <summary>
@@ -655,13 +661,13 @@ namespace Flex.AspNetIdentity.Api.Services
                 }
 
                 // ===== Create user =====
-                var userId = await this.CreateUserRequestAsync(data, "");
+                var userId = await this.CreateUserRequestAsync(data);
                 
                 // ===== Parse userId to long =====
-                if (long.TryParse(userId, out var userIdLong))
-                {
-                    return userIdLong;
-                }
+                //if (long.TryParse(userId, out var userIdLong))
+                //{
+                //    return userIdLong;
+                //}
                 
                 return 0;
             }
