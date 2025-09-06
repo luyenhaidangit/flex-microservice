@@ -69,12 +69,14 @@ namespace Flex.AspNetIdentity.Api.Controllers
             return Ok(Result.Success(id));
         }
 
-        [HttpPut("{userName}/roles")]
-        [Authorize(Policy = "USERS.ASSIGN_ROLE")]
-        public async Task<IActionResult> AssignRoles(string userName, [FromBody] AssignRolesRequest req, CancellationToken ct)
+        /// <summary>
+        /// Create a new user request.
+        /// </summary>
+        [HttpPost("request/update")]
+        public async Task<IActionResult> UpdateUserRequest([FromBody] UpdateUserRequest request)
         {
-            await _userService.AssignRolesAsync(userName, req.RoleCodes, ct);
-            return Ok(Result.Success(message: "Assign roles success"));
+            var id = await _userService.CreateUserRequestAsync(request);
+            return Ok(Result.Success(id));
         }
 
         [HttpPost("{userName}/lock")]
@@ -103,7 +105,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
         [HttpPost("{userName}/update")]
         [Authorize(Policy = "USERS.UPDATE")]
-        public async Task<IActionResult> Update(string userName, [FromBody] UpdateUserRequestDto dto)
+        public async Task<IActionResult> Update(string userName, [FromBody] UpdateUserRequest dto)
         {
             await _userService.UpdateUserAsync(userName, dto);
             return Ok(Result.Success(message: "Update user success"));

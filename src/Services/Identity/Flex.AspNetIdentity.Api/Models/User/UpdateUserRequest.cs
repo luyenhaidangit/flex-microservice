@@ -1,6 +1,6 @@
 namespace Flex.AspNetIdentity.Api.Models.User
 {
-    public class UpdateUserRequestDto
+    public class UpdateUserRequest
     {
         public string? FullName { get; set; }
         public string? Email { get; set; }
@@ -8,8 +8,5 @@ namespace Flex.AspNetIdentity.Api.Models.User
         public long? BranchId { get; set; }
         public bool? IsActive { get; set; }
         public List<string>? RoleCodes { get; set; }
-        public string? Comment { get; set; }
     }
 }
-
-

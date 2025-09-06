@@ -10,6 +10,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken cancellationToken);
         Task<List<UserChangeHistoryDto>> GetUserChangeHistoryAsync(string userName);
         Task<long> CreateUserRequestAsync(CreateUserRequest request);
+        Task<long> UpdateUserRequestAsync(UpdateUserRequest dto);
         Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken cancellationToken);
         
         // Commands on approved
@@ -20,7 +21,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
 
         // Pending style using RoleRequests pattern replaced by immediate create/update/delete with audit comment
         
-        Task UpdateUserAsync(string userName, UpdateUserRequestDto dto);
+        
         Task DeleteUserAsync(string userName, DeleteUserRequestDto dto);
 
         // User request management

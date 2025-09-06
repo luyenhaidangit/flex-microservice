@@ -1,9 +1,7 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
-using Flex.AspNetIdentity.Api.Entities.Views;
 using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
-using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
@@ -354,24 +352,9 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Update user immediately.
         /// </summary>
-        public async Task UpdateUserAsync(string userName, UpdateUserRequestDto dto)
+        public async Task<long> CreateUpdateUserRequest(UpdateUserRequest request)
         {
-            // ===== Find and update user =====
-            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
-                       ?? throw new Exception($"User '{userName}' not found.");
-
-            if (dto.FullName != null) user.FullName = dto.FullName;
-            if (dto.Email != null) user.Email = dto.Email;
-            if (dto.PhoneNumber != null) user.PhoneNumber = dto.PhoneNumber;
-            if (dto.BranchId.HasValue) user.BranchId = dto.BranchId.Value;
-
-            await _dbContext.SaveChangesAsync();
-
-            // ===== Update roles if specified =====
-            if (dto.RoleCodes != null)
-            {
-                await AssignRolesAsync(userName, dto.RoleCodes);
-            }
+            
         }
 
         /// <summary>
@@ -683,7 +666,7 @@ namespace Flex.AspNetIdentity.Api.Services
             try
             {
                 // ===== Deserialize and validate data =====
-                var data = JsonSerializer.Deserialize<UpdateUserRequestDto>(request.RequestedData);
+                var data = JsonSerializer.Deserialize<UpdateUserRequest>(request.RequestedData);
                 if (data == null)
                 {
                     throw new ArgumentException("Invalid request data for user update.");
