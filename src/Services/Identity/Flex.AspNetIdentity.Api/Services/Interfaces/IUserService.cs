@@ -9,12 +9,12 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken cancellationToken);
         Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken cancellationToken);
         Task<List<UserChangeHistoryDto>> GetUserChangeHistoryAsync(string userName);
+        Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken cancellationToken);
+        Task<UserRequestDetailDto> GetPendingUserRequestByIdAsync(long requestId);
+        // Command
         Task<long> CreateUserRequestAsync(CreateUserRequest request);
         Task<long> UpdateUserRequestAsync(UpdateUserRequest request);
         Task<long> DeleteUserRequestAsync(string userName);
-        Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken cancellationToken); 
-        // User request management
-        Task<UserRequestDetailDto> GetPendingUserRequestByIdAsync(long requestId);
         Task<UserRequestApprovalResultDto> ApprovePendingUserRequestAsync(long requestId, string? comment = null);
         Task<UserRequestApprovalResultDto> RejectPendingUserRequestAsync(long requestId, string? reason = null);
     }

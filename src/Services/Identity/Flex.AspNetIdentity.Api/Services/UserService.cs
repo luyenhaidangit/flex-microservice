@@ -90,50 +90,6 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         /// <summary>
-        /// Get all pending user requests with pagination.
-        /// </summary>
-        public async Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken ct)
-        {
-            // ===== Process request parameters =====
-            var keyword = request.Keyword?.Trim().ToLower();
-            var requestType = request.Type?.Trim().ToUpperInvariant();
-            int pageIndex = request.PageIndexValue;
-            int pageSize = request.PageSizeValue;
-
-            // ===== Build query using view =====
-            var pendingQuery = _userRequestRepository.GetAllUserRequests()
-                .WhereIf(!string.IsNullOrEmpty(keyword), 
-                    r => EF.Functions.Like(r.UserName.ToLower(), $"%{keyword}%") ||
-                         EF.Functions.Like(r.FullName.ToLower(), $"%{keyword}%") ||
-                         EF.Functions.Like(r.Email.ToLower(), $"%{keyword}%"))
-                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All, 
-                    r => r.Action == requestType)
-                .AsNoTracking()
-                .Select(r => new UserPendingPagingDto
-                {
-                    RequestId = r.RequestId,
-                    Action = r.Action,
-                    RequestedBy = r.RequestedBy,
-                    RequestedDate = r.RequestedDate,
-                    UserName = r.UserName,
-                    FullName = r.FullName,
-                    Email = r.Email
-                });
-
-            // ===== Execute query =====
-            var total = await pendingQuery.CountAsync(ct);
-            var items = await pendingQuery
-                .OrderByDescending(dto => dto.RequestedDate)
-                .ThenBy(dto => dto.RequestId)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(ct);
-
-            // ===== Return result =====
-            return PagedResult<UserPendingPagingDto>.Create(pageIndex, pageSize, total, items);
-        }
-
-        /// <summary>
         /// Get approved user by username.
         /// </summary>
         public async Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken ct)
@@ -141,10 +97,11 @@ namespace Flex.AspNetIdentity.Api.Services
             // ===== Find user by username =====
             var user = await _userRepository.FindAll().AsNoTracking().FirstOrDefaultAsync(u => u.UserName.ToLower() == userName.ToLower(), ct);
 
-            if(user == null)
+            if (user == null)
             {
                 throw new Exception($"User '{userName}' not found.");
-            };
+            }
+            ;
 
             // ===== Get branch information =====
             string branchName = "";
@@ -226,6 +183,89 @@ namespace Flex.AspNetIdentity.Api.Services
             }).ToList();
 
             return historyItems;
+        }
+
+        /// <summary>
+        /// Get all pending user requests with pagination.
+        /// </summary>
+        public async Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken ct)
+        {
+            // ===== Process request parameters =====
+            var keyword = request.Keyword?.Trim().ToLower();
+            var requestType = request.Type?.Trim().ToUpperInvariant();
+            int pageIndex = request.PageIndexValue;
+            int pageSize = request.PageSizeValue;
+
+            // ===== Build query using view =====
+            var pendingQuery = _userRequestRepository.GetAllUserRequests()
+                .WhereIf(!string.IsNullOrEmpty(keyword), 
+                    r => EF.Functions.Like(r.UserName.ToLower(), $"%{keyword}%") ||
+                         EF.Functions.Like(r.FullName.ToLower(), $"%{keyword}%") ||
+                         EF.Functions.Like(r.Email.ToLower(), $"%{keyword}%"))
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All, 
+                    r => r.Action == requestType)
+                .AsNoTracking()
+                .Select(r => new UserPendingPagingDto
+                {
+                    RequestId = r.RequestId,
+                    Action = r.Action,
+                    RequestedBy = r.RequestedBy,
+                    RequestedDate = r.RequestedDate,
+                    UserName = r.UserName,
+                    FullName = r.FullName,
+                    Email = r.Email
+                });
+
+            // ===== Execute query =====
+            var total = await pendingQuery.CountAsync(ct);
+            var items = await pendingQuery
+                .OrderByDescending(dto => dto.RequestedDate)
+                .ThenBy(dto => dto.RequestId)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(ct);
+
+            // ===== Return result =====
+            return PagedResult<UserPendingPagingDto>.Create(pageIndex, pageSize, total, items);
+        }
+
+        /// <summary>
+        /// Get pending user request detail by request ID.
+        /// </summary>
+        public async Task<UserRequestDetailDto> GetPendingUserRequestByIdAsync(long requestId)
+        {
+            // ===== Get request data =====
+            var request = await _userRequestRepository.FindAll()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null)
+            {
+                throw new ArgumentException($"User request with ID {requestId} not found.");
+            }
+
+            // ===== Build base result =====
+            var result = new UserRequestDetailDto
+            {
+                RequestId = request.Id.ToString(),
+                Type = request.Action,
+            };
+
+            // ===== Process request data based on action type =====
+            switch (request.Action)
+            {
+                case RequestTypeConstant.Create:
+                    ProcessCreateUserRequestData(request, result);
+                    break;
+                case RequestTypeConstant.Update:
+                    await ProcessUpdateUserRequestData(request, result);
+                    break;
+                case RequestTypeConstant.Delete:
+                    await ProcessDeleteUserRequestData(request, result);
+                    break;
+            }
+
+            return result;
         }
         #endregion
 
@@ -343,45 +383,6 @@ namespace Flex.AspNetIdentity.Api.Services
             await _dbContext.SaveChangesAsync();
 
             return user.Id;
-        }
-
-        /// <summary>
-        /// Get pending user request detail by request ID.
-        /// </summary>
-        public async Task<UserRequestDetailDto> GetPendingUserRequestByIdAsync(long requestId)
-        {
-            // ===== Get request data =====
-            var request = await _userRequestRepository.FindAll()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == requestId);
-
-            if (request == null)
-            {
-                throw new ArgumentException($"User request with ID {requestId} not found.");
-            }
-
-            // ===== Build base result =====
-            var result = new UserRequestDetailDto
-            {
-                RequestId = request.Id.ToString(),
-                Type = request.Action,
-            };
-
-            // ===== Process request data based on action type =====
-            switch (request.Action)
-            {
-                case RequestTypeConstant.Create:
-                    ProcessCreateUserRequestData(request, result);
-                    break;
-                case RequestTypeConstant.Update:
-                    await ProcessUpdateUserRequestData(request, result);
-                    break;
-                case RequestTypeConstant.Delete:
-                    await ProcessDeleteUserRequestData(request, result);
-                    break;
-            }
-
-            return result;
         }
 
         /// <summary>
