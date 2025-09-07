@@ -269,7 +269,7 @@ namespace Flex.AspNetIdentity.Api.Services
         }
         #endregion
 
-        #region Create/Update/Delete immediate with audit comment
+        #region Command
 
         /// <summary>
         /// Create user immediately.

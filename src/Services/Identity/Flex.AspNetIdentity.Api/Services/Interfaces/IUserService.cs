@@ -19,5 +19,3 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<UserRequestApprovalResultDto> RejectPendingUserRequestAsync(long requestId, string? reason = null);
     }
 }
-
-

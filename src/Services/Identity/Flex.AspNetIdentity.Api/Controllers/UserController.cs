@@ -1,7 +1,6 @@
 ﻿using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Flex.AspNetIdentity.Api.Controllers
@@ -18,6 +17,8 @@ namespace Flex.AspNetIdentity.Api.Controllers
             _logger = logger;
             _userService = userService;
         }
+
+        #region Query
 
         /// <summary>
         /// Get all user with pagination
@@ -60,6 +61,20 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
+        /// Get user request pending detail.
+        /// </summary>
+        [HttpGet("requests/pending/{requestId}")]
+        public async Task<IActionResult> GetPendingUserRequestById(long requestId)
+        {
+            var result = await _userService.GetPendingUserRequestByIdAsync(requestId);
+            return Ok(Result.Success(result));
+        }
+
+        #endregion
+
+        #region Command
+
+        /// <summary>
         /// Create a new user request.
         /// </summary>
         [HttpPost("request/create")]
@@ -90,16 +105,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Get user request pending detail.
-        /// </summary>
-        [HttpGet("requests/pending/{requestId}")]
-        public async Task<IActionResult> GetPendingUserRequestById(long requestId)
-        {
-            var result = await _userService.GetPendingUserRequestByIdAsync(requestId);
-            return Ok(Result.Success(result));
-        }
-
-        /// <summary>
         /// Approve pending user request by ID.
         /// </summary>
         [HttpPost("requests/pending/{requestId}/approve")]
@@ -115,7 +120,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
                 // ===== Process approval =====
                 var result = await _userService.ApprovePendingUserRequestAsync(requestId, dto?.Comment);
-                
+
                 // ===== Return result =====
                 return Ok(Result.Success(result));
             }
@@ -145,7 +150,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
                 // ===== Process rejection =====
                 var result = await _userService.RejectPendingUserRequestAsync(requestId, dto?.Reason);
-                
+
                 // ===== Return result =====
                 return Ok(Result.Success(result));
             }
@@ -158,5 +163,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 return StatusCode(500, Result.Failure($"Failed to reject user request: {ex.Message}"));
             }
         }
+
+        #endregion
     }
 }
