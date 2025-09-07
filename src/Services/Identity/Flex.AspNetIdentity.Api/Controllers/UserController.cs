@@ -63,7 +63,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// <summary>
         /// Get user request pending detail.
         /// </summary>
-        [HttpGet("requests/pending/{requestId}")]
+        [HttpGet("request/pending/{requestId}")]
         public async Task<IActionResult> GetPendingUserRequestById(long requestId)
         {
             var result = await _userService.GetPendingUserRequestByIdAsync(requestId);
@@ -107,7 +107,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// <summary>
         /// Approve pending user request by ID.
         /// </summary>
-        [HttpPost("requests/pending/{requestId}/approve")]
+        [HttpPost("request/pending/{requestId}/approve")]
         public async Task<IActionResult> ApprovePendingUserRequest(long requestId, [FromBody] ApproveUserRequestDto? dto = null)
         {
             try
@@ -137,7 +137,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// <summary>
         /// Reject pending user request by ID.
         /// </summary>
-        [HttpPost("requests/pending/{requestId}/reject")]
+        [HttpPost("request/pending/{requestId}/reject")]
         public async Task<IActionResult> RejectPendingUserRequest(long requestId, [FromBody] RejectUserRequestDto? dto = null)
         {
             try
