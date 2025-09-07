@@ -2,20 +2,17 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.Infrastructure.EntityFrameworkCore.Converters;
+using Flex.Infrastructure.EntityFrameworkCore.Configurations;
 
 namespace Flex.AspNetIdentity.Api.Persistence.Configurations
 {
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public class UserConfiguration : ApprovalEntityBaseConfiguration<User, long>
     {
-        public void Configure(EntityTypeBuilder<User> builder)
+        public override void Configure(EntityTypeBuilder<User> builder)
         {
+            base.Configure(builder);
+
             builder.ToTable("USERS");
-
-            // Keys
-            builder.HasKey(u => u.Id);
-
-            // Columns
-            builder.Property(u => u.Id).HasColumnName("ID");
 
             builder.Property(u => u.UserName)
                    .HasColumnName("USER_NAME")

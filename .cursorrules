@@ -196,7 +196,20 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - `Controllers/<Entity>Controller.cs`
 
 # Scratchpad
-Goal: Triển khai API xem danh sách yêu cầu cho UserController theo pattern RoleController
+Goal: Thêm cột STATUS vào bảng USERS và cập nhật backend
+
+[X] Tạo migration script V4.1__add_status_column_to_users.sql
+[X] Cập nhật User entity để thêm property Status
+[X] Cập nhật UserConfiguration để map cột STATUS với index
+[X] Kiểm tra compilation và fix lỗi
+
+Implementation details:
+- Thêm cột STATUS VARCHAR2(3 CHAR) với default 'AUT'
+- Tạo index IX_USERS_STATUS cho performance
+- Cập nhật User entity với property Status string
+- Cập nhật UserConfiguration với mapping và index
+- Tuân thủ pattern tương tự như bảng ROLES
+- Các giá trị status: UNA (Unauthorised), AUT (Authorised)
 
 [X] Phân tích cấu trúc RoleController để tham khảo
 [X] Tạo các DTO cần thiết cho User requests:
@@ -481,3 +494,9 @@ Implementation details:
 ## Template sẵn sàng
 
 Có thể copy từ Flex.System.Api hoặc Flex.Investor.Api làm template cơ bản và customize theo nhu cầu cụ thể của service mới.
+
+## Entity Design Lessons
+
+- **CRITICAL**: Khi entity kế thừa từ `ApprovalEntityBase<TKey>`, KHÔNG cần thêm trường `Status` vì đã có sẵn trong base class. `ApprovalEntityBase<TKey>` đã cung cấp property `Status` với mapping `[Column("STATUS")]`.
+- Entity chỉ cần thêm các trường đặc thù của domain, không duplicate các trường đã có trong base class.
+- **Configuration Pattern**: Sử dụng `ApprovalEntityBaseConfiguration<TEntity, TKey>` cho tất cả entity kế thừa từ `ApprovalEntityBase<TKey>` để tái sử dụng cấu hình `Status` property và index. Không cần cấu hình lại `Status` trong từng configuration riêng lẻ.
