@@ -37,7 +37,8 @@ namespace Flex.AspNetIdentity.Api.Persistence.Seeds
                     {
                         UserName = adminUsername,
                         Email = adminEmail,
-                        EmailConfirmed = true
+                        EmailConfirmed = true,
+                        Status = "AUT" // Admin user is automatically authorized
                     };
 
                     var result = await userManager.CreateAsync(adminUser, "Haidang106@");

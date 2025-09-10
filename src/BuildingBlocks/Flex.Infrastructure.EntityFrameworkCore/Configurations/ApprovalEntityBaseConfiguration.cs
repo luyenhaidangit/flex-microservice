@@ -18,7 +18,8 @@ namespace Flex.Infrastructure.EntityFrameworkCore.Configurations
             builder.Property(x => x.Status)
                    .HasColumnName("STATUS")
                    .HasMaxLength(3)
-                   .HasDefaultValue("AUT");
+                   .HasDefaultValue("UNA")
+                   .IsRequired();
 
             // Index for Status column
             builder.HasIndex(x => x.Status)
