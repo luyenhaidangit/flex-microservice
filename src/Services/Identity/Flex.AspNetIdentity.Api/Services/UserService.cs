@@ -276,10 +276,12 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<long> CreateUserRequestAsync(CreateUserRequest request)
         {
+            var username = request.UserName?.ToLower();
+
             // ===== Validate request =====
             // Check if user already exists
             var existingUser = await _userRepository.FindAll().AsNoTracking()
-                .FirstOrDefaultAsync(u => u.UserName!.ToLower() == request.UserName.ToLower());
+                .FirstOrDefaultAsync(u => u.UserName!.ToLower() == username);
             
             if (existingUser != null)
             {
@@ -288,7 +290,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
             // Check if user request already exists with pending status
             var existingPendingRequest = await _userRequestRepository.GetAllUserRequests()
-                .Where(ur => ur.UserName.ToLower() == request.UserName.ToLower() && ur.Status == RequestStatusConstant.Unauthorised)
+                .Where(ur => EF.Functions.Like(ur.UserName.ToLower(), username) && ur.Status == RequestStatusConstant.Unauthorised)
                 .FirstOrDefaultAsync();
             
             if (existingPendingRequest != null)
