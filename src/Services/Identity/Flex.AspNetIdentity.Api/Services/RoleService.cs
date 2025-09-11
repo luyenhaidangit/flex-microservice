@@ -631,6 +631,10 @@ namespace Flex.AspNetIdentity.Api.Services
                         comment = "Yêu cầu cập nhật vai trò.";
                         break;
 
+                    case RequestTypeConstant.Delete:
+                        comment = "Yêu cầu xóa vai trò.";
+                        break;
+
                     default:
                         throw new Exception($"Unsupported request type: {request.Action}");
                 }
