@@ -5,6 +5,8 @@ using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
+using Flex.Infrastructure.Exceptions;
+using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Microsoft.EntityFrameworkCore;
@@ -285,7 +287,7 @@ namespace Flex.AspNetIdentity.Api.Services
             
             if (existingUser != null)
             {
-                throw new Exception($"User with username '{request.UserName}' already exists.");
+                throw new ValidationException(ErrorCode.UserAlreadyExists);
             }
 
             // Check if user request already exists with pending status
@@ -295,7 +297,7 @@ namespace Flex.AspNetIdentity.Api.Services
             
             if (existingPendingRequest != null)
             {
-                throw new Exception($"A pending request with username '{request.UserName}' already exists.");
+                throw new ValidationException(ErrorCode.UserRequestExists);
             }
 
             // ===== Process =====

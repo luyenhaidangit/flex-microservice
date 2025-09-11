@@ -47,8 +47,16 @@ namespace Flex.Infrastructure.Middlewares
             }
             catch (ValidationException ex)
             {
-                _logger.LogError(ex, "Unhandled exception: {Message}", ex.Message);
-                await HandleExceptionAsync(context, StatusCodes.Status500InternalServerError, ex.Message);
+                if(string.IsNullOrEmpty(ex.ErrorCode))
+                {
+                    _logger.LogError(ex, "Validation exception: {Message}", ex.Message);
+                    await HandleExceptionAsync(context, StatusCodes.Status400BadRequest, ex.Message);
+                }
+                else
+                {
+                    _logger.LogError(ex, "Validation exception: {Message}", ex.Message);
+                    await HandleExceptionAsync(context, StatusCodes.Status400BadRequest, ex.Message, ex.ErrorCode);
+                }
             }
             catch (Exception ex)
             {
@@ -62,7 +70,7 @@ namespace Flex.Infrastructure.Middlewares
             }
         }
 
-        private async Task HandleExceptionAsync(HttpContext context, int statusCode, string message)
+        private async Task HandleExceptionAsync(HttpContext context, int statusCode, string message, string? errorCode = null)
         {
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
@@ -71,7 +79,7 @@ namespace Flex.Infrastructure.Middlewares
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
-            var responseJson = JsonSerializer.Serialize(Result.Failure(message: message), options);
+            var responseJson = JsonSerializer.Serialize(Result.Failure(message: message, errorCode: errorCode), options);
 
             await context.Response.WriteAsync(responseJson);
         }
