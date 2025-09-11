@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Flex.AspNetIdentity.Api.Entities;
+﻿using Flex.AspNetIdentity.Api.Entities;
+using Flex.Shared.SeedWork.Workflow.Constants;
+using Microsoft.AspNetCore.Identity;
 using ILogger = Serilog.ILogger;
 
 namespace Flex.AspNetIdentity.Api.Persistence.Seeds
@@ -38,7 +39,7 @@ namespace Flex.AspNetIdentity.Api.Persistence.Seeds
                         UserName = adminUsername,
                         Email = adminEmail,
                         EmailConfirmed = true,
-                        Status = "AUT" // Admin user is automatically authorized
+                        Status = RequestStatusConstant.Authorised,
                     };
 
                     var result = await userManager.CreateAsync(adminUser, "Haidang106@");
