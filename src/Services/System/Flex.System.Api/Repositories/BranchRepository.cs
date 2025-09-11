@@ -29,9 +29,9 @@ namespace Flex.System.Api.Repositories
                 .CountAsync(x => x.Code == code) > 0;
         }
 
-        public IQueryable<ProposedBranch> GetBranchCombinedQuery()
+        public IQueryable<BrandRequestView> GetBranchCombinedQuery()
         {
-            return _context.Set<ProposedBranch>().AsNoTracking();
+            return _context.Set<BrandRequestView>().AsNoTracking();
         }
     }
 }

@@ -33,7 +33,7 @@ namespace Flex.AspNetIdentity.Api.Persistence
         #endregion
 
         #region Views
-        public DbSet<ProposedBranch> ProposedBranchs { get; set; }
+        public DbSet<RoleRequestView> ProposedBranchs { get; set; }
         public DbSet<UserRequestView> UserRequestViews { get; set; }
         #endregion
     }

@@ -7,6 +7,6 @@ namespace Flex.AspNetIdentity.Api.Repositories.Interfaces
 {
     public interface IRoleRequestRepository : IRepositoryBase<RoleRequest, long, IdentityDbContext>
     {
-        IQueryable<ProposedBranch> GetBranchCombinedQuery();
+        IQueryable<RoleRequestView> GetBranchCombinedQuery();
     }
 }

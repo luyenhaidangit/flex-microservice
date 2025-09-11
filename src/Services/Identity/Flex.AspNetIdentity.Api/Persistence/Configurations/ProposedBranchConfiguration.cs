@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Flex.AspNetIdentity.Api.Persistence.Configurations
 {
-    public class ProposedBranchConfiguration : IEntityTypeConfiguration<ProposedBranch>
+    public class ProposedBranchConfiguration : IEntityTypeConfiguration<RoleRequestView>
     {
-        public void Configure(EntityTypeBuilder<ProposedBranch> builder)
+        public void Configure(EntityTypeBuilder<RoleRequestView> builder)
         {
-            builder.ToTable("V_PROPOSED_BRANCH");
+            builder.ToTable("V_ROLE_REQUESTS");
             builder.HasNoKey();
 
             builder.Property(p => p.Code).HasColumnType("varchar2(255)");

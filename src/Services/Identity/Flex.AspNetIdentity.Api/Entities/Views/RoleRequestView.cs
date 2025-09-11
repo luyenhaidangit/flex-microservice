@@ -3,9 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Flex.AspNetIdentity.Api.Entities.Views
 {
-    [Keyless]
-    [Table("V_PROPOSED_BRANCH")]
-    public class ProposedBranch
+    public class RoleRequestView
     {
         [Column("ID")]
         public long? Id { get; set; }
@@ -28,9 +26,6 @@ namespace Flex.AspNetIdentity.Api.Entities.Views
         [Column("IS_ACTIVE")]
         public bool? IsActive { get; set; } = true;
 
-        [Column("DESCRIPTION")]
-        public string? Description { get; set; }
-
         [Column("CREATED_BY")]
         public string? CreatedBy { get; set; }
 
@@ -48,5 +43,8 @@ namespace Flex.AspNetIdentity.Api.Entities.Views
 
         [Column("APPROVE_DATE")]
         public DateTime? ApproveDate { get; set; }
+
+        [Column("DESCRIPTION")]
+        public string? Description { get; set; }
     }
 }

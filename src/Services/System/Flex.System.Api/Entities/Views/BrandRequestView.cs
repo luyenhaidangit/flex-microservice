@@ -1,6 +1,6 @@
 namespace Flex.System.Api.Entities.Views
 {
-    public class ProposedBranch
+    public class BrandRequestView
     {
         public long? Id { get; set; }
         public long? EntityId { get; set; }

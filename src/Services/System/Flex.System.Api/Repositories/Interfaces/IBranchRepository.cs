@@ -9,7 +9,7 @@ namespace Flex.System.Api.Repositories.Interfaces
 {
     public interface IBranchRepository : IRepositoryBase<Branch, long, SystemDbContext>
     {
-        IQueryable<ProposedBranch> GetBranchCombinedQuery();
+        IQueryable<BrandRequestView> GetBranchCombinedQuery();
         Task<Branch?> GetByCodeAsync(string code);
         Task<bool> ExistsByCodeAsync(string code);
     }

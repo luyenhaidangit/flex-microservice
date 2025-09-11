@@ -4,11 +4,11 @@ using Flex.System.Api.Entities.Views;
 
 namespace Flex.System.Api.Persistence.Configurations
 {
-    public class ProposedBranchViewConfiguration : IEntityTypeConfiguration<ProposedBranch>
+    public class ProposedBranchViewConfiguration : IEntityTypeConfiguration<BrandRequestView>
     {
-        public void Configure(EntityTypeBuilder<ProposedBranch> builder)
+        public void Configure(EntityTypeBuilder<BrandRequestView> builder)
         {
-            builder.ToView("V_PROPOSED_BRANCH");
+            builder.ToView("V_BRANCH_REQUEST");
             builder.HasNoKey();
 
             // Optional: Map column names (giữ tối thiểu để tránh ràng buộc không cần thiết)
