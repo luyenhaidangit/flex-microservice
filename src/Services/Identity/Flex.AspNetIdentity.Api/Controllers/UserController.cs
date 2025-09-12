@@ -34,7 +34,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// Get approved user by user name.
         /// </summary>
         [HttpGet("approved/{userName}")]
-        public async Task<IActionResult> GetUser(string userName, CancellationToken ct)
+        public async Task<IActionResult> GetUserByUserName(string userName, CancellationToken ct)
         {
             var result = await _userService.GetUserByUserNameAsync(userName, ct);
             return Ok(Result.Success(result));

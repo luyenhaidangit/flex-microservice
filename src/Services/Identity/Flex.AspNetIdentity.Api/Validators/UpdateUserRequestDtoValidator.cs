@@ -17,12 +17,6 @@ namespace Flex.AspNetIdentity.Api.Validators
             RuleFor(x => x.Email)
                 .EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Email))
                 .MaximumLength(256).When(x => !string.IsNullOrWhiteSpace(x.Email));
-
-            RuleFor(x => x.PhoneNumber)
-                .MaximumLength(50).When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
-
-            RuleFor(x => x.Comment)
-                .MaximumLength(500).When(x => !string.IsNullOrWhiteSpace(x.Comment));
         }
     }
 }

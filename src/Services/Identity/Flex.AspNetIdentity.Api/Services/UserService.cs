@@ -1,5 +1,6 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Integrations.Interfaces;
+using Flex.AspNetIdentity.Api.Models.Branch;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
@@ -106,13 +107,12 @@ namespace Flex.AspNetIdentity.Api.Services
             ;
 
             // ===== Get branch information =====
-            string branchName = "";
+            var branch = new BranchLookupDto(0, "");
             if (user.BranchId > 0)
             {
                 try
                 {
-                    var branch = await _branchIntegrationService.GetBranchByIdAsync(user.BranchId, ct);
-                    branchName = branch?.Name ?? "";
+                    branch = await _branchIntegrationService.GetBranchByIdAsync(user.BranchId, ct) ?? new BranchLookupDto(0, "");
                 }
                 catch (Exception ex)
                 {
@@ -132,9 +132,10 @@ namespace Flex.AspNetIdentity.Api.Services
                 UserName = user.UserName ?? string.Empty,
                 FullName = user.FullName,
                 Email = user.Email,
-                BranchName = branchName,
+                BranchName = branch.Name,
                 IsActive = user.IsActive,
-                Roles = roles
+                Roles = roles,
+                Branch = branch ?? new BranchLookupDto(0, "")
             };
         }
 
@@ -349,7 +350,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
                 RequestedData = requestedJson,
-                Comments = request.Comment ?? "Yêu cầu cập nhật người dùng."
+                //Comments = request.Comment ?? "Yêu cầu cập nhật người dùng."
             };
 
             // ===== Update status process user =====

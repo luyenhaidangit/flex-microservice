@@ -1,5 +1,6 @@
 ﻿using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models;
+using Flex.AspNetIdentity.Api.Models.Branch;
 using Flex.System.Grpc.Services;
 using Grpc.Core;
 using Microsoft.Extensions.Configuration;
@@ -16,7 +17,7 @@ namespace Flex.AspNetIdentity.Api.Integrations
         private readonly BranchService.BranchServiceClient _client;
         private readonly IConfiguration _configuration;
         private readonly ILogger<BranchGrpcService> _logger;
-        private readonly ConcurrentDictionary<long, BranchDto> _cache;
+        private readonly ConcurrentDictionary<long, BranchLookupDto> _cache;
         private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(5);
 
         public BranchGrpcService(
@@ -27,18 +28,18 @@ namespace Flex.AspNetIdentity.Api.Integrations
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _cache = new ConcurrentDictionary<long, BranchDto>();
+            _cache = new ConcurrentDictionary<long, BranchLookupDto>();
         }
 
         /// <summary>
         /// Lấy danh sách branches theo danh sách ids
         /// </summary>
-        public async Task<IReadOnlyList<BranchDto>> BatchGetBranchesAsync(IEnumerable<long> ids, CancellationToken ct = default)
+        public async Task<IReadOnlyList<BranchLookupDto>> BatchGetBranchesAsync(IEnumerable<long> ids, CancellationToken ct = default)
         {
             if (ids == null || !ids.Any())
             {
                 _logger.LogWarning("BatchGetBranchesAsync called with empty or null ids");
-                return Array.Empty<BranchDto>();
+                return Array.Empty<BranchLookupDto>();
             }
 
             var idList = ids.ToList();
@@ -55,12 +56,12 @@ namespace Flex.AspNetIdentity.Api.Integrations
                     request,
                     cancellationToken: ct);
 
-                var result = new List<BranchDto>();
+                var result = new List<BranchLookupDto>();
                 
                 // Map from ids to BranchDto
                 foreach (var kvp in response.BranchesById)
                 {
-                    var branch = new BranchDto(kvp.Key, kvp.Value.Name);
+                    var branch = new BranchLookupDto(kvp.Key, kvp.Value.Name);
                     result.Add(branch);
                     
                     // Cache by id
@@ -81,7 +82,7 @@ namespace Flex.AspNetIdentity.Api.Integrations
             catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
             {
                 _logger.LogWarning("No branches found for ids: {Ids}", string.Join(", ", idList));
-                return Array.Empty<BranchDto>();
+                return Array.Empty<BranchLookupDto>();
             }
             catch (RpcException ex) when (ex.StatusCode is StatusCode.Unavailable or StatusCode.DeadlineExceeded)
             {
@@ -104,7 +105,7 @@ namespace Flex.AspNetIdentity.Api.Integrations
         /// <summary>
         /// Lấy thông tin một branch theo id
         /// </summary>
-        public async Task<BranchDto?> GetBranchByIdAsync(long id, CancellationToken ct = default)
+        public async Task<BranchLookupDto?> GetBranchByIdAsync(long id, CancellationToken ct = default)
         {
             if (id <= 0)
             {
@@ -156,7 +157,7 @@ namespace Flex.AspNetIdentity.Api.Integrations
         /// <summary>
         /// Lấy danh sách tất cả branches (nếu có endpoint)
         /// </summary>
-        public async Task<IReadOnlyList<BranchDto>> GetAllBranchesAsync(CancellationToken ct = default)
+        public async Task<IReadOnlyList<BranchLookupDto>> GetAllBranchesAsync(CancellationToken ct = default)
         {
             // Note: This method would require an additional gRPC endpoint in BranchService
             // For now, we'll return an empty list and log that it's not implemented
@@ -167,7 +168,7 @@ namespace Flex.AspNetIdentity.Api.Integrations
             // var response = await _client.GetAllBranchesAsync(request, deadline: DateTime.UtcNow.AddSeconds(30), cancellationToken: ct);
             // return response.Branches.Select(b => new BranchDto(b.Code, b.Name)).ToList();
             
-            return Array.Empty<BranchDto>();
+            return Array.Empty<BranchLookupDto>();
         }
 
         /// <summary>
