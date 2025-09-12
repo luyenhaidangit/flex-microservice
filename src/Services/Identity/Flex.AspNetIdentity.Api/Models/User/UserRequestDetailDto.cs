@@ -5,10 +5,10 @@ namespace Flex.AspNetIdentity.Api.Models.User
     /// </summary>
     public class UserRequestDetailDto
     {
-        public string RequestId { get; set; } = default!;
-        public string Type { get; set; } = default!; // CREATE / UPDATE / DELETE
-        public string CreatedBy { get; set; } = default!;
-        public string CreatedDate { get; set; } = default!;
+        public string RequestId { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty; // CREATE / UPDATE / DELETE
+        public string CreatedBy { get; set; } = string.Empty;
+        public string CreatedDate { get; set; } = string.Empty;
         public UserDetailDataDto? OldData { get; set; } // Dữ liệu cũ (cho UPDATE/DELETE)
         public UserDetailDataDto? NewData { get; set; } // Dữ liệu mới (cho CREATE/UPDATE)
     }
@@ -18,7 +18,7 @@ namespace Flex.AspNetIdentity.Api.Models.User
     /// </summary>
     public class UserDetailDataDto
     {
-        public string UserName { get; set; } = default!;
+        public string UserName { get; set; } = string.Empty;
         public string? FullName { get; set; }
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
@@ -33,9 +33,9 @@ namespace Flex.AspNetIdentity.Api.Models.User
     public class UserRequestApprovalResultDto
     {
         public long RequestId { get; set; }
-        public string RequestType { get; set; } = default!;
-        public string Status { get; set; } = default!;
-        public string ApprovedBy { get; set; } = default!;
+        public string RequestType { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string ApprovedBy { get; set; } = string.Empty;
         public DateTime ApprovedDate { get; set; }
         public string? Comment { get; set; }
         public long? CreatedUserId { get; set; } // For CREATE requests

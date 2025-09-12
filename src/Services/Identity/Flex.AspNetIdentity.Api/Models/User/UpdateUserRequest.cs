@@ -2,7 +2,7 @@ namespace Flex.AspNetIdentity.Api.Models.User
 {
     public class UpdateUserRequest
     {
-        public string UserName { get; set; } = default!;
+        public string UserName { get; set; } = string.Empty;
         public string? FullName { get; set; }
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
