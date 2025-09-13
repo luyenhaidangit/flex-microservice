@@ -245,7 +245,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
             if (request == null)
             {
-                throw new ArgumentException($"User request with ID {requestId} not found.");
+                throw new ValidationException(ErrorCode.RequestNotFound);
             }
 
             // ===== Build base result =====
@@ -402,12 +402,12 @@ namespace Flex.AspNetIdentity.Api.Services
 
             if (request == null)
             {
-                throw new ArgumentException($"User request with ID {requestId} not found.");
+                throw new ValidationException(ErrorCode.RequestNotFound);
             }
 
             if (request.Status != RequestStatusConstant.Unauthorised)
             {
-                throw new ArgumentException($"User request with ID {requestId} is not in pending status.");
+                throw new ValidationException(ErrorCode.RequestNotPending);
             }
 
             // ===== Process approval based on action type =====
@@ -447,12 +447,12 @@ namespace Flex.AspNetIdentity.Api.Services
 
             if (request == null)
             {
-                throw new ArgumentException($"User request with ID {requestId} not found.");
+                throw new ValidationException(ErrorCode.RequestNotFound);
             }
 
             if (request.Status != RequestStatusConstant.Unauthorised)
             {
-                throw new ArgumentException($"User request with ID {requestId} is not in pending status.");
+                throw new ValidationException(ErrorCode.RequestNotPending);
             }
 
             // ===== Return result =====
@@ -622,7 +622,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 var data = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
                 if (data == null)
                 {
-                    throw new ArgumentException("Invalid request data for user creation.");
+                    throw new ValidationException(ErrorCode.InvalidRequestData);
                 }
 
                 // ===== Create user =====
@@ -651,13 +651,13 @@ namespace Flex.AspNetIdentity.Api.Services
                 var data = JsonSerializer.Deserialize<UpdateUserRequest>(request.RequestedData);
                 if (data == null)
                 {
-                    throw new ArgumentException("Invalid request data for user update.");
+                    throw new ValidationException(ErrorCode.InvalidRequestData);
                 }
 
                 var userName = ExtractUserNameFromRequestData(request.RequestedData);
                 if (string.IsNullOrEmpty(userName))
                 {
-                    throw new ArgumentException("UserName is required for user update.");
+                    throw new ValidationException(ErrorCode.UserNameRequired);
                 }
 
                 // ===== Update user =====
@@ -678,13 +678,13 @@ namespace Flex.AspNetIdentity.Api.Services
                 var data = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
                 if (data == null)
                 {
-                    throw new ArgumentException("Invalid request data for user deletion.");
+                    throw new ValidationException(ErrorCode.InvalidRequestData);
                 }
 
                 var userName = ExtractUserNameFromRequestData(request.RequestedData);
                 if (string.IsNullOrEmpty(userName))
                 {
-                    throw new ArgumentException("UserName is required for user deletion.");
+                    throw new ValidationException(ErrorCode.UserNameRequired);
                 }
 
                 // ===== Delete user =====
