@@ -9,6 +9,7 @@ using Flex.Infrastructure.EF;
 using Flex.Infrastructure.Exceptions;
 using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
+using Flex.Shared.SeedWork.Workflow;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -235,7 +236,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Get pending user request detail by request ID.
         /// </summary>
-        public async Task<UserRequestDetailDto> GetPendingUserRequestByIdAsync(long requestId)
+        public async Task<PendingRequestDtoBase<UserRequestDataDto>> GetPendingUserRequestByIdAsync(long requestId)
         {
             // ===== Get request data =====
             var request = await _userRequestRepository.FindAll()
@@ -248,25 +249,25 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // ===== Build base result =====
-            var result = new UserRequestDetailDto
+            var result = new PendingRequestDtoBase<UserRequestDataDto>
             {
                 RequestId = request.Id.ToString(),
                 Type = request.Action,
             };
 
             // ===== Process request data based on action type =====
-            switch (request.Action)
-            {
-                case RequestTypeConstant.Create:
-                    ProcessCreateUserRequestData(request, result);
-                    break;
-                case RequestTypeConstant.Update:
-                    await ProcessUpdateUserRequestData(request, result);
-                    break;
-                case RequestTypeConstant.Delete:
-                    await ProcessDeleteUserRequestData(request, result);
-                    break;
-            }
+            //switch (request.Action)
+            //{
+            //    case RequestTypeConstant.Create:
+            //        ProcessCreateUserRequestData(request, result);
+            //        break;
+            //    case RequestTypeConstant.Update:
+            //        await ProcessUpdateUserRequestData(request, result);
+            //        break;
+            //    case RequestTypeConstant.Delete:
+            //        await ProcessDeleteUserRequestData(request, result);
+            //        break;
+            //}
 
             return result;
         }

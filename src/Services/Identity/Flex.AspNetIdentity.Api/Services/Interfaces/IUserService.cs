@@ -1,5 +1,6 @@
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.Shared.SeedWork;
+using Flex.Shared.SeedWork.Workflow;
 
 namespace Flex.AspNetIdentity.Api.Services.Interfaces
 {
@@ -10,7 +11,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken cancellationToken);
         Task<List<UserChangeHistoryDto>> GetUserChangeHistoryAsync(string userName);
         Task<PagedResult<UserPendingPagingDto>> GetPendingUserRequestsPagedAsync(GetUserRequestsPagingRequest request, CancellationToken cancellationToken);
-        Task<UserRequestDetailDto> GetPendingUserRequestByIdAsync(long requestId);
+        Task<PendingRequestDtoBase<UserRequestDataDto>> GetPendingUserRequestByIdAsync(long requestId);
         // Command
         Task<long> CreateUserRequestAsync(CreateUserRequest request);
         Task<long> UpdateUserRequestAsync(UpdateUserRequest request);
