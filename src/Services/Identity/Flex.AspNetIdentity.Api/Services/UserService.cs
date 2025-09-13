@@ -253,21 +253,25 @@ namespace Flex.AspNetIdentity.Api.Services
             {
                 RequestId = request.Id.ToString(),
                 Type = request.Action,
+                CreatedBy = request.MakerId.ToString(),
+                CreatedDate = request.RequestedDate.ToString("yyyy-MM-dd HH:mm:ss")
             };
 
             // ===== Process request data based on action type =====
-            //switch (request.Action)
-            //{
-            //    case RequestTypeConstant.Create:
-            //        ProcessCreateUserRequestData(request, result);
-            //        break;
-            //    case RequestTypeConstant.Update:
-            //        await ProcessUpdateUserRequestData(request, result);
-            //        break;
-            //    case RequestTypeConstant.Delete:
-            //        await ProcessDeleteUserRequestData(request, result);
-            //        break;
-            //}
+            switch (request.Action)
+            {
+                case RequestTypeConstant.Create:
+                    ProcessCreateUserRequestData(request, result);
+                    break;
+                case RequestTypeConstant.Update:
+                    await ProcessUpdateUserRequestData(request, result);
+                    break;
+                case RequestTypeConstant.Delete:
+                    await ProcessDeleteUserRequestData(request, result);
+                    break;
+                default:
+                    throw new ValidationException(ErrorCode.InvalidRequestType);
+            }
 
             return result;
         }
@@ -519,12 +523,12 @@ namespace Flex.AspNetIdentity.Api.Services
             }
         }
 
-        private static void ProcessCreateUserRequestData(UserRequest request, UserRequestDetailDto result)
+        private static void ProcessCreateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
         {
             try
             {
                 var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
-                result.NewData = new UserDetailDataDto
+                result.NewData = new UserRequestDataDto
                 {
                     UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
                     FullName = data?.GetValueOrDefault("FullName")?.ToString(),
@@ -539,7 +543,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
         }
 
-        private async Task ProcessUpdateUserRequestData(UserRequest request, UserRequestDetailDto result)
+        private async Task ProcessUpdateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
         {
             try
             {
@@ -555,7 +559,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
                     if (currentUser != null)
                     {
-                        result.OldData = new UserDetailDataDto
+                        result.OldData = new UserRequestDataDto
                         {
                             UserName = currentUser.UserName ?? string.Empty,
                             FullName = currentUser.FullName,
@@ -566,7 +570,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     }
                 }
 
-                result.NewData = new UserDetailDataDto
+                result.NewData = new UserRequestDataDto
                 {
                     UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
                     FullName = data?.GetValueOrDefault("FullName")?.ToString(),
@@ -581,7 +585,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
         }
 
-        private async Task ProcessDeleteUserRequestData(UserRequest request, UserRequestDetailDto result)
+        private async Task ProcessDeleteUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
         {
             try
             {
@@ -597,7 +601,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
                     if (currentUser != null)
                     {
-                        result.OldData = new UserDetailDataDto
+                        result.OldData = new UserRequestDataDto
                         {
                             UserName = currentUser.UserName ?? string.Empty,
                             FullName = currentUser.FullName,

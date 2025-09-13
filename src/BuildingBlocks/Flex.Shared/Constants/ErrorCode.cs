@@ -43,6 +43,7 @@ namespace Flex.Shared.Constants
         public const string UserRequestExists = "USER_REQUEST_EXISTS";
         public const string RequestNotPending = "REQUEST_NOT_PENDING";
         public const string InvalidRequestData = "INVALID_REQUEST_DATA";
+        public const string InvalidRequestType = "INVALID_REQUEST_TYPE";
         public const string UserNameRequired = "USER_NAME_REQUIRED";
     }
 }
