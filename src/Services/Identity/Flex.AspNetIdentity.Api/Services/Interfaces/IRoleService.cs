@@ -1,5 +1,4 @@
-﻿using Flex.AspNetIdentity.Api.Models;
-using Flex.AspNetIdentity.Api.Models.Permission;
+﻿using Flex.AspNetIdentity.Api.Models.Permission;
 using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.Shared.SeedWork;
 

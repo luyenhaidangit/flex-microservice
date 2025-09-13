@@ -1,6 +1,6 @@
 ﻿using Flex.AspNetIdentity.Api.Models.Permission;
 
-namespace Flex.AspNetIdentity.Api.Models
+namespace Flex.AspNetIdentity.Api.Models.Role
 {
     public class RoleDto
     {

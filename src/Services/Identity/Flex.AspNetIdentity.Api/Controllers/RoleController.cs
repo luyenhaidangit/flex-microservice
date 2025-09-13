@@ -1,5 +1,4 @@
-﻿using Flex.AspNetIdentity.Api.Models;
-using Flex.AspNetIdentity.Api.Models.Role;
+﻿using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;

@@ -87,7 +87,7 @@ namespace Flex.AspNetIdentity.Api.Integrations
             catch (RpcException ex) when (ex.StatusCode is StatusCode.Unavailable or StatusCode.DeadlineExceeded)
             {
                 _logger.LogError(ex, "Transient error calling System service for ids: {Ids}", string.Join(", ", idList));
-                throw new TransientException($"System service transient error: {ex.Status.Detail}", ex);
+                throw new InvalidOperationException($"Failed to retrieve branches: {ex.Status.Detail}", ex);
             }
             catch (RpcException ex)
             {

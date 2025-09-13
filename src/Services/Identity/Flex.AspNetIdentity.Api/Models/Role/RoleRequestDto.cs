@@ -1,4 +1,4 @@
-﻿namespace Flex.AspNetIdentity.Api.Models
+﻿namespace Flex.AspNetIdentity.Api.Models.Role
 {
 
 
