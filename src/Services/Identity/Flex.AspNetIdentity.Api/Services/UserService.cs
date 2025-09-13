@@ -398,7 +398,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Approve pending user request by ID.
         /// </summary>
-        public async Task<UserRequestApprovalResultDto> ApprovePendingUserRequestAsync(long requestId, string? comment = null)
+        public async Task<UserRequestApprovalResultDto> ApprovePendingUserRequestAsync(long requestId)
         {
             // ===== Get request data =====
             var request = await _userRequestRepository.FindAll()
@@ -435,7 +435,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 RequestId = requestId,
                 RequestType = request.Action,
                 Status = RequestStatusConstant.Authorised,
-                Comment = comment,
+                Comment = request.Comments,
                 CreatedUserId = createdUserId
             };
         }

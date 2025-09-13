@@ -108,30 +108,10 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// Approve pending user request by ID.
         /// </summary>
         [HttpPost("request/pending/{requestId}/approve")]
-        public async Task<IActionResult> ApprovePendingUserRequest(long requestId, [FromBody] ApproveUserRequestDto? dto = null)
+        public async Task<IActionResult> ApprovePendingUserRequest(long requestId)
         {
-            try
-            {
-                // ===== Validation =====
-                if (requestId <= 0)
-                {
-                    return BadRequest(Result.Failure("RequestId must be greater than 0."));
-                }
-
-                // ===== Process approval =====
-                var result = await _userService.ApprovePendingUserRequestAsync(requestId, dto?.Comment);
-
-                // ===== Return result =====
-                return Ok(Result.Success(result));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(Result.Failure(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, Result.Failure($"Failed to approve user request: {ex.Message}"));
-            }
+            var result = await _userService.ApprovePendingUserRequestAsync(requestId);
+            return Ok(Result.Success(result));
         }
 
         /// <summary>

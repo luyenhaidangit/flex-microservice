@@ -16,7 +16,7 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<long> CreateUserRequestAsync(CreateUserRequest request);
         Task<long> UpdateUserRequestAsync(UpdateUserRequest request);
         Task<long> DeleteUserRequestAsync(string userName);
-        Task<UserRequestApprovalResultDto> ApprovePendingUserRequestAsync(long requestId, string? comment = null);
+        Task<UserRequestApprovalResultDto> ApprovePendingUserRequestAsync(long requestId);
         Task<UserRequestApprovalResultDto> RejectPendingUserRequestAsync(long requestId, string? reason = null);
     }
 }
