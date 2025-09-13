@@ -525,22 +525,15 @@ namespace Flex.AspNetIdentity.Api.Services
 
         private static void ProcessCreateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
         {
-            try
+            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
+            result.NewData = new UserRequestDataDto
             {
-                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
-                result.NewData = new UserRequestDataDto
-                {
-                    UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
-                    FullName = data?.GetValueOrDefault("FullName")?.ToString(),
-                    Email = data?.GetValueOrDefault("Email")?.ToString(),
-                    PhoneNumber = data?.GetValueOrDefault("PhoneNumber")?.ToString(),
-                    BranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : null
-                };
-            }
-            catch (Exception ex)
-            {
-                // Log error if needed
-            }
+                UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
+                FullName = data?.GetValueOrDefault("FullName")?.ToString(),
+                Email = data?.GetValueOrDefault("Email")?.ToString(),
+                PhoneNumber = data?.GetValueOrDefault("PhoneNumber")?.ToString(),
+                BranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : null
+            };
         }
 
         private async Task ProcessUpdateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
