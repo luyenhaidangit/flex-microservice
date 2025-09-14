@@ -482,6 +482,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     if (user != null) 
                     {
                         user.Status = RequestStatusConstant.Authorised;
+                        await _userRepository.UpdateAsync(user);
                     }
                 }
 
@@ -490,8 +491,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 request.CheckerId = rejecter;
                 request.ApproveDate = DateTime.UtcNow;
                 request.Comments = reason;
-
-                await _userRequestRepository.SaveChangesAsync();
+                await _userRequestRepository.UpdateAsync(request);
 
                 await transaction.CommitAsync();
             }
