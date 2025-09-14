@@ -1,5 +1,4 @@
-﻿using Flex.Contracts.Domains;
-using Flex.Shared.SeedWork.Workflow;
+﻿using Flex.Shared.SeedWork.Workflow;
 
 namespace Flex.AspNetIdentity.Api.Entities
 {

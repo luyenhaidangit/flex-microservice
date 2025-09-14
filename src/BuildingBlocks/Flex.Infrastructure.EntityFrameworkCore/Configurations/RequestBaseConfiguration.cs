@@ -17,7 +17,8 @@ namespace Flex.Infrastructure.EntityFrameworkCore.Configurations
 
             // Common columns for all request entities
             builder.Property(x => x.EntityId)
-                   .HasColumnName("ENTITY_ID");
+                   .HasColumnName("ENTITY_ID")
+                   .HasColumnType("NUMBER(19)");
 
             builder.Property(x => x.Action)
                    .HasColumnName("ACTION")
