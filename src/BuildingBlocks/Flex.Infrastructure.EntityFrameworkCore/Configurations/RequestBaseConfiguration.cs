@@ -12,7 +12,8 @@ namespace Flex.Infrastructure.EntityFrameworkCore.Configurations
             // Id and primary key
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id)
-                   .HasColumnName("ID");
+                   .HasColumnName("ID")
+                   .HasColumnType("NUMBER(19)");
 
             // Common columns for all request entities
             builder.Property(x => x.EntityId)

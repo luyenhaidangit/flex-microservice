@@ -28,6 +28,7 @@ namespace Flex.AspNetIdentity.Api.Persistence
         public DbSet<Role> Roles { get; set; }
         public DbSet<RoleClaim> RoleClaims { get; set; }
         public DbSet<RoleRequest> RoleRequests { get; set; }
+        public DbSet<UserRequest> UserRequests { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<BranchCache> BranchCaches { get; set; }
         #endregion

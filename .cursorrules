@@ -516,3 +516,27 @@ Implementation details:
 - Tất cả methods liên quan đến UserRequest đã được sửa
 - Test script có thể chạy để verify functionality
 - Không có compilation errors sau khi sửa
+
+# Fix: UserService InvalidCastException - Root Cause Analysis
+
+[X] Đã tìm ra nguyên nhân gốc rễ và sửa lỗi InvalidCastException:
+1. ✅ Thêm DbSet<UserRequest> vào IdentityDbContext (thiếu DbSet)
+2. ✅ Sửa Oracle NUMBER(19) mapping cho Id property trong RequestBaseConfiguration
+3. ✅ Thay đổi từ repository pattern sang sử dụng _dbContext.Set<UserRequest>() trực tiếp
+4. ✅ Sử dụng GetByIdAsync() thay vì FindByCondition() cho các method đơn giản
+5. ✅ Kiểm tra và sửa tất cả methods liên quan đến UserRequest
+
+Root cause analysis:
+- DbSet<UserRequest> bị thiếu trong IdentityDbContext
+- Oracle NUMBER(19) mapping không đúng với C# long
+- Repository pattern có vấn đề với generic type constraints
+- Sử dụng _dbContext.Set<UserRequest>() trực tiếp an toàn hơn
+- GetByIdAsync() được implement đúng cách trong RepositoryQueryBase
+
+Implementation details:
+- Thêm public DbSet<UserRequest> UserRequests { get; set; } vào IdentityDbContext
+- Cập nhật RequestBaseConfiguration với .HasColumnType("NUMBER(19)")
+- Thay đổi tất cả UserRequest queries sang sử dụng _dbContext.Set<UserRequest>()
+- Sử dụng GetByIdAsync() cho single record queries
+- Giữ nguyên FindByCondition() cho complex queries
+- Không có compilation errors sau khi sửa
