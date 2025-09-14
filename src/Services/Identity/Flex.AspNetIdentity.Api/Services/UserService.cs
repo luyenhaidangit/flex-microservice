@@ -11,6 +11,7 @@ using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow;
 using Flex.Shared.SeedWork.Workflow.Constants;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -24,6 +25,7 @@ namespace Flex.AspNetIdentity.Api.Services
         private readonly IUserRequestRepository _userRequestRepository;
         private readonly ICurrentUserService _userService;
         private readonly IBranchIntegrationService _branchIntegrationService;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
         public UserService(
             ILogger<UserService> logger,
@@ -31,7 +33,8 @@ namespace Flex.AspNetIdentity.Api.Services
             ICurrentUserService userService,
             IUserRepository userRepository,
             IUserRequestRepository userRequestRepository,
-            IBranchIntegrationService branchIntegrationService)
+            IBranchIntegrationService branchIntegrationService,
+            IPasswordHasher<User> passwordHasher)
         {
             _logger = logger;
             _dbContext = dbContext;
@@ -39,6 +42,7 @@ namespace Flex.AspNetIdentity.Api.Services
             _userRepository = userRepository;
             _userRequestRepository = userRequestRepository;
             _branchIntegrationService = branchIntegrationService;
+            _passwordHasher = passwordHasher;
         }
 
         #region Query
@@ -206,6 +210,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     r => EF.Functions.Like(r.UserName.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(r.FullName.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(r.Email.ToLower(), $"%{keyword}%"))
+                .Where(x => x.Status == RequestStatusConstant.Unauthorised)
                 .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All, 
                     r => r.Action == requestType)
                 .AsNoTracking()
@@ -613,31 +618,65 @@ namespace Flex.AspNetIdentity.Api.Services
 
         private async Task<long> ProcessCreateUserApproval(UserRequest request)
         {
+            if (string.IsNullOrEmpty(request.RequestedData))
+            {
+                throw new Exception("Request data is empty for CREATE request.");
+            }
+
+            var dto = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
+            if (dto == null)
+            {
+                throw new Exception("Invalid CREATE request data format.");
+            }
+
+            // ===== Create new user =====
+            var newUser = new User
+            {
+                UserName = dto.UserName,
+                NormalizedUserName = dto.UserName.ToUpperInvariant(),
+                Email = dto.Email,
+                NormalizedEmail = dto.Email?.ToUpperInvariant(),
+                FullName = dto.FullName,
+                BranchId = dto.BranchId,
+                IsActive = dto.IsActive,
+                Status = RequestStatusConstant.Authorised,
+                EmailConfirmed = false,
+                PhoneNumberConfirmed = false,
+                TwoFactorEnabled = false,
+                LockoutEnabled = true,
+                AccessFailedCount = 0,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                ConcurrencyStamp = Guid.NewGuid().ToString()
+            };
+
+            // ===== Hash password and create user =====
+            var tempPassword = "TempPassword123!";
+            newUser.PasswordHash = _passwordHasher.HashPassword(newUser, tempPassword);
+
+            // ===== Transaction to ensure data integrity =====
+            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
             try
             {
-                // ===== Deserialize and validate data =====
-                var data = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
-                if (data == null)
-                {
-                    throw new ValidationException(ErrorCode.InvalidRequestData);
-                }
+                // ===== Create user using repository =====
+                await _userRepository.CreateAsync(newUser);
 
-                // ===== Create user =====
-                var userId = await this.CreateUserRequestAsync(data);
-                
-                // ===== Parse userId to long =====
-                //if (long.TryParse(userId, out var userIdLong))
-                //{
-                //    return userIdLong;
-                //}
-                
-                return 0;
+                // ===== Update request status and entity ID =====
+                request.Status = RequestStatusConstant.Authorised;
+                request.EntityId = newUser.Id;
+                request.CheckerId = _userService.GetCurrentUsername() ?? "system";
+                request.ApproveDate = DateTime.UtcNow;
+
+                await _userRequestRepository.UpdateAsync(request);
+
+                await transaction.CommitAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex, "Failed to process create user approval for request {RequestId}", request.Id);
-                throw;
+                await transaction.RollbackAsync();
+                throw new Exception("Failed to process create user approval.");
             }
+
+            return newUser.Id;
         }
 
         private async Task ProcessUpdateUserApproval(UserRequest request)
