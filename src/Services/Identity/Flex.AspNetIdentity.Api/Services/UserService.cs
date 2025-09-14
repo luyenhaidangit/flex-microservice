@@ -1,8 +1,10 @@
 ﻿using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models.Branch;
+using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
+using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
@@ -448,7 +450,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Reject pending user request by ID.
         /// </summary>
-        public async Task<UserRequestApprovalResultDto> RejectPendingUserRequestAsync(long requestId, string? reason = null)
+        public async Task<bool> RejectPendingUserRequestAsync(long requestId, string reason)
         {
             // ===== Get request data =====
             var request = await _userRequestRepository.FindByCondition(r => r.Id == requestId)
@@ -464,14 +466,43 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.RequestNotPending);
             }
 
-            // ===== Return result =====
-            return new UserRequestApprovalResultDto
+            // ===== Prepare data =====
+            var rejecter = _userService.GetCurrentUsername() ?? "system";
+
+            // ===== Process rejection with transaction =====
+
+            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
+            try
             {
-                RequestId = requestId,
-                RequestType = request.Action,
-                Status = RequestStatusConstant.Rejected,
-                Comment = reason
-            };
+                // Revert status user
+                if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) && request.EntityId > 0)
+                {
+                    var user = await _userRepository.FindByCondition(x => x.Id == request.EntityId).FirstOrDefaultAsync();
+
+                    if (user != null) 
+                    {
+                        user.Status = RequestStatusConstant.Authorised;
+                    }
+                }
+
+                // Reject request
+                request.Status = RequestStatusConstant.Rejected;
+                request.CheckerId = rejecter;
+                request.ApproveDate = DateTime.UtcNow;
+                request.Comments = reason;
+
+                await _userRequestRepository.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Failed to reject role request ID '{requestId}'.");
+            }
+
+            // ===== Return result =====
+            return true;
         }
 
         #region Private Helper Methods for User Requests
@@ -734,6 +765,7 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         #endregion
+
         #endregion
     }
 }
