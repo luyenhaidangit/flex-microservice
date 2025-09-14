@@ -500,3 +500,19 @@ Có thể copy từ Flex.System.Api hoặc Flex.Investor.Api làm template cơ b
 - **CRITICAL**: Khi entity kế thừa từ `ApprovalEntityBase<TKey>`, KHÔNG cần thêm trường `Status` vì đã có sẵn trong base class. `ApprovalEntityBase<TKey>` đã cung cấp property `Status` với mapping `[Column("STATUS")]`.
 - Entity chỉ cần thêm các trường đặc thù của domain, không duplicate các trường đã có trong base class.
 - **Configuration Pattern**: Sử dụng `ApprovalEntityBaseConfiguration<TEntity, TKey>` cho tất cả entity kế thừa từ `ApprovalEntityBase<TKey>` để tái sử dụng cấu hình `Status` property và index. Không cần cấu hình lại `Status` trong từng configuration riêng lẻ.
+
+# Fix: UserService InvalidCastException
+
+[X] Đã sửa lỗi InvalidCastException trong UserService:
+1. ✅ Sửa method ApprovePendingUserRequestAsync: thay FindAll().FirstOrDefaultAsync() bằng FindByCondition().FirstOrDefaultAsync()
+2. ✅ Sửa method RejectPendingUserRequestAsync: thay FindAll().FirstOrDefaultAsync() bằng FindByCondition().FirstOrDefaultAsync()
+3. ✅ Sửa method GetPendingUserRequestByIdAsync: thay FindAll().FirstOrDefaultAsync() bằng FindByCondition().FirstOrDefaultAsync()
+4. ✅ Sửa method GetUserChangeHistoryAsync: thay FindAll().Where() bằng FindByCondition().Where()
+5. ✅ Tạo test script Python để verify fix
+
+Implementation details:
+- Lỗi InvalidCastException xảy ra do sử dụng FindAll() trực tiếp với FirstOrDefaultAsync()
+- FindByCondition() an toàn hơn vì đã được implement đúng cách trong RepositoryQueryBase
+- Tất cả methods liên quan đến UserRequest đã được sửa
+- Test script có thể chạy để verify functionality
+- Không có compilation errors sau khi sửa

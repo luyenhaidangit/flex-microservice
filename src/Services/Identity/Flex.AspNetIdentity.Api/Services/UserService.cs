@@ -156,8 +156,8 @@ namespace Flex.AspNetIdentity.Api.Services
             // ===== Get user histories by user Id =====
             var userId = user.Id;
 
-            var requests = await _userRequestRepository.FindAll()
-                .Where(r => r.EntityId == userId).AsNoTracking()
+            var requests = await _userRequestRepository.FindByCondition(r => r.EntityId == userId)
+                .AsNoTracking()
                 .OrderByDescending(r => r.RequestedDate)
                 .Select(r => new
                 {
@@ -239,9 +239,9 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<PendingRequestDtoBase<UserRequestDataDto>> GetPendingUserRequestByIdAsync(long requestId)
         {
             // ===== Get request data =====
-            var request = await _userRequestRepository.FindAll()
+            var request = await _userRequestRepository.FindByCondition(r => r.Id == requestId)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == requestId);
+                .FirstOrDefaultAsync();
 
             if (request == null)
             {
@@ -401,8 +401,8 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<UserRequestApprovalResultDto> ApprovePendingUserRequestAsync(long requestId)
         {
             // ===== Get request data =====
-            var request = await _userRequestRepository.FindAll()
-                .FirstOrDefaultAsync(r => r.Id == requestId);
+            var request = await _userRequestRepository.FindByCondition(r => r.Id == requestId)
+                .FirstOrDefaultAsync();
 
             if (request == null)
             {
@@ -446,8 +446,8 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<UserRequestApprovalResultDto> RejectPendingUserRequestAsync(long requestId, string? reason = null)
         {
             // ===== Get request data =====
-            var request = await _userRequestRepository.FindAll()
-                .FirstOrDefaultAsync(r => r.Id == requestId);
+            var request = await _userRequestRepository.FindByCondition(r => r.Id == requestId)
+                .FirstOrDefaultAsync();
 
             if (request == null)
             {
