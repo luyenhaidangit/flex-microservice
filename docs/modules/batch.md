@@ -39,21 +39,72 @@ Batch là tập hợp các chương trình chạy tự động theo lịch, xử
 - **Monitoring**: Log, dashboard, alerting
 - **Performance**: Tối ưu xử lý khối lượng lớn
 
-## Pattern trong Flex System
+## Lưu ý triển khai
+
+### Thời gian chạy batch
+- **Scheduled time**: Cấu hình thời gian chạy batch (cron expression)
+- **Business day**: Chỉ chạy trong ngày làm việc (trừ T7, CN, lễ)
+- **Time window**: Batch phải hoàn thành trong khung giờ cho phép
+
+### Tham số chạy batch
+- **A (Auto)**: Chạy tự động theo lịch
+- **M (Manual)**: Chạy thủ công bởi admin
+- **Mutual exclusion**: Auto và Manual không được chạy đồng thời
+- **Lock mechanism**: Chặn batch mới khi đang có batch đang chạy
+
+### Cơ chế chặn batch
 ```csharp
-// Background Service Pattern
-public class BatchService : BackgroundService
+// Batch Lock Pattern
+public class BatchLockService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    private readonly IDistributedLock _lock;
+    
+    public async Task<bool> TryAcquireLock(string batchName)
     {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await ProcessBatch();
-            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
-        }
+        return await _lock.TryAcquireAsync($"batch:{batchName}", TimeSpan.FromHours(2));
+    }
+    
+    public async Task ReleaseLock(string batchName)
+    {
+        await _lock.ReleaseAsync($"batch:{batchName}");
     }
 }
 ```
+
+### Màn hình tra cứu trạng thái
+- **Batch Status Dashboard**: Hiển thị trạng thái real-time
+- **User tracking**: Ghi nhận user thực hiện batch
+- **Execution time**: Thời gian bắt đầu/kết thúc batch
+- **Log viewer**: Xem chi tiết log từng bước
+
+### Quy định chạy batch
+
+#### Quy định 1: Ngày thực tế = Ngày làm việc
+- Batch chạy theo ngày làm việc (business day)
+- Bỏ qua ngày nghỉ, lễ tết
+- Cấu hình calendar trong hệ thống
+
+#### Quy định 2: CHECK_LOCAL_DATE
+- **CHECK_LOCAL_DATE = Y**: Batch chỉ chạy khi ngày thực tế = ngày hiện tại
+- **CHECK_LOCAL_DATE = N**: Không check điều kiện ngày
+- **Lưu ý**: Có thể phát sinh batch 2 lần nếu thay đổi tham số giữa chừng
+
+```csharp
+// Date Check Logic
+public bool ShouldRunBatch(DateTime currentDate, bool checkLocalDate)
+{
+    if (!checkLocalDate) return true;
+    
+    var businessDate = GetBusinessDate(currentDate);
+    return businessDate.Date == currentDate.Date;
+}
+```
+
+### Monitoring & Control
+- **TCB Monitor**: Hệ thống giám sát batch job
+- **Health check**: Kiểm tra batch có chạy đúng thời điểm
+- **Alerting**: Cảnh báo khi batch fail hoặc delay
+- **Metrics**: Thống kê performance, success rate
 
 ## Notes
 - **Idempotent**: Chạy nhiều lần không ảnh hưởng kết quả
