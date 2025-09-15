@@ -118,30 +118,10 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// Reject pending user request by ID.
         /// </summary>
         [HttpPost("request/pending/{requestId}/reject")]
-        public async Task<IActionResult> RejectPendingUserRequest(long requestId, [FromBody] RejectUserRequestDto? dto = null)
+        public async Task<IActionResult> RejectPendingUserRequest(long requestId, [FromBody] RejectUserRequestDto request)
         {
-            try
-            {
-                // ===== Validation =====
-                if (requestId <= 0)
-                {
-                    return BadRequest(Result.Failure("RequestId must be greater than 0."));
-                }
-
-                // ===== Process rejection =====
-                var result = await _userService.RejectPendingUserRequestAsync(requestId, dto?.Reason);
-
-                // ===== Return result =====
-                return Ok(Result.Success(result));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(Result.Failure(ex.Message));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, Result.Failure($"Failed to reject user request: {ex.Message}"));
-            }
+            var result = await _userService.RejectPendingUserRequestAsync(requestId, request.Reason);
+            return Ok(Result.Success(result));
         }
 
         #endregion
