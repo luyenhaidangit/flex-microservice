@@ -1,4 +1,4 @@
-﻿using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models.Branch;
 using Flex.AspNetIdentity.Api.Models.Role;
@@ -421,19 +421,41 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.RequestNotPending);
             }
 
-            // ===== Process approval based on action type =====
+            // ===== Process approval with transaction =====
+            var approver = _userService.GetCurrentUsername() ?? "system";
             long? createdUserId = null;
-            switch (request.Action)
+
+            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
+            try
             {
-                case RequestTypeConstant.Create:
-                    createdUserId = await ProcessCreateUserApproval(request);
-                    break;
-                case RequestTypeConstant.Update:
-                    await ProcessUpdateUserApproval(request);
-                    break;
-                case RequestTypeConstant.Delete:
-                    await ProcessDeleteUserApproval(request);
-                    break;
+                // Process approval based on action type
+                switch (request.Action)
+                {
+                    case RequestTypeConstant.Create:
+                        createdUserId = await ProcessCreateUserApproval(request);
+                        break;
+                    case RequestTypeConstant.Update:
+                        await ProcessUpdateUserApproval(request);
+                        break;
+                    case RequestTypeConstant.Delete:
+                        await ProcessDeleteUserApproval(request);
+                        break;
+                }
+
+                // Update request status to approved
+                request.Status = RequestStatusConstant.Authorised;
+                request.CheckerId = approver;
+                request.ApproveDate = DateTime.UtcNow;
+
+                await _userRequestRepository.UpdateAsync(request);
+                await _userRequestRepository.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Failed to approve user request ID '{requestId}'.");
             }
 
             // ===== Return result =====
@@ -470,7 +492,6 @@ namespace Flex.AspNetIdentity.Api.Services
             var rejecter = _userService.GetCurrentUsername() ?? "system";
 
             // ===== Process rejection with transaction =====
-
             await using var transaction = await _userRequestRepository.BeginTransactionAsync();
             try
             {
@@ -491,14 +512,18 @@ namespace Flex.AspNetIdentity.Api.Services
                 request.CheckerId = rejecter;
                 request.ApproveDate = DateTime.UtcNow;
                 request.Comments = reason;
+
                 await _userRequestRepository.UpdateAsync(request);
+
+                // Save changes through unit of work
+                await _userRequestRepository.SaveChangesAsync();
 
                 await transaction.CommitAsync();
             }
             catch
             {
                 await transaction.RollbackAsync();
-                throw new Exception($"Failed to reject role request ID '{requestId}'.");
+                throw new Exception($"Failed to reject user request ID '{requestId}'.");
             }
 
             // ===== Return result =====

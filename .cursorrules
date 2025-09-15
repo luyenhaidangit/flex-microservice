@@ -540,3 +540,23 @@ Implementation details:
 - Sử dụng GetByIdAsync() cho single record queries
 - Giữ nguyên FindByCondition() cho complex queries
 - Không có compilation errors sau khi sửa
+
+# Fix: Reject Modal State Reset Issue
+
+[X] Đã sửa lỗi modal từ chối hiển thị nội dung cũ khi mở bản ghi mới:
+1. ✅ Cập nhật RejectUserModalComponent: thêm resetStates() trong ngOnChanges
+2. ✅ Cập nhật UsersComponent: reset selectedRequest trước khi mở modal mới
+3. ✅ Sử dụng setTimeout(0) để đảm bảo change detection hoạt động đúng
+4. ✅ Tạo test script HTML để verify fix
+
+Root cause analysis:
+- rejectionReason không được reset khi mở modal mới
+- selectedRequest không được reset trước khi set giá trị mới
+- ngOnChanges không được trigger đúng cách
+
+Implementation details:
+- resetStates() được gọi trong ngOnChanges khi selectedRequest thay đổi
+- selectedRequest được reset về null trước khi set giá trị mới
+- setTimeout(0) đảm bảo Angular change detection hoạt động đúng
+- rejectionReason được reset về empty string mỗi lần mở modal mới
+- Test script có thể dùng để verify functionality
