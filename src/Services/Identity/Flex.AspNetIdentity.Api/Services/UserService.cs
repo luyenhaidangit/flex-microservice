@@ -1,10 +1,8 @@
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models.Branch;
-using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
-using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
@@ -530,45 +528,6 @@ namespace Flex.AspNetIdentity.Api.Services
             {
                 var data = JsonSerializer.Deserialize<Dictionary<string, object>>(requestData);
                 return data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        private static string ExtractFullNameFromRequestData(string requestData)
-        {
-            try
-            {
-                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(requestData);
-                return data?.GetValueOrDefault("FullName")?.ToString() ?? string.Empty;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        private static string ExtractEmailFromRequestData(string requestData)
-        {
-            try
-            {
-                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(requestData);
-                return data?.GetValueOrDefault("Email")?.ToString() ?? string.Empty;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        private static string ExtractPhoneNumberFromRequestData(string requestData)
-        {
-            try
-            {
-                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(requestData);
-                return data?.GetValueOrDefault("PhoneNumber")?.ToString() ?? string.Empty;
             }
             catch
             {
