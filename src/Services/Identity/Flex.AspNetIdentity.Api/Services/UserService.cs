@@ -520,7 +520,9 @@ namespace Flex.AspNetIdentity.Api.Services
             return true;
         }
 
-        #region Private Helper Methods for User Requests
+        #endregion
+
+        #region Process Functions
 
         private static string ExtractUserNameFromRequestData(string requestData)
         {
@@ -554,7 +556,7 @@ namespace Flex.AspNetIdentity.Api.Services
             {
                 var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
                 var userName = data?.GetValueOrDefault("UserName")?.ToString();
-                
+
                 if (!string.IsNullOrEmpty(userName))
                 {
                     // ===== Get current user data =====
@@ -596,7 +598,7 @@ namespace Flex.AspNetIdentity.Api.Services
             {
                 var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
                 var userName = data?.GetValueOrDefault("UserName")?.ToString();
-                
+
                 if (!string.IsNullOrEmpty(userName))
                 {
                     // ===== Get current user data =====
@@ -686,61 +688,118 @@ namespace Flex.AspNetIdentity.Api.Services
             return newUser.Id;
         }
 
-        private async Task ProcessUpdateUserApproval(UserRequest request)
+        private async Task<long> ProcessUpdateUserApproval(UserRequest request)
         {
+            if (string.IsNullOrEmpty(request.RequestedData))
+            {
+                throw new Exception("Request data is empty for UPDATE request.");
+            }
+
+            var dto = JsonSerializer.Deserialize<UpdateUserRequest>(request.RequestedData);
+            if (dto == null)
+            {
+                throw new ValidationException(ErrorCode.InvalidRequestData);
+            }
+
+            // ===== Find current user =====
+            var user = await _userRepository.FindByCondition(u => u.UserName == dto.UserName)
+                                            .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                throw new ValidationException(ErrorCode.UserNotFound);
+            }
+
+            // ===== Apply updates =====
+            user.FullName = dto.FullName;
+            user.Email = dto.Email;
+            user.BranchId = dto.BranchId;
+            user.IsActive = dto.IsActive;
+            user.Status = RequestStatusConstant.Authorised;
+
+            // ===== Transaction =====
+            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
             try
             {
-                // ===== Deserialize and validate data =====
-                var data = JsonSerializer.Deserialize<UpdateUserRequest>(request.RequestedData);
-                if (data == null)
-                {
-                    throw new ValidationException(ErrorCode.InvalidRequestData);
-                }
+                await _userRepository.UpdateAsync(user);
 
-                var userName = ExtractUserNameFromRequestData(request.RequestedData);
-                if (string.IsNullOrEmpty(userName))
-                {
-                    throw new ValidationException(ErrorCode.UserNameRequired);
-                }
+                request.Status = RequestStatusConstant.Authorised;
+                request.EntityId = user.Id;
+                request.CheckerId = _userService.GetCurrentUsername() ?? "system";
+                request.ApproveDate = DateTime.UtcNow;
 
-                // ===== Update user =====
-                //await UpdateUserAsync(userName, data);
+                await _userRequestRepository.UpdateAsync(request);
+                await _userRequestRepository.SaveChangesAsync();
+
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Failed to process update user approval for request {RequestId}", request.Id);
                 throw;
             }
+
+            return user.Id;
         }
 
-        private async Task ProcessDeleteUserApproval(UserRequest request)
+        private async Task<long> ProcessDeleteUserApproval(UserRequest request)
         {
+            if (string.IsNullOrEmpty(request.RequestedData))
+            {
+                throw new Exception("Request data is empty for DELETE request.");
+            }
+
+            var dto = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
+            if (dto == null)
+            {
+                throw new ValidationException(ErrorCode.InvalidRequestData);
+            }
+
+            var userName = ExtractUserNameFromRequestData(request.RequestedData);
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new ValidationException(ErrorCode.UserNameRequired);
+            }
+
+            // ===== Find user =====
+            var user = await _userRepository.FindByCondition(u => u.UserName == userName)
+                                            .FirstOrDefaultAsync();
+            if (user == null)
+            {
+                throw new ValidationException(ErrorCode.UserNotFound);
+            }
+
+            // ===== Soft delete user =====
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
+            user.Status = RequestStatusConstant.Authorised;
+
+            // ===== Transaction =====
+            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
             try
             {
-                // ===== Deserialize and validate data =====
-                var data = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
-                if (data == null)
-                {
-                    throw new ValidationException(ErrorCode.InvalidRequestData);
-                }
+                await _userRepository.UpdateAsync(user);
 
-                var userName = ExtractUserNameFromRequestData(request.RequestedData);
-                if (string.IsNullOrEmpty(userName))
-                {
-                    throw new ValidationException(ErrorCode.UserNameRequired);
-                }
+                request.Status = RequestStatusConstant.Authorised;
+                request.EntityId = user.Id;
+                request.CheckerId = _userService.GetCurrentUsername() ?? "system";
+                request.ApproveDate = DateTime.UtcNow;
 
-                // ===== Delete user =====
-                //await DeleteUserAsync(userName, data);
+                await _userRequestRepository.UpdateAsync(request);
+                await _userRequestRepository.SaveChangesAsync();
+
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Failed to process delete user approval for request {RequestId}", request.Id);
                 throw;
             }
-        }
 
-        #endregion
+            return user.Id;
+        }
 
         #endregion
     }
