@@ -405,7 +405,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// <summary>
         /// Approve pending user request by ID.
         /// </summary>
-        public async Task<UserRequestApprovalResultDto> ApprovePendingUserRequestAsync(long requestId)
+        public async Task<bool> ApprovePendingUserRequestAsync(long requestId)
         {
             // ===== Get request data =====
             var request = await _userRequestRepository.FindByCondition(r => r.Id == requestId)
@@ -423,7 +423,6 @@ namespace Flex.AspNetIdentity.Api.Services
 
             // ===== Process approval with transaction =====
             var approver = _userService.GetCurrentUsername() ?? "system";
-            long? createdUserId = null;
 
             await using var transaction = await _userRequestRepository.BeginTransactionAsync();
             try
@@ -432,7 +431,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 switch (request.Action)
                 {
                     case RequestTypeConstant.Create:
-                        createdUserId = await ProcessCreateUserApproval(request);
+                        await ProcessCreateUserApproval(request);
                         break;
                     case RequestTypeConstant.Update:
                         await ProcessUpdateUserApproval(request);
@@ -459,14 +458,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // ===== Return result =====
-            return new UserRequestApprovalResultDto
-            {
-                RequestId = requestId,
-                RequestType = request.Action,
-                Status = RequestStatusConstant.Authorised,
-                Comment = request.Comments,
-                CreatedUserId = createdUserId
-            };
+            return true;
         }
 
         /// <summary>
