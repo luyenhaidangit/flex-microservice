@@ -32,7 +32,7 @@ namespace Flex.AspNetIdentity.Api.Validators.User
 
             // ===== BranchId Validation =====
             RuleFor(x => x.BranchId)
-                .GreaterThan(0).WithMessage("Branch ID must be greater than 0").When(x => x.BranchId > 0);
+                .GreaterThan(0).WithMessage("Branch ID must be greater than 0");
         }
     }
 }

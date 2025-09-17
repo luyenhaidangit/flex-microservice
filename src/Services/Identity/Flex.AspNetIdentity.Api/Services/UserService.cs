@@ -289,32 +289,11 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<long> CreateUserRequestAsync(CreateUserRequest request)
         {
-            var username = request.UserName.ToLower();
-            var email = request.Email.ToLower();
-
-            // ===== Validate request =====
-            // Check if user already exists by username
-            if (await _userRepository.ExistsByUserNameAsync(username))
+            // ===== Validate =====
+            var isValid = await ValidateCreateUserRequestAsync(request);
+            if (!isValid)
             {
-                throw new ValidationException(ErrorCode.UserAlreadyExists);
-            }
-
-            // Check if user already exists by email
-            if (await _userRepository.ExistsByEmailAsync(email))
-            {
-                throw new ValidationException(ErrorCode.EmailAlreadyExists);
-            }
-
-            // Check if user request already exists with pending status by username
-            if (await _userRequestRepository.ExistsPendingByUserNameAsync(username))
-            {
-                throw new ValidationException(ErrorCode.UserRequestExists);
-            }
-
-            // Check if user request already exists with pending status by email
-            if (await _userRequestRepository.ExistsPendingByEmailAsync(email))
-            {
-                throw new ValidationException(ErrorCode.EmailAlreadyExists);
+                throw new ValidationException(ErrorCode.InvalidRequest);
             }
 
             // ===== Process =====
@@ -644,6 +623,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
         private async Task<long> ProcessCreateUserApproval(UserRequest request)
         {
+            // ===== Validate =====
             if (string.IsNullOrEmpty(request.RequestedData))
             {
                 throw new Exception("Request data is empty for CREATE request.");
@@ -653,6 +633,12 @@ namespace Flex.AspNetIdentity.Api.Services
             if (dto == null)
             {
                 throw new Exception("Invalid CREATE request data format.");
+            }
+
+            var isValid = await ValidateCreateUserRequestAsync(dto);
+            if (!isValid)
+            {
+                throw new ValidationException(ErrorCode.InvalidRequest);
             }
 
             // ===== Create new user =====
@@ -816,6 +802,39 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             return user.Id;
+        }
+
+        private async Task<bool> ValidateCreateUserRequestAsync(CreateUserRequest request)
+        {
+            var username = request.UserName.ToLower();
+            var email = request.Email.ToLower();
+
+            // ===== Validate request =====
+            // Check if user already exists by username
+            if (await _userRepository.ExistsByUserNameAsync(username))
+            {
+                throw new ValidationException(ErrorCode.UserAlreadyExists);
+            }
+
+            // Check if user already exists by email
+            if (await _userRepository.ExistsByEmailAsync(email))
+            {
+                throw new ValidationException(ErrorCode.EmailAlreadyExists);
+            }
+
+            // Check if user request already exists with pending status by username
+            if (await _userRequestRepository.ExistsPendingByUserNameAsync(username))
+            {
+                throw new ValidationException(ErrorCode.UserRequestExists);
+            }
+
+            // Check if user request already exists with pending status by email
+            if (await _userRequestRepository.ExistsPendingByEmailAsync(email))
+            {
+                throw new ValidationException(ErrorCode.EmailAlreadyExists);
+            }
+
+            return true;
         }
 
         #endregion

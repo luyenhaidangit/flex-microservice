@@ -200,6 +200,38 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - `Services/I<Entity>Service.cs`, `Services/<Entity>Service.cs`
   - `Controllers/<Entity>Controller.cs`
 
+# Fix: InvalidRequest Error Code
+
+[X] Đã thêm error code InvalidRequest cho request không hợp lệ:
+1. ✅ Thêm ErrorCode.InvalidRequest vào ErrorCode.cs
+2. ✅ Cập nhật CreateUserRequestAsync để sử dụng ErrorCode.InvalidRequest
+3. ✅ Tạo test script Python để verify error code mới
+4. ✅ Kiểm tra compilation và fix lỗi
+
+Implementation details:
+- Thêm public const string InvalidRequest = "INVALID_REQUEST" vào ErrorCode.cs
+- Sử dụng ErrorCode.InvalidRequest thay vì ErrorCode.EmailAlreadyExists cho validation chung
+- Test script có thể chạy để verify functionality
+- Không có compilation errors sau khi sửa
+
+# Fix: ValidationException Issue
+
+[X] Đã sửa lỗi ValidationException trong CreateUserRequestValidator:
+1. ✅ Sửa BranchId validation rule: loại bỏ điều kiện When(x => x.BranchId > 0)
+2. ✅ Tạo test script Python để verify fix
+3. ✅ Kiểm tra compilation và fix lỗi
+
+Root cause analysis:
+- CreateUserRequestValidator có rule BranchId với điều kiện When(x => x.BranchId > 0)
+- Điều kiện này làm cho validation không hoạt động khi BranchId = 0 hoặc âm
+- ValidationException được throw nhưng không có thông tin chi tiết về lỗi
+
+Implementation details:
+- Loại bỏ điều kiện When(x => x.BranchId > 0) khỏi BranchId validation rule
+- Giữ nguyên rule GreaterThan(0) để đảm bảo BranchId phải > 0
+- Test script có thể chạy để verify functionality
+- Không có compilation errors sau khi sửa
+
 # Fix: Oracle AnyAsync Compatibility Issue
 
 [X] Đã sửa lỗi Oracle ORA-00904: "FALSE": invalid identifier:

@@ -46,5 +46,6 @@ namespace Flex.Shared.Constants
         public const string InvalidRequestData = "INVALID_REQUEST_DATA";
         public const string InvalidRequestType = "INVALID_REQUEST_TYPE";
         public const string UserNameRequired = "USER_NAME_REQUIRED";
+        public const string InvalidRequest = "INVALID_REQUEST";
     }
 }
