@@ -266,7 +266,7 @@ namespace Flex.AspNetIdentity.Api.Services
             switch (request.Action)
             {
                 case RequestTypeConstant.Create:
-                    ProcessCreateUserRequestData(request, result);
+                    ConvertCreateUserRequestData(request, result);
                     break;
                 case RequestTypeConstant.Update:
                     await ProcessUpdateUserRequestData(request, result);
@@ -533,16 +533,21 @@ namespace Flex.AspNetIdentity.Api.Services
             }
         }
 
-        private static void ProcessCreateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
+        private static void ConvertCreateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
         {
-            var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
+            var data = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
+
+            if(data == null)
+            {
+                throw new ValidationException(ErrorCode.InvalidRequestData);
+            }
+
             result.NewData = new UserRequestDataDto
             {
-                UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
-                FullName = data?.GetValueOrDefault("FullName")?.ToString(),
-                Email = data?.GetValueOrDefault("Email")?.ToString(),
-                PhoneNumber = data?.GetValueOrDefault("PhoneNumber")?.ToString(),
-                BranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : null
+                UserName = data.UserName,
+                FullName = data.FullName,
+                Email = data.Email,
+                BranchId = data.BranchId
             };
         }
 
@@ -567,7 +572,6 @@ namespace Flex.AspNetIdentity.Api.Services
                             UserName = currentUser.UserName ?? string.Empty,
                             FullName = currentUser.FullName,
                             Email = currentUser.Email,
-                            PhoneNumber = currentUser.PhoneNumber,
                             BranchId = currentUser.BranchId
                         };
                     }
@@ -578,7 +582,6 @@ namespace Flex.AspNetIdentity.Api.Services
                     UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
                     FullName = data?.GetValueOrDefault("FullName")?.ToString(),
                     Email = data?.GetValueOrDefault("Email")?.ToString(),
-                    PhoneNumber = data?.GetValueOrDefault("PhoneNumber")?.ToString(),
                     BranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : null
                 };
             }
@@ -609,7 +612,6 @@ namespace Flex.AspNetIdentity.Api.Services
                             UserName = currentUser.UserName ?? string.Empty,
                             FullName = currentUser.FullName,
                             Email = currentUser.Email,
-                            PhoneNumber = currentUser.PhoneNumber,
                             BranchId = currentUser.BranchId
                         };
                     }
