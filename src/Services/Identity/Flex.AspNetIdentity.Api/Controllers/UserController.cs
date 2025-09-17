@@ -1,6 +1,7 @@
 ﻿using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
+using Flex.Shared.SeedWork.Workflow;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Flex.AspNetIdentity.Api.Controllers
@@ -118,7 +119,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         /// Reject pending user request by ID.
         /// </summary>
         [HttpPost("request/pending/{requestId}/reject")]
-        public async Task<IActionResult> RejectPendingUserRequest(long requestId, [FromBody] RejectUserRequestDto request)
+        public async Task<IActionResult> RejectPendingUserRequest(long requestId, [FromBody] RejectRequest request)
         {
             var result = await _userService.RejectPendingUserRequestAsync(requestId, request.Reason);
             return Ok(Result.Success(result));
