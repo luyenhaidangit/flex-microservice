@@ -289,7 +289,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<long> CreateUserRequestAsync(CreateUserRequest request)
         {
-            var username = request.UserName?.ToLower();
+            var username = request.UserName.ToLower();
             var email = request.Email.ToLower();
 
             // ===== Validate request =====
