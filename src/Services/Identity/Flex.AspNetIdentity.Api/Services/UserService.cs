@@ -294,39 +294,25 @@ namespace Flex.AspNetIdentity.Api.Services
 
             // ===== Validate request =====
             // Check if user already exists by username
-            var existingUser = await _userRepository.FindAll().AsNoTracking()
-                .FirstOrDefaultAsync(u => u.UserName!.ToLower() == username);
-            
-            if (existingUser != null)
+            if (await _userRepository.ExistsByUserNameAsync(username))
             {
                 throw new ValidationException(ErrorCode.UserAlreadyExists);
             }
 
             // Check if user already exists by email
-            var existingUserByEmail = await _userRepository.FindAll().AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Email!.ToLower() == email);
-
-            if (existingUserByEmail != null)
+            if (await _userRepository.ExistsByEmailAsync(email))
             {
                 throw new ValidationException(ErrorCode.EmailAlreadyExists);
             }
 
             // Check if user request already exists with pending status by username
-            var existingPendingRequest = await _userRequestRepository.GetAllUserRequests()
-                .Where(ur => EF.Functions.Like(ur.UserName.ToLower(), username) && ur.Status == RequestStatusConstant.Unauthorised)
-                .FirstOrDefaultAsync();
-            
-            if (existingPendingRequest != null)
+            if (await _userRequestRepository.ExistsPendingByUserNameAsync(username))
             {
                 throw new ValidationException(ErrorCode.UserRequestExists);
             }
 
             // Check if user request already exists with pending status by email
-            var existingPendingRequestByEmail = await _userRequestRepository.GetAllUserRequests()
-                    .Where(ur => EF.Functions.Like(ur.Email.ToLower(), email) && ur.Status == RequestStatusConstant.Unauthorised)
-                    .FirstOrDefaultAsync();
-
-            if (existingPendingRequestByEmail != null)
+            if (await _userRequestRepository.ExistsPendingByEmailAsync(email))
             {
                 throw new ValidationException(ErrorCode.EmailAlreadyExists);
             }
@@ -367,10 +353,7 @@ namespace Flex.AspNetIdentity.Api.Services
             // ===== Check email uniqueness (if email is being changed) =====
             if (!string.IsNullOrEmpty(email) && user.Email?.ToLower() != email)
             {
-                var existingUserByEmail = await _userRepository.FindAll().AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Email!.ToLower() == email);
-                
-                if (existingUserByEmail != null)
+                if (await _userRepository.ExistsByEmailAsync(email))
                 {
                     throw new ValidationException(ErrorCode.EmailAlreadyExists);
                 }

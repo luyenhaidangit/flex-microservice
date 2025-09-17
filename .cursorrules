@@ -214,6 +214,12 @@ Implementation details:
 - Sử dụng case-insensitive comparison với ToLower()
 - Chỉ validate khi email không null/empty
 
+[X] Refactor: Đẩy các điều kiện check tồn tại xuống repository layer
+- Thêm ExistsByEmailAsync() vào IUserRepository và UserRepository
+- Thêm ExistsPendingByUserNameAsync() và ExistsPendingByEmailAsync() vào IUserRequestRepository và UserRequestRepository
+- Refactor UserService để sử dụng repository methods thay vì query trực tiếp
+- Code gọn gàng hơn, tái sử dụng được và dễ test
+
 [X] Tạo migration script V4.1__add_status_column_to_users.sql
 [X] Cập nhật User entity để thêm property Status
 [X] Cập nhật UserConfiguration để map cột STATUS với index

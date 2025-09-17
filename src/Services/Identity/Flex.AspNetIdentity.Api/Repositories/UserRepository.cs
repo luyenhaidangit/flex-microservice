@@ -4,8 +4,6 @@ using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common.Repositories;
-using Flex.Infrastructure.EF;
-using Flex.Shared.SeedWork;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.AspNetIdentity.Api.Repositories
@@ -21,7 +19,12 @@ namespace Flex.AspNetIdentity.Api.Repositories
 
         public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken ct = default)
 		{
-			return await _context.Set<User>().AsNoTracking().AnyAsync(u => u.UserName == userName, ct);
+			return await _context.Users.AsNoTracking().AnyAsync(u => u.UserName!.ToLower() == userName.ToLower(), ct);
+		}
+
+		public async Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default)
+		{
+			return await _context.Users.AsNoTracking().AnyAsync(u => u.Email!.ToLower() == email.ToLower(), ct);
 		}
 	}
 }
