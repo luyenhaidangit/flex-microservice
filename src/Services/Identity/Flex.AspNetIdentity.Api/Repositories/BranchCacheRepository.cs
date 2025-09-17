@@ -32,8 +32,10 @@ namespace Flex.AspNetIdentity.Api.Repositories
 
         public async Task<bool> ExistsByCodeAsync(string code)
         {
-            return await _context.Set<BranchCache>()
-                .AnyAsync(x => x.Code == code);
+            var count = await _context.Set<BranchCache>()
+                .Where(x => x.Code == code)
+                .CountAsync();
+            return count > 0;
         }
 
         public async Task<BranchCache?> GetByIdAsync(long id)

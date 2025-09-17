@@ -69,8 +69,8 @@ namespace Flex.Securities.Api.Controllers
         {
             // Validate
             // Check if symbol code is already exists in database
-            var isSymbolExist = await _securitiesRepository.FindByCondition(x => x.Symbol.ToUpper() == request.Symbol.ToUpper()).AnyAsync();
-            if (isSymbolExist)
+            var symbolCount = await _securitiesRepository.FindByCondition(x => x.Symbol.ToUpper() == request.Symbol.ToUpper()).CountAsync();
+            if (symbolCount > 0)
             {
                 return BadRequest(Result.Failure(message: "Issuer symbol is already exists."));
             }
@@ -101,8 +101,8 @@ namespace Flex.Securities.Api.Controllers
             // Check if symbol code is already exists in database
             if (!string.IsNullOrEmpty(request.Symbol) && !securities.Symbol.Equals(request.Symbol, StringComparison.OrdinalIgnoreCase))
             {
-                var isSymbolExist = await _securitiesRepository.FindByCondition(x => x.Symbol.ToUpper() == request.Symbol.ToUpper() && x.Id != request.Id).AnyAsync();
-                if (isSymbolExist)
+                var symbolCount = await _securitiesRepository.FindByCondition(x => x.Symbol.ToUpper() == request.Symbol.ToUpper() && x.Id != request.Id).CountAsync();
+                if (symbolCount > 0)
                 {
                     return Conflict(Result.Failure(message: "Securities symbol is already exists."));
                 }

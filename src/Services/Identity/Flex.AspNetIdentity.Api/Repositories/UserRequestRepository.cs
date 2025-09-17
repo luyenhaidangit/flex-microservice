@@ -26,16 +26,20 @@ namespace Flex.AspNetIdentity.Api.Repositories
 
 		public async Task<bool> ExistsPendingByUserNameAsync(string userName, CancellationToken ct = default)
 		{
-			return await GetAllUserRequests()
-				.AnyAsync(ur => EF.Functions.Like(ur.UserName.ToLower(), userName.ToLower()) 
-					&& ur.Status == RequestStatusConstant.Unauthorised, ct);
+			var count = await GetAllUserRequests()
+				.Where(ur => EF.Functions.Like(ur.UserName.ToLower(), userName.ToLower()) 
+					&& ur.Status == RequestStatusConstant.Unauthorised)
+				.CountAsync(ct);
+			return count > 0;
 		}
 
 		public async Task<bool> ExistsPendingByEmailAsync(string email, CancellationToken ct = default)
 		{
-			return await GetAllUserRequests()
-				.AnyAsync(ur => EF.Functions.Like(ur.Email.ToLower(), email.ToLower()) 
-					&& ur.Status == RequestStatusConstant.Unauthorised, ct);
+			var count = await GetAllUserRequests()
+				.Where(ur => EF.Functions.Like(ur.Email.ToLower(), email.ToLower()) 
+					&& ur.Status == RequestStatusConstant.Unauthorised)
+				.CountAsync(ct);
+			return count > 0;
 		}
 	}
 }

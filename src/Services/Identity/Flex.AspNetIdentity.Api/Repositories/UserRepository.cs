@@ -19,12 +19,18 @@ namespace Flex.AspNetIdentity.Api.Repositories
 
         public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken ct = default)
 		{
-			return await _context.Users.AsNoTracking().AnyAsync(u => u.UserName!.ToLower() == userName.ToLower(), ct);
+			var count = await _context.Users.AsNoTracking()
+				.Where(u => u.UserName!.ToLower() == userName.ToLower())
+				.CountAsync(ct);
+			return count > 0;
 		}
 
 		public async Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default)
 		{
-			return await _context.Users.AsNoTracking().AnyAsync(u => u.Email!.ToLower() == email.ToLower(), ct);
+			var count = await _context.Users.AsNoTracking()
+				.Where(u => u.Email!.ToLower() == email.ToLower())
+				.CountAsync(ct);
+			return count > 0;
 		}
 	}
 }

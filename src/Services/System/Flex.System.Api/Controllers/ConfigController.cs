@@ -93,8 +93,8 @@ namespace Flex.System.Api.Controllers
         public async Task<IActionResult> CreateConfigAsync([FromBody] CreateConfigRequest request)
         {
             // Kiểm tra tồn tại theo Key
-            bool isExist = await _configRepository.FindByCondition(c => c.Key == request.Key).AnyAsync();
-            if (isExist)
+            var count = await _configRepository.FindByCondition(c => c.Key == request.Key).CountAsync();
+            if (count > 0)
             {
                 return Conflict(Result.Failure(message: "Config key already exists."));
             }

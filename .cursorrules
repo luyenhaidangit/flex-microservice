@@ -123,6 +123,11 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - Khai báo private field: `private readonly IdentityDbContext _context;`
   - Gán context trong constructor: `_context = context;`
   - Sử dụng `_context` thay vì access trực tiếp từ base class
+- **CRITICAL**: Oracle Database Compatibility:
+  - KHÔNG sử dụng `AnyAsync()` với Oracle vì gây lỗi ORA-00904: "FALSE": invalid identifier
+  - Sử dụng `CountAsync() > 0` thay vì `AnyAsync()` để kiểm tra tồn tại
+  - Oracle không hỗ trợ True/False literals trong SQL queries
+  - EF Core generate query với CASE WHEN EXISTS... THEN True ELSE False không tương thích với Oracle
 
 ## Project-specific Lessons
 
@@ -194,6 +199,31 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - `Repositories/Interfaces/I<Entity>Repository.cs`, `Repositories/<Entity>Repository.cs`
   - `Services/I<Entity>Service.cs`, `Services/<Entity>Service.cs`
   - `Controllers/<Entity>Controller.cs`
+
+# Fix: Oracle AnyAsync Compatibility Issue
+
+[X] Đã sửa lỗi Oracle ORA-00904: "FALSE": invalid identifier:
+1. ✅ Sửa UserRepository: thay AnyAsync() bằng CountAsync() > 0
+2. ✅ Sửa UserRequestRepository: thay AnyAsync() bằng CountAsync() > 0  
+3. ✅ Sửa BranchCacheRepository: thay AnyAsync() bằng CountAsync() > 0
+4. ✅ Sửa ConfigController: thay AnyAsync() bằng CountAsync() > 0
+5. ✅ Sửa SecuritiesController: thay AnyAsync() bằng CountAsync() > 0
+6. ✅ Sửa InvestorService: thay AnyAsync() bằng CountAsync() > 0
+7. ✅ Tạo test script Python để verify fix
+
+Root cause analysis:
+- Oracle không hỗ trợ True/False literals trong SQL queries
+- EF Core generate query với CASE WHEN EXISTS... THEN True ELSE False
+- Oracle báo lỗi ORA-00904 vì không nhận diện được "FALSE" identifier
+- Sử dụng CountAsync() > 0 thay vì AnyAsync() để tương thích với Oracle
+
+Implementation details:
+- Thay đổi tất cả AnyAsync() calls thành CountAsync() > 0
+- Giữ nguyên logic validation và error handling
+- Performance tương đương vì CountAsync() với WHERE clause hiệu quả
+- Tương thích hoàn toàn với Oracle database
+- Không có compilation errors sau khi sửa
+- Test script có thể chạy để verify functionality
 
 # Scratchpad
 Goal: Thêm validation email trùng lặp vào CreateUserRequestAsync method

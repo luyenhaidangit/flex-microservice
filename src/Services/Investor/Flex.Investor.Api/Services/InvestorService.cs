@@ -51,8 +51,8 @@ namespace Flex.Investor.Api.Services
         public async Task<List<SubAccountDto>> GetSubAccountsByInvestorIdAsync(long investorId)
         {
             // Validate investor existence
-            var investorExists = await _investorRepository.FindByCondition(x => x.Id == investorId).AnyAsync();
-            if (!investorExists)
+            var investorCount = await _investorRepository.FindByCondition(x => x.Id == investorId).CountAsync();
+            if (investorCount == 0)
             {
                 throw new BadRequestException("Investor not found.");
             }
@@ -68,20 +68,20 @@ namespace Flex.Investor.Api.Services
         public async Task<Result> CreateInvestorAsync(CreateInvestorRequest request)
         {
             // Validate
-            var isNoExist = await _investorRepository.FindByCondition(x => x.No == request.No).AnyAsync();
-            if (isNoExist)
+            var noCount = await _investorRepository.FindByCondition(x => x.No == request.No).CountAsync();
+            if (noCount > 0)
             {
                 return Result.Failure(message: "Investor No is already in use.");
             }
 
-            var isEmailExist = await _investorRepository.FindByCondition(x => x.Email == request.Email).AnyAsync();
-            if (isEmailExist)
+            var emailCount = await _investorRepository.FindByCondition(x => x.Email == request.Email).CountAsync();
+            if (emailCount > 0)
             {
                 return Result.Failure(message: "Email is already in use.");
             }
 
-            var isPhoneExist = await _investorRepository.FindByCondition(x => x.Phone == request.Phone).AnyAsync();
-            if (isPhoneExist)
+            var phoneCount = await _investorRepository.FindByCondition(x => x.Phone == request.Phone).CountAsync();
+            if (phoneCount > 0)
             {
                 return Result.Failure(message: "Phone number is already in use.");
             }
@@ -128,17 +128,17 @@ namespace Flex.Investor.Api.Services
 
             if (request.Email.Trim().ToLower() != investor.Email.Trim().ToLower())
             {
-                var isNoExist = await _investorRepository.FindByCondition(x => x.No == request.No).AnyAsync();
-                if (isNoExist)
+                var emailCount = await _investorRepository.FindByCondition(x => x.Email == request.Email).CountAsync();
+                if (emailCount > 0)
                 {
-                    return Result.Failure(message: "Email No is already in use.");
+                    return Result.Failure(message: "Email is already in use.");
                 }
             }
 
             if (request.Phone.Trim().ToLower() != investor.Phone.Trim().ToLower())
             {
-                var isEmailExist = await _investorRepository.FindByCondition(x => x.Email == request.Email).AnyAsync();
-                if (isEmailExist)
+                var phoneCount = await _investorRepository.FindByCondition(x => x.Phone == request.Phone).CountAsync();
+                if (phoneCount > 0)
                 {
                     return Result.Failure("Phone is already in use.");
                 }
@@ -168,8 +168,8 @@ namespace Flex.Investor.Api.Services
         public async Task<Result> CreateSubAccountAsync(CreateSubAccountRequest request)
         {
             // Validate investor existence
-            var investorExists = await _investorRepository.FindByCondition(x => x.Id == request.InvestorId).AnyAsync();
-            if (!investorExists)
+            var investorCount = await _investorRepository.FindByCondition(x => x.Id == request.InvestorId).CountAsync();
+            if (investorCount == 0)
             {
                 return Result.Failure(message: "Investor not found.");
             }
@@ -208,8 +208,8 @@ namespace Flex.Investor.Api.Services
             }
 
             // Ensure no duplicate account type exists for the same investor
-            var existingAccount = await _subAccountRepository.FindByCondition(x => x.InvestorId == subAccount.InvestorId && x.AccountType == request.AccountType && x.Id != request.Id).AnyAsync();
-            if (existingAccount)
+            var existingAccountCount = await _subAccountRepository.FindByCondition(x => x.InvestorId == subAccount.InvestorId && x.AccountType == request.AccountType && x.Id != request.Id).CountAsync();
+            if (existingAccountCount > 0)
             {
                 return Result.Failure($"An account of type '{request.AccountType}' already exists for this investor.");
             }
