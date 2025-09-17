@@ -290,9 +290,10 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<long> CreateUserRequestAsync(CreateUserRequest request)
         {
             var username = request.UserName?.ToLower();
+            var email = request.Email?.ToLower();
 
             // ===== Validate request =====
-            // Check if user already exists
+            // Check if user already exists by username
             var existingUser = await _userRepository.FindAll().AsNoTracking()
                 .FirstOrDefaultAsync(u => u.UserName!.ToLower() == username);
             
@@ -301,7 +302,19 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.UserAlreadyExists);
             }
 
-            // Check if user request already exists with pending status
+            // Check if user already exists by email
+            if (!string.IsNullOrEmpty(email))
+            {
+                var existingUserByEmail = await _userRepository.FindAll().AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.Email!.ToLower() == email);
+                
+                if (existingUserByEmail != null)
+                {
+                    throw new ValidationException(ErrorCode.EmailAlreadyExists);
+                }
+            }
+
+            // Check if user request already exists with pending status by username
             var existingPendingRequest = await _userRequestRepository.GetAllUserRequests()
                 .Where(ur => EF.Functions.Like(ur.UserName.ToLower(), username) && ur.Status == RequestStatusConstant.Unauthorised)
                 .FirstOrDefaultAsync();
@@ -309,6 +322,19 @@ namespace Flex.AspNetIdentity.Api.Services
             if (existingPendingRequest != null)
             {
                 throw new ValidationException(ErrorCode.UserRequestExists);
+            }
+
+            // Check if user request already exists with pending status by email
+            if (!string.IsNullOrEmpty(email))
+            {
+                var existingPendingRequestByEmail = await _userRequestRepository.GetAllUserRequests()
+                    .Where(ur => EF.Functions.Like(ur.Email.ToLower(), email) && ur.Status == RequestStatusConstant.Unauthorised)
+                    .FirstOrDefaultAsync();
+                
+                if (existingPendingRequestByEmail != null)
+                {
+                    throw new ValidationException(ErrorCode.EmailAlreadyExists);
+                }
             }
 
             // ===== Process =====
@@ -334,12 +360,26 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<long> UpdateUserRequestAsync(UpdateUserRequest request)
         {
+            var email = request.Email?.ToLower();
+
             // ===== Validation =====
             // ===== Check user exists =====
             var user = await _userRepository.FindAll().AsNoTracking().FirstOrDefaultAsync(u => u.UserName == request.UserName);
             if (user == null)
             {
                 throw new Exception($"User with username '{request.UserName}' does not exist.");
+            }
+
+            // ===== Check email uniqueness (if email is being changed) =====
+            if (!string.IsNullOrEmpty(email) && user.Email?.ToLower() != email)
+            {
+                var existingUserByEmail = await _userRepository.FindAll().AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.Email!.ToLower() == email);
+                
+                if (existingUserByEmail != null)
+                {
+                    throw new ValidationException(ErrorCode.EmailAlreadyExists);
+                }
             }
 
             // ===== Check user request exists =====

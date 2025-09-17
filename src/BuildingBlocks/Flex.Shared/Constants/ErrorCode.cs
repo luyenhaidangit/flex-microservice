@@ -40,6 +40,7 @@ namespace Flex.Shared.Constants
 
         // Identity
         public const string UserAlreadyExists = "USER_ALREADY_EXISTS";
+        public const string EmailAlreadyExists = "EMAIL_ALREADY_EXISTS";
         public const string UserRequestExists = "USER_REQUEST_EXISTS";
         public const string RequestNotPending = "REQUEST_NOT_PENDING";
         public const string InvalidRequestData = "INVALID_REQUEST_DATA";

@@ -196,7 +196,23 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
   - `Controllers/<Entity>Controller.cs`
 
 # Scratchpad
-Goal: Thêm cột STATUS vào bảng USERS và cập nhật backend
+Goal: Thêm validation email trùng lặp vào CreateUserRequestAsync method
+
+[X] Phân tích yêu cầu: Thêm kiểm tra email trùng lặp trong CreateUserRequestAsync
+[X] Kiểm tra cấu trúc hiện tại: CreateUserRequest có Email property
+[X] Thêm error code EmailAlreadyExists vào ErrorCode constants
+[X] Cập nhật CreateUserRequestAsync để validate email trùng lặp
+[X] Cập nhật UpdateUserRequestAsync để validate email trùng lặp
+[X] Test và verify fix
+
+Implementation details:
+- Thêm EmailAlreadyExists error code vào ErrorCode.cs
+- Cập nhật CreateUserRequestAsync để kiểm tra email trùng lặp trong:
+  - Existing users (trong bảng USERS)
+  - Pending requests (trong bảng USER_REQUESTS)
+- Cập nhật UpdateUserRequestAsync để kiểm tra email trùng lặp khi email thay đổi
+- Sử dụng case-insensitive comparison với ToLower()
+- Chỉ validate khi email không null/empty
 
 [X] Tạo migration script V4.1__add_status_column_to_users.sql
 [X] Cập nhật User entity để thêm property Status
