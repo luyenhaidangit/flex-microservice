@@ -290,7 +290,7 @@ namespace Flex.AspNetIdentity.Api.Services
         public async Task<long> CreateUserRequestAsync(CreateUserRequest request)
         {
             var username = request.UserName?.ToLower();
-            var email = request.Email?.ToLower();
+            var email = request.Email.ToLower();
 
             // ===== Validate request =====
             // Check if user already exists by username
@@ -303,15 +303,12 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // Check if user already exists by email
-            if (!string.IsNullOrEmpty(email))
-            {
-                var existingUserByEmail = await _userRepository.FindAll().AsNoTracking()
+            var existingUserByEmail = await _userRepository.FindAll().AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Email!.ToLower() == email);
-                
-                if (existingUserByEmail != null)
-                {
-                    throw new ValidationException(ErrorCode.EmailAlreadyExists);
-                }
+
+            if (existingUserByEmail != null)
+            {
+                throw new ValidationException(ErrorCode.EmailAlreadyExists);
             }
 
             // Check if user request already exists with pending status by username
@@ -325,16 +322,13 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // Check if user request already exists with pending status by email
-            if (!string.IsNullOrEmpty(email))
-            {
-                var existingPendingRequestByEmail = await _userRequestRepository.GetAllUserRequests()
+            var existingPendingRequestByEmail = await _userRequestRepository.GetAllUserRequests()
                     .Where(ur => EF.Functions.Like(ur.Email.ToLower(), email) && ur.Status == RequestStatusConstant.Unauthorised)
                     .FirstOrDefaultAsync();
-                
-                if (existingPendingRequestByEmail != null)
-                {
-                    throw new ValidationException(ErrorCode.EmailAlreadyExists);
-                }
+
+            if (existingPendingRequestByEmail != null)
+            {
+                throw new ValidationException(ErrorCode.EmailAlreadyExists);
             }
 
             // ===== Process =====
