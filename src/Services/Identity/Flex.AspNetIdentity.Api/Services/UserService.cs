@@ -520,19 +520,6 @@ namespace Flex.AspNetIdentity.Api.Services
 
         #region Process Functions
 
-        private static string ExtractUserNameFromRequestData(string requestData)
-        {
-            try
-            {
-                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(requestData);
-                return data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
         private static void ConvertCreateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
         {
             var data = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
@@ -761,7 +748,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.InvalidRequestData);
             }
 
-            var userName = ExtractUserNameFromRequestData(request.RequestedData);
+            var userName = "";
             if (string.IsNullOrEmpty(userName))
             {
                 throw new ValidationException(ErrorCode.UserNameRequired);
