@@ -24,21 +24,35 @@ namespace Flex.AspNetIdentity.Api.Repositories
 			return _context.Set<UserRequestView>().AsNoTracking();
 		}
 
-		public async Task<bool> ExistsPendingByUserNameAsync(string userName, CancellationToken ct = default)
+		public async Task<bool> ExistsPendingByUserNameAsync(string userName, long? excludeRequestId = null, CancellationToken ct = default)
 		{
-			var count = await GetAllUserRequests()
+			var query = GetAllUserRequests()
 				.Where(ur => EF.Functions.Like(ur.UserName.ToLower(), userName.ToLower()) 
-					&& ur.Status == RequestStatusConstant.Unauthorised)
-				.CountAsync(ct);
+					&& ur.Status == RequestStatusConstant.Unauthorised);
+
+			// Exclude current request if specified
+			if (excludeRequestId.HasValue)
+			{
+				query = query.Where(ur => ur.RequestId != excludeRequestId.Value);
+			}
+
+			var count = await query.CountAsync(ct);
 			return count > 0;
 		}
 
-		public async Task<bool> ExistsPendingByEmailAsync(string email, CancellationToken ct = default)
+		public async Task<bool> ExistsPendingByEmailAsync(string email, long? excludeRequestId = null, CancellationToken ct = default)
 		{
-			var count = await GetAllUserRequests()
+			var query = GetAllUserRequests()
 				.Where(ur => EF.Functions.Like(ur.Email.ToLower(), email.ToLower()) 
-					&& ur.Status == RequestStatusConstant.Unauthorised)
-				.CountAsync(ct);
+					&& ur.Status == RequestStatusConstant.Unauthorised);
+
+			// Exclude current request if specified
+			if (excludeRequestId.HasValue)
+			{
+				query = query.Where(ur => ur.RequestId != excludeRequestId.Value);
+			}
+
+			var count = await query.CountAsync(ct);
 			return count > 0;
 		}
 	}

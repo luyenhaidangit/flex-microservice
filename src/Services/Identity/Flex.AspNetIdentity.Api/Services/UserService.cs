@@ -448,7 +448,6 @@ namespace Flex.AspNetIdentity.Api.Services
             catch
             {
                 await transaction.RollbackAsync();
-                throw new Exception($"Failed to approve user request ID '{requestId}'.");
             }
 
             // ===== Return result =====
@@ -624,7 +623,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new Exception("Invalid CREATE request data format.");
             }
 
-            var isValid = await ValidateCreateUserRequestAsync(dto);
+            var isValid = await ValidateCreateUserRequestAsync(dto, request.Id);
             if (!isValid)
             {
                 throw new ValidationException(ErrorCode.InvalidRequest);
@@ -654,28 +653,8 @@ namespace Flex.AspNetIdentity.Api.Services
             var tempPassword = "TempPassword123!";
             newUser.PasswordHash = _passwordHasher.HashPassword(newUser, tempPassword);
 
-            // ===== Transaction to ensure data integrity =====
-            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
-            try
-            {
-                // ===== Create user using repository =====
-                await _userRepository.CreateAsync(newUser);
-
-                // ===== Update request status and entity ID =====
-                request.Status = RequestStatusConstant.Authorised;
-                request.EntityId = newUser.Id;
-                request.CheckerId = _userService.GetCurrentUsername() ?? "system";
-                request.ApproveDate = DateTime.UtcNow;
-
-                await _userRequestRepository.UpdateAsync(request);
-
-                await transaction.CommitAsync();
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw new Exception("Failed to process create user approval.");
-            }
+            // ===== Create user using repository (no transaction - handled by caller) =====
+            await _userRepository.CreateAsync(newUser);
 
             return newUser.Id;
         }
@@ -709,28 +688,16 @@ namespace Flex.AspNetIdentity.Api.Services
             user.IsActive = dto.IsActive;
             user.Status = RequestStatusConstant.Authorised;
 
-            // ===== Transaction =====
-            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
-            try
-            {
-                await _userRepository.UpdateAsync(user);
+            // ===== Update user (no transaction - handled by caller) =====
+            await _userRepository.UpdateAsync(user);
 
-                request.Status = RequestStatusConstant.Authorised;
-                request.EntityId = user.Id;
-                request.CheckerId = _userService.GetCurrentUsername() ?? "system";
-                request.ApproveDate = DateTime.UtcNow;
+            // ===== Update request status =====
+            request.Status = RequestStatusConstant.Authorised;
+            request.EntityId = user.Id;
+            request.CheckerId = _userService.GetCurrentUsername() ?? "system";
+            request.ApproveDate = DateTime.UtcNow;
 
-                await _userRequestRepository.UpdateAsync(request);
-                await _userRequestRepository.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to process update user approval for request {RequestId}", request.Id);
-                throw;
-            }
+            await _userRequestRepository.UpdateAsync(request);
 
             return user.Id;
         }
@@ -748,7 +715,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.InvalidRequestData);
             }
 
-            var userName = "";
+            var userName = dto.UserName;
             if (string.IsNullOrEmpty(userName))
             {
                 throw new ValidationException(ErrorCode.UserNameRequired);
@@ -767,33 +734,21 @@ namespace Flex.AspNetIdentity.Api.Services
             user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
             user.Status = RequestStatusConstant.Authorised;
 
-            // ===== Transaction =====
-            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
-            try
-            {
-                await _userRepository.UpdateAsync(user);
+            // ===== Update user (no transaction - handled by caller) =====
+            await _userRepository.UpdateAsync(user);
 
-                request.Status = RequestStatusConstant.Authorised;
-                request.EntityId = user.Id;
-                request.CheckerId = _userService.GetCurrentUsername() ?? "system";
-                request.ApproveDate = DateTime.UtcNow;
+            // ===== Update request status =====
+            request.Status = RequestStatusConstant.Authorised;
+            request.EntityId = user.Id;
+            request.CheckerId = _userService.GetCurrentUsername() ?? "system";
+            request.ApproveDate = DateTime.UtcNow;
 
-                await _userRequestRepository.UpdateAsync(request);
-                await _userRequestRepository.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to process delete user approval for request {RequestId}", request.Id);
-                throw;
-            }
+            await _userRequestRepository.UpdateAsync(request);
 
             return user.Id;
         }
 
-        private async Task<bool> ValidateCreateUserRequestAsync(CreateUserRequest request)
+        private async Task<bool> ValidateCreateUserRequestAsync(CreateUserRequest request, long? excludeRequestId = null)
         {
             var username = request.UserName.ToLower();
             var email = request.Email.ToLower();
@@ -811,14 +766,14 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.EmailAlreadyExists);
             }
 
-            // Check if user request already exists with pending status by username
-            if (await _userRequestRepository.ExistsPendingByUserNameAsync(username))
+            // Check if user request already exists with pending status by username (excluding current request)
+            if (await _userRequestRepository.ExistsPendingByUserNameAsync(username, excludeRequestId))
             {
                 throw new ValidationException(ErrorCode.UserRequestExists);
             }
 
-            // Check if user request already exists with pending status by email
-            if (await _userRequestRepository.ExistsPendingByEmailAsync(email))
+            // Check if user request already exists with pending status by email (excluding current request)
+            if (await _userRequestRepository.ExistsPendingByEmailAsync(email, excludeRequestId))
             {
                 throw new ValidationException(ErrorCode.EmailAlreadyExists);
             }
