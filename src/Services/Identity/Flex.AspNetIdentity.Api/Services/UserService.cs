@@ -1,10 +1,8 @@
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models.Branch;
-using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
-using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
@@ -13,7 +11,6 @@ using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow;
 using Flex.Shared.SeedWork.Workflow.Constants;
-using Google.Rpc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
