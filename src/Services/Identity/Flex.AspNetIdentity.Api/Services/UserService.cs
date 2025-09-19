@@ -122,6 +122,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "Failed to retrieve branch information for user {UserName} with BranchId {BranchId}", userName, user.BranchId);
+                    throw;
                 }
             }
 
@@ -501,6 +502,7 @@ namespace Flex.AspNetIdentity.Api.Services
             catch
             {
                 await transaction.RollbackAsync();
+                throw;
             }
 
             // ===== Return result =====
@@ -627,6 +629,7 @@ namespace Flex.AspNetIdentity.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to process update user request data for request {RequestId}", request.Id);
+                throw;
             }
         }
 
@@ -659,6 +662,7 @@ namespace Flex.AspNetIdentity.Api.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to process delete user request data for request {RequestId}", request.Id);
+                throw;
             }
         }
 
