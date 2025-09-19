@@ -1,8 +1,10 @@
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Models.Branch;
+using Flex.AspNetIdentity.Api.Models.Role;
 using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
+using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.Infrastructure.EF;
@@ -11,6 +13,7 @@ using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow;
 using Flex.Shared.SeedWork.Workflow.Constants;
+using Google.Rpc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -386,14 +389,58 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<long> DeleteUserRequestAsync(string userName)
         {
-            // ===== Find and soft-delete user =====
-            var user = await _dbContext.Set<User>().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower())
-                       ?? throw new Exception($"User '{userName}' not found.");
-            user.LockoutEnabled = true;
-            user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
-            await _dbContext.SaveChangesAsync();
+            // ===== Validate =====
+            var isValid = await ValidateDeleteUserRequestAsync(userName);
+            if (!isValid)
+            {
+                throw new ValidationException(ErrorCode.InvalidRequest);
+            }
 
-            return user.Id;
+            var user = await _userRepository.FindByCondition(x => x.UserName == userName).FirstOrDefaultAsync();
+
+            // ===== Check role request is exits =====
+            if (user?.Status == RequestStatusConstant.Unauthorised)
+            {
+                throw new Exception("A pending update request already exists for this role.");
+            }
+
+            // ===== Process =====
+            // ===== Create delete role request =====
+            var currentSnapshot = new UserDetailDto
+            {
+            };
+            var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
+            var request = new UserRequest
+            {
+                Action = RequestTypeConstant.Delete,
+                Status = RequestStatusConstant.Unauthorised,
+                EntityId = user.Id,
+                MakerId = requestedBy,
+                RequestedDate = DateTime.UtcNow,
+                RequestedData = JsonSerializer.Serialize(currentSnapshot),
+                Comments = "Yêu cầu xóa người dùng."
+            };
+
+            // ===== Update status process role =====
+            user.Status = RequestStatusConstant.Unauthorised;
+
+            // ===== Transaction =====
+            await using var transaction = await _userRequestRepository.BeginTransactionAsync();
+            try
+            {
+                await _userRequestRepository.CreateAsync(request);
+                await _userRepository.UpdateAsync(user);
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+
+            return request.Id;
         }
 
         /// <summary>
@@ -776,6 +823,20 @@ namespace Flex.AspNetIdentity.Api.Services
             if (await _userRequestRepository.ExistsPendingByEmailAsync(email, excludeRequestId))
             {
                 throw new ValidationException(ErrorCode.EmailAlreadyExists);
+            }
+
+            return true;
+        }
+
+        private async Task<bool> ValidateDeleteUserRequestAsync(string username)
+        {
+            username = username.ToLower();
+
+            // ===== Validate request =====
+            // Check if user already exists by username
+            if (!await _userRepository.ExistsByUserNameAsync(username))
+            {
+                throw new ValidationException(ErrorCode.UserAlreadyExists);
             }
 
             return true;
