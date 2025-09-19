@@ -764,11 +764,6 @@ namespace Flex.AspNetIdentity.Api.Services
             var idEntity = request.EntityId;
 
             // ===== Validate =====
-            var isValid = await ValidateDeleteUserRequestAsync(idEntity);
-            if (!isValid)
-            {
-                throw new ValidationException(ErrorCode.InvalidRequest);
-            }
 
             // ===== Find user =====
             var user = await _userRepository.FindByCondition(u => u.Id == idEntity)
@@ -825,7 +820,7 @@ namespace Flex.AspNetIdentity.Api.Services
             return true;
         }
 
-        private async Task<bool> ValidateDeleteUserRequestAsync(long idRequest)
+        private async Task<bool> ValidateDeleteUserRequestAsync(string idRequest)
         {
             await Task.CompletedTask;
             return true;
