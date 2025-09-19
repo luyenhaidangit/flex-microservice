@@ -778,13 +778,8 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.UserNotFound);
             }
 
-            // ===== Soft delete user =====
-            user.LockoutEnabled = true;
-            user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
-            user.Status = RequestStatusConstant.Authorised;
-
-            // ===== Update user (no transaction - handled by caller) =====
-            await _userRepository.UpdateAsync(user);
+            // ===== Hard delete user =====
+            await _userRepository.DeleteAsync(user);
 
             // ===== Update request status =====
             request.Status = RequestStatusConstant.Authorised;
