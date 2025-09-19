@@ -397,18 +397,27 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             var user = await _userRepository.FindByCondition(x => x.UserName == userName).FirstOrDefaultAsync();
-
-            // ===== Check role request is exits =====
-            if (user?.Status == RequestStatusConstant.Unauthorised)
+            if (user == null)
             {
-                throw new Exception("A pending update request already exists for this role.");
+                throw new ValidationException(ErrorCode.UserNotFound);
             }
 
-            // ===== Process =====
-            // ===== Create delete role request =====
+            // ===== Check pending request =====
+            if (user.Status == RequestStatusConstant.Unauthorised)
+            {
+                throw new Exception("A pending delete request already exists for this user.");
+            }
+
+            // ===== Create snapshot =====
             var currentSnapshot = new UserDetailDto
             {
+                UserName = user.UserName ?? string.Empty,
+                FullName = user.FullName,
+                Email = user.Email,
+                BranchName = "",
+                IsActive = user.IsActive
             };
+
             var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
             var request = new UserRequest
             {
@@ -421,7 +430,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 Comments = "Yêu cầu xóa người dùng."
             };
 
-            // ===== Update status process role =====
+            // ===== Update user status =====
             user.Status = RequestStatusConstant.Unauthorised;
 
             // ===== Transaction =====
@@ -628,8 +637,8 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             try
             {
-                var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
-                var userName = data?.GetValueOrDefault("UserName")?.ToString();
+                var data = JsonSerializer.Deserialize<UserDetailDto>(request.RequestedData);
+                var userName = data?.UserName;
 
                 if (!string.IsNullOrEmpty(userName))
                 {
@@ -756,7 +765,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new Exception("Request data is empty for DELETE request.");
             }
 
-            var dto = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
+            var dto = JsonSerializer.Deserialize<UserDetailDto>(request.RequestedData);
             if (dto == null)
             {
                 throw new ValidationException(ErrorCode.InvalidRequestData);
@@ -833,10 +842,10 @@ namespace Flex.AspNetIdentity.Api.Services
             username = username.ToLower();
 
             // ===== Validate request =====
-            // Check if user already exists by username
+            // Check if user exists by username
             if (!await _userRepository.ExistsByUserNameAsync(username))
             {
-                throw new ValidationException(ErrorCode.UserAlreadyExists);
+                throw new ValidationException(ErrorCode.UserNotFound);
             }
 
             return true;
