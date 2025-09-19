@@ -761,25 +761,17 @@ namespace Flex.AspNetIdentity.Api.Services
 
         private async Task<long> ProcessApproveDeleteUser(UserRequest request)
         {
-            if (string.IsNullOrEmpty(request.RequestedData))
-            {
-                throw new Exception("Request data is empty for DELETE request.");
-            }
+            var idEntity = request.EntityId;
 
-            var dto = JsonSerializer.Deserialize<UserDetailDto>(request.RequestedData);
-            if (dto == null)
+            // ===== Validate =====
+            var isValid = await ValidateDeleteUserRequestAsync(idEntity);
+            if (!isValid)
             {
-                throw new ValidationException(ErrorCode.InvalidRequestData);
-            }
-
-            var userName = dto.UserName;
-            if (string.IsNullOrEmpty(userName))
-            {
-                throw new ValidationException(ErrorCode.UserNameRequired);
+                throw new ValidationException(ErrorCode.InvalidRequest);
             }
 
             // ===== Find user =====
-            var user = await _userRepository.FindByCondition(u => u.UserName == userName)
+            var user = await _userRepository.FindByCondition(u => u.Id == idEntity)
                                             .FirstOrDefaultAsync();
             if (user == null)
             {
@@ -838,17 +830,9 @@ namespace Flex.AspNetIdentity.Api.Services
             return true;
         }
 
-        private async Task<bool> ValidateDeleteUserRequestAsync(string username)
+        private async Task<bool> ValidateDeleteUserRequestAsync(long idRequest)
         {
-            username = username.ToLower();
-
-            // ===== Validate request =====
-            // Check if user exists by username
-            if (!await _userRepository.ExistsByUserNameAsync(username))
-            {
-                throw new ValidationException(ErrorCode.UserNotFound);
-            }
-
+            await Task.CompletedTask;
             return true;
         }
 
