@@ -479,13 +479,13 @@ namespace Flex.AspNetIdentity.Api.Services
                 switch (request.Action)
                 {
                     case RequestTypeConstant.Create:
-                        await ProcessCreateUserApproval(request);
+                        await ProcessApproveCreateUser(request);
                         break;
                     case RequestTypeConstant.Update:
-                        await ProcessUpdateUserApproval(request);
+                        await ProcessApproveUpdateUser(request);
                         break;
                     case RequestTypeConstant.Delete:
-                        await ProcessDeleteUserApproval(request);
+                        await ProcessApproveDeleteUser(request);
                         break;
                 }
 
@@ -666,7 +666,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
         }
 
-        private async Task<long> ProcessCreateUserApproval(UserRequest request)
+        private async Task<long> ProcessApproveCreateUser(UserRequest request)
         {
             // ===== Validate =====
             if (string.IsNullOrEmpty(request.RequestedData))
@@ -716,7 +716,7 @@ namespace Flex.AspNetIdentity.Api.Services
             return newUser.Id;
         }
 
-        private async Task<long> ProcessUpdateUserApproval(UserRequest request)
+        private async Task<long> ProcessApproveUpdateUser(UserRequest request)
         {
             if (string.IsNullOrEmpty(request.RequestedData))
             {
@@ -759,7 +759,7 @@ namespace Flex.AspNetIdentity.Api.Services
             return user.Id;
         }
 
-        private async Task<long> ProcessDeleteUserApproval(UserRequest request)
+        private async Task<long> ProcessApproveDeleteUser(UserRequest request)
         {
             if (string.IsNullOrEmpty(request.RequestedData))
             {
