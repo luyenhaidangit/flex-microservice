@@ -268,7 +268,7 @@ namespace Flex.AspNetIdentity.Api.Services
             switch (request.Action)
             {
                 case RequestTypeConstant.Create:
-                    ConvertCreateUserRequestData(request, result);
+                    await ConvertCreateUserRequestData(request, result);
                     break;
                 case RequestTypeConstant.Update:
                     await ProcessUpdateUserRequestData(request, result);
@@ -640,26 +640,20 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             try
             {
-                var data = JsonSerializer.Deserialize<UserDetailDto>(request.RequestedData);
-                var userName = data?.UserName;
+                // ===== Get current user data by EntityId =====
+                var currentUser = await _userRepository.FindByCondition(u => u.Id == request.EntityId)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync();
 
-                if (!string.IsNullOrEmpty(userName))
+                if (currentUser != null)
                 {
-                    // ===== Get current user data =====
-                    var currentUser = await _userRepository.FindAll()
-                        .AsNoTracking()
-                        .FirstOrDefaultAsync(u => u.UserName == userName);
-
-                    if (currentUser != null)
+                    result.OldData = new UserRequestDataDto
                     {
-                        result.OldData = new UserRequestDataDto
-                        {
-                            UserName = currentUser.UserName ?? string.Empty,
-                            FullName = currentUser.FullName,
-                            Email = currentUser.Email,
-                            BranchId = currentUser.BranchId
-                        };
-                    }
+                        UserName = currentUser.UserName ?? string.Empty,
+                        FullName = currentUser.FullName,
+                        Email = currentUser.Email,
+                        BranchId = currentUser.BranchId
+                    };
                 }
             }
             catch (Exception ex)
