@@ -3,10 +3,9 @@
     public class UserRequestDataDto
     {
         public string UserName { get; set; } = string.Empty;
-        public string? FullName { get; set; }
-        public string? Email { get; set; }
-        public long? BranchId { get; set; }
-        public string? BranchName { get; set; }
-        public List<string> Roles { get; set; } = new List<string>();
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public long BranchId { get; set; }
+        public string BranchName { get; set; } = string.Empty;
     }
 }

@@ -273,7 +273,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     await ProcessUpdateUserRequestData(request, result);
                     break;
                 case RequestTypeConstant.Delete:
-                    await ProcessDeleteUserRequestData(request, result);
+                    await ConvertDeleteUserRequestData(request, result);
                     break;
                 default:
                     throw new ValidationException(ErrorCode.InvalidRequestType);
@@ -612,7 +612,7 @@ namespace Flex.AspNetIdentity.Api.Services
                         {
                             UserName = currentUser.UserName ?? string.Empty,
                             FullName = currentUser.FullName,
-                            Email = currentUser.Email,
+                            Email = currentUser.Email ?? string.Empty,
                             BranchId = currentUser.BranchId
                         };
                     }
@@ -623,7 +623,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
                     FullName = data?.GetValueOrDefault("FullName")?.ToString(),
                     Email = data?.GetValueOrDefault("Email")?.ToString(),
-                    BranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : null
+                    BranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : 0
                 };
             }
             catch (Exception ex)
@@ -633,7 +633,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
         }
 
-        private async Task ProcessDeleteUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
+        private async Task ConvertDeleteUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
         {
             try
             {
@@ -773,18 +773,40 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.UserNotFound);
             }
 
-            // ===== Hard delete user =====
-            await _userRepository.DeleteAsync(user);
+            // ===== Execute in transaction =====
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                _logger.LogInformation("Starting delete user transaction for user ID: {UserId}, Request ID: {RequestId}", 
+                    user.Id, request.Id);
 
-            // ===== Update request status =====
-            request.Status = RequestStatusConstant.Authorised;
-            request.EntityId = user.Id;
-            request.CheckerId = _userService.GetCurrentUsername() ?? "system";
-            request.ApproveDate = DateTime.UtcNow;
+                // ===== Hard delete user =====
+                await _userRepository.DeleteAsync(user);
+                _logger.LogInformation("User deleted successfully: {UserId}", user.Id);
 
-            await _userRequestRepository.UpdateAsync(request);
+                // ===== Update request status =====
+                request.Status = RequestStatusConstant.Authorised;
+                request.EntityId = user.Id;
+                request.CheckerId = _userService.GetCurrentUsername() ?? "system";
+                request.ApproveDate = DateTime.UtcNow;
 
-            return user.Id;
+                await _userRequestRepository.UpdateAsync(request);
+                _logger.LogInformation("User request updated to approved: {RequestId}", request.Id);
+
+                // ===== Commit transaction =====
+                await transaction.CommitAsync();
+                _logger.LogInformation("Delete user transaction committed successfully for user ID: {UserId}", user.Id);
+
+                return user.Id;
+            }
+            catch (Exception ex)
+            {
+                // ===== Rollback transaction on error =====
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error occurred during delete user transaction for user ID: {UserId}, Request ID: {RequestId}. Transaction rolled back.", 
+                    user.Id, request.Id);
+                throw;
+            }
         }
 
         private async Task<bool> ValidateCreateUserRequestAsync(CreateUserRequest request, long? excludeRequestId = null)
