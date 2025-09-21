@@ -14,7 +14,6 @@ using Flex.Shared.SeedWork.Workflow.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Flex.AspNetIdentity.Api.Services
 {
@@ -271,7 +270,7 @@ namespace Flex.AspNetIdentity.Api.Services
                     await ConvertCreateUserRequestData(request, result);
                     break;
                 case RequestTypeConstant.Update:
-                    await ProcessUpdateUserRequestData(request, result);
+                    await ConvertUpdateUserRequestData(request, result);
                     break;
                 case RequestTypeConstant.Delete:
                     await ConvertDeleteUserRequestData(request, result);
@@ -589,13 +588,14 @@ namespace Flex.AspNetIdentity.Api.Services
                 UserName = data.UserName,
                 FullName = data.FullName,
                 Email = data.Email,
-                BranchId = data.BranchId
+                BranchId = data.BranchId,
+                IsActive = data.IsActive
             };
 
             return Task.CompletedTask;
         }
 
-        private async Task ProcessUpdateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
+        private async Task ConvertUpdateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
         {
             try
             {

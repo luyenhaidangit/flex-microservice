@@ -271,6 +271,26 @@ Implementation details:
 - Create, Edit, Approve, Reject modal đã sử dụng đúng từ trước
 - UI/UX nhất quán giữa tất cả các modal
 
+# Fix: User Request Detail Status Loading
+
+[X] Đã sửa lỗi trạng thái fix cứng trong modal chi tiết yêu cầu tạo người dùng:
+1. ✅ Sửa template HTML: thay trạng thái fix cứng bằng load từ dữ liệu thực tế
+2. ✅ Sử dụng getUserStatusIcon() và getUserStatusText() methods có sẵn
+3. ✅ Tạo test script HTML để verify fix
+4. ✅ Kiểm tra linting và không có lỗi
+
+Root cause analysis:
+- Modal chi tiết yêu cầu tạo người dùng (CREATE request) hiển thị trạng thái fix cứng "Hoạt động"
+- Component đã có sẵn methods getUserStatus(), getUserStatusText(), getUserStatusIcon()
+- Chỉ cần sửa template để sử dụng dữ liệu thực tế thay vì hardcode
+
+Implementation details:
+- Thay đổi từ hardcode "Hoạt động" thành {{ getUserStatusText(requestDetailData.newData) }}
+- Thay đổi từ hardcode icon thành [class]="getUserStatusIcon(requestDetailData.newData)"
+- Chỉ áp dụng cho CREATE request, UPDATE và DELETE đã đúng từ trước
+- Test script có thể dùng để verify functionality
+- Không có linting errors sau khi sửa
+
 # Scratchpad
 Goal: Thêm validation email trùng lặp vào CreateUserRequestAsync method
 

@@ -7,5 +7,6 @@
         public string Email { get; set; } = string.Empty;
         public long BranchId { get; set; }
         public string BranchName { get; set; } = string.Empty;
+        public bool IsActive { get; set; }
     }
 }
