@@ -770,40 +770,20 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.UserNotFound);
             }
 
-            // ===== Execute in transaction =====
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
-            try
-            {
-                _logger.LogInformation("Starting delete user transaction for user ID: {UserId}, Request ID: {RequestId}", 
-                    user.Id, request.Id);
+            // ===== Hard delete user =====
+            await _userRepository.DeleteAsync(user);
+            _logger.LogInformation("User deleted successfully: {UserId}", user.Id);
 
-                // ===== Hard delete user =====
-                await _userRepository.DeleteAsync(user);
-                _logger.LogInformation("User deleted successfully: {UserId}", user.Id);
+            // ===== Update request status =====
+            request.Status = RequestStatusConstant.Authorised;
+            request.EntityId = user.Id;
+            request.CheckerId = _userService.GetCurrentUsername() ?? "system";
+            request.ApproveDate = DateTime.UtcNow;
 
-                // ===== Update request status =====
-                request.Status = RequestStatusConstant.Authorised;
-                request.EntityId = user.Id;
-                request.CheckerId = _userService.GetCurrentUsername() ?? "system";
-                request.ApproveDate = DateTime.UtcNow;
+            await _userRequestRepository.UpdateAsync(request);
+            _logger.LogInformation("User request updated to approved: {RequestId}", request.Id);
 
-                await _userRequestRepository.UpdateAsync(request);
-                _logger.LogInformation("User request updated to approved: {RequestId}", request.Id);
-
-                // ===== Commit transaction =====
-                await transaction.CommitAsync();
-                _logger.LogInformation("Delete user transaction committed successfully for user ID: {UserId}", user.Id);
-
-                return user.Id;
-            }
-            catch (Exception ex)
-            {
-                // ===== Rollback transaction on error =====
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error occurred during delete user transaction for user ID: {UserId}, Request ID: {RequestId}. Transaction rolled back.", 
-                    user.Id, request.Id);
-                throw;
-            }
+            return user.Id;
         }
 
         private async Task<bool> ValidateCreateUserRequestAsync(CreateUserRequest request, long? excludeRequestId = null)
