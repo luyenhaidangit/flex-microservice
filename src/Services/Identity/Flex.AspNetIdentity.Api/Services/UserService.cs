@@ -850,6 +850,9 @@ namespace Flex.AspNetIdentity.Api.Services
             return user.Id;
         }
 
+        #endregion
+
+        #region Validate
         private async Task<bool> ValidateCreateUserRequestAsync(CreateUserRequest request, long? excludeRequestId = null)
         {
             var username = request.UserName.ToLower();
@@ -887,7 +890,6 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             return Task.FromResult(true);
         }
-
         #endregion
     }
 }
