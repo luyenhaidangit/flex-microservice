@@ -1,7 +1,68 @@
-# Batch Processing
+# Batch
 
-## Định nghĩa
-Batch là tập hợp các chương trình chạy tự động theo lịch, xử lý khối lượng dữ liệu lớn không cần tương tác người dùng.
+## Nghiệp vụ
+- Batch là tập hợp các chương trình chạy tự động theo lịch, được thực hiện ở những mốc thời gian nhất định, phụ thuộc vào lịch vận hành của hệ thống.
+- Batch thực hiện các giao dịch theo lô, không cần thao tác thủ công của người dùng, chạy theo chu kỳ (daily, monthly, EOD/SOD, T+1…) để thực hiện các công việc sau:
+  + Tự động hóa xử lý khối lượng lớn.
+  + Kết sổ và chuẩn bị sổ sách.
+  + Đối chiếu và kiểm tra toàn vẹn.
+  + Kết xuất và truyền thông tin.
+  + Lưu trữ, backup và audit.
+  + Đảm bảo an toàn và tính liên tục.
+## Chu kỳ vận hành
+- Cuối ngày giao dịch (EOD – End of Day) (quan trọng)
+  + Thời điểm: Sau khi ngân hàng ngừng nhận giao dịch trong ngày (cut-off, thường 17h–20h cho từng loại giao dịch).
+  + Mục đích:
+    - Khóa ngày (business_date) → không còn nhận thêm booking T0.
+    - Thực hiện xử lý batch chính: tính toán, kết sổ, đối chiếu, tạo báo cáo, gửi điện/file outbound.
+    - Đây là batch quan trọng nhất, thường kéo dài vài tiếng (ví dụ 20h–00h).
+- Đầu ngày giao dịch (SOD – Start of Day)
+  + Thời điểm: Rạng sáng hôm sau (thường 00h30–03h00).
+  + Mục đích:
+    - Khởi tạo dữ liệu & tham số cho ngày mới.
+    - Nạp lịch nghỉ, tỷ giá, hạn mức.
+    - Mở sổ, cho phép bắt đầu ghi nhận giao dịch T+1.
+- Intraday Batch (giữa ngày)
+  + Thời điểm: Nhiều lần trong ngày, theo phiên clearing hoặc theo cut-off nội bộ (ví dụ 11h, 15h).
+  + Mục đích:
+  + Đối chiếu tạm thời (clearing, Nostro).
+    - Chạy batch xử lý lô cho một số nghiệp vụ (ví dụ: card settlement, ACH theo phiên).
+    - Thường chạy nhanh, không ảnh hưởng toàn bộ hệ thống, nhưng cần để giữ cân bằng trong ngày.
+- Batch định kỳ (Monthly/Quarterly/Yearly)
+  + Thời điểm: Cuối tháng, cuối quý, cuối năm.
+  + Mục đích:
+    - Kết chuyển, khấu hao, phân bổ chi phí.
+    - Chạy báo cáo quản lý & regulator (Basel, IFRS, NHNN…).
+    - Được tích hợp chung vào lịch batch, nhưng thời gian chạy thường dài hơn EOD.
+## Luồng vận hành bước batch
+- Được vận hành bởi scheduler hệ thống, giám sát bởi đội Ops/IT, và có sự tham gia gián tiếp của nghiệp vụ & kiểm toán. Nó chạy theo một luồng chặt chẽ: khởi chạy → kiểm tra đầu vào → xử lý → đối chiếu → kết xuất → đóng ngày → backup → giám sát.
+1. Trigger (khởi chạy)
+- Batch được kích hoạt theo lịch (ví dụ 20h00 chạy EOD, 01h00 chạy SOD).
+- Có thể được khởi động bằng tay (manual trigger) trong trường hợp đặc biệt.
+2. Pre-check
+- Kiểm tra điều kiện đầu vào: đã hết giao dịch? file inbound đầy đủ? cut-off đã tới?
+- Nếu không đạt điều kiện, batch sẽ bị hoãn hoặc gửi cảnh báo.
+3. Staging & Validation
+- Tập hợp dữ liệu vào khu vực trung gian.
+- Giải mã/giải nén, kiểm tra tổng số bản ghi, tổng tiền (control totals).
+4. Processing (xử lý chính)
+- Thực thi các bước theo DAG (Directed Acyclic Graph) – job này phụ thuộc job kia.
+- Ví dụ: job A (tính lãi) phải xong trước job B (ghi sổ).
+- Có checkpoint để nếu lỗi có thể chạy lại từ điểm dừng.
+5. Reconciliation (đối chiếu)
+- So sánh số liệu giữa các hệ thống/sổ.
+- Nếu lệch → tạo log, gửi cảnh báo, có thể sinh adjustment.
+6, Output/Export
+- Sinh báo cáo, file kết quả, điện outbound.
+- Ký số, mã hóa, gửi qua kênh chính thức (SFTP, SWIFT, API).
+Close/Finalize
+7. Đóng ngày giao dịch, cập nhật business_date.
+- Backup, snapshot dữ liệu.
+- Ghi log kết quả, gửi thông báo batch success/fail.
+- Đóng giao dịch ngày → khoanh business_date (không nhận thêm booking T0).
+8. Monitoring & Alerting
+- Kết quả batch được giám sát qua dashboard.
+- Nếu quá SLA hoặc có lỗi → gửi cảnh báo cho Ops/IT và đội nghiệp vụ.
 
 ## Đặc điểm chính
 - **Scheduled**: Cron job, Task Scheduler, Quartz, Hangfire
