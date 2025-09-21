@@ -596,7 +596,6 @@ namespace Flex.AspNetIdentity.Api.Services
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to get branch name for BranchId: {BranchId}", data.BranchId);
-                // Continue with empty branch name
             }
 
             result.NewData = new UserRequestDataDto
@@ -674,7 +673,8 @@ namespace Flex.AspNetIdentity.Api.Services
                     FullName = data?.GetValueOrDefault("FullName")?.ToString(),
                     Email = data?.GetValueOrDefault("Email")?.ToString(),
                     BranchId = newBranchId,
-                    BranchName = newBranchName
+                    BranchName = newBranchName,
+                    IsActive = data?.GetValueOrDefault("IsActive") != null && bool.Parse(data["IsActive"].ToString()!)
                 };
             }
             catch (Exception ex)
