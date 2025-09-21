@@ -101,5 +101,35 @@ namespace Flex.AspNetIdentity.Api.Integrations
                 throw;
             }
         }
+
+        /// <summary>
+        /// Lấy thông tin một branch theo id
+        /// </summary>
+        public async Task<BranchLookupDto?> GetBranchByIdAsync(long id, CancellationToken ct = default)
+        {
+            if (id <= 0)
+            {
+                _logger.LogWarning("GetBranchByIdAsync called with invalid id: {Id}", id);
+                return null;
+            }
+
+            // Check cache first
+            if (_cache.TryGetValue(id, out var cachedBranch))
+            {
+                _logger.LogDebug("Branch {Id} found in cache", id);
+                return cachedBranch;
+            }
+
+            try
+            {
+                var branches = await BatchGetBranchesAsync(new[] { id }, ct);
+                return branches.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving branch {Id}", id);
+                throw;
+            }
+        }
     }
 }

@@ -574,7 +574,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
         #region Process Functions
 
-        private Task ConvertCreateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
+        private async Task ConvertCreateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
         {
             var data = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
 
@@ -583,16 +583,31 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.InvalidRequestData);
             }
 
+            // ===== Get branch name =====
+            string branchName = string.Empty;
+            try
+            {
+                if (data.BranchId > 0)
+                {
+                    var branch = await _branchIntegrationService.GetBranchByIdAsync(data.BranchId);
+                    branchName = branch?.Name ?? string.Empty;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to get branch name for BranchId: {BranchId}", data.BranchId);
+                // Continue with empty branch name
+            }
+
             result.NewData = new UserRequestDataDto
             {
                 UserName = data.UserName,
                 FullName = data.FullName,
                 Email = data.Email,
                 BranchId = data.BranchId,
+                BranchName = branchName,
                 IsActive = data.IsActive
             };
-
-            return Task.CompletedTask;
         }
 
         private async Task ConvertUpdateUserRequestData(UserRequest request, PendingRequestDtoBase<UserRequestDataDto> result)
@@ -611,14 +626,46 @@ namespace Flex.AspNetIdentity.Api.Services
 
                     if (currentUser != null)
                     {
+                        // ===== Get branch name for old data =====
+                        string oldBranchName = string.Empty;
+                        try
+                        {
+                            if (currentUser.BranchId > 0)
+                            {
+                                var oldBranch = await _branchIntegrationService.GetBranchByIdAsync(currentUser.BranchId);
+                                oldBranchName = oldBranch?.Name ?? string.Empty;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to get branch name for old data BranchId: {BranchId}", currentUser.BranchId);
+                        }
+
                         result.OldData = new UserRequestDataDto
                         {
                             UserName = currentUser.UserName ?? string.Empty,
                             FullName = currentUser.FullName,
                             Email = currentUser.Email ?? string.Empty,
-                            BranchId = currentUser.BranchId
+                            BranchId = currentUser.BranchId,
+                            BranchName = oldBranchName
                         };
                     }
+                }
+
+                // ===== Get branch name for new data =====
+                string newBranchName = string.Empty;
+                long newBranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : 0;
+                try
+                {
+                    if (newBranchId > 0)
+                    {
+                        var newBranch = await _branchIntegrationService.GetBranchByIdAsync(newBranchId);
+                        newBranchName = newBranch?.Name ?? string.Empty;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to get branch name for new data BranchId: {BranchId}", newBranchId);
                 }
 
                 result.NewData = new UserRequestDataDto
@@ -626,7 +673,8 @@ namespace Flex.AspNetIdentity.Api.Services
                     UserName = data?.GetValueOrDefault("UserName")?.ToString() ?? string.Empty,
                     FullName = data?.GetValueOrDefault("FullName")?.ToString(),
                     Email = data?.GetValueOrDefault("Email")?.ToString(),
-                    BranchId = data?.GetValueOrDefault("BranchId")?.ToString() != null ? long.Parse(data["BranchId"].ToString()!) : 0
+                    BranchId = newBranchId,
+                    BranchName = newBranchName
                 };
             }
             catch (Exception ex)
@@ -647,12 +695,28 @@ namespace Flex.AspNetIdentity.Api.Services
 
                 if (currentUser != null)
                 {
+                    // ===== Get branch name for delete data =====
+                    string branchName = string.Empty;
+                    try
+                    {
+                        if (currentUser.BranchId > 0)
+                        {
+                            var branch = await _branchIntegrationService.GetBranchByIdAsync(currentUser.BranchId);
+                            branchName = branch?.Name ?? string.Empty;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to get branch name for delete data BranchId: {BranchId}", currentUser.BranchId);
+                    }
+
                     result.OldData = new UserRequestDataDto
                     {
                         UserName = currentUser.UserName ?? string.Empty,
                         FullName = currentUser.FullName,
                         Email = currentUser.Email,
-                        BranchId = currentUser.BranchId
+                        BranchId = currentUser.BranchId,
+                        BranchName = branchName
                     };
                 }
             }

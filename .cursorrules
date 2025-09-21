@@ -291,6 +291,29 @@ Implementation details:
 - Test script có thể dùng để verify functionality
 - Không có linting errors sau khi sửa
 
+# Fix: Branch Name Integration in User Request Detail API
+
+[X] Đã cập nhật API get chi tiết request để lấy Branch name từ gRPC service:
+1. ✅ Cập nhật ConvertCreateUserRequestData: lấy tên chi nhánh cho CREATE request
+2. ✅ Cập nhật ConvertUpdateUserRequestData: lấy tên chi nhánh cho cả oldData và newData
+3. ✅ Cập nhật ConvertDeleteUserRequestData: lấy tên chi nhánh cho DELETE request
+4. ✅ Tạo test script Python để verify integration
+5. ✅ Kiểm tra linting và không có lỗi
+
+Root cause analysis:
+- API get chi tiết request chỉ trả về BranchId mà không có BranchName
+- Frontend cần hiển thị tên chi nhánh thay vì chỉ ID
+- gRPC service đã có sẵn để lấy thông tin chi nhánh
+
+Implementation details:
+- Sử dụng _branchIntegrationService.BatchGetBranchesAsync() để lấy tên chi nhánh (method có sẵn)
+- Thêm error handling với logging warning khi không lấy được tên chi nhánh
+- Cập nhật tất cả 3 methods: ConvertCreateUserRequestData, ConvertUpdateUserRequestData, ConvertDeleteUserRequestData
+- Sử dụng FirstOrDefault() để lấy branch đầu tiên từ danh sách trả về
+- UserRequestDataDto đã có sẵn BranchName property
+- Test script có thể chạy để verify functionality
+- Không có linting errors sau khi sửa
+
 # Scratchpad
 Goal: Thêm validation email trùng lặp vào CreateUserRequestAsync method
 
