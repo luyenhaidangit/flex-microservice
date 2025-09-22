@@ -63,6 +63,7 @@ Close/Finalize
 8. Monitoring & Alerting
 - Kết quả batch được giám sát qua dashboard.
 - Nếu quá SLA hoặc có lỗi → gửi cảnh báo cho Ops/IT và đội nghiệp vụ.
+## Ví dụ luồng
 
 ## Đặc điểm chính
 - **Scheduled**: Cron job, Task Scheduler, Quartz, Hangfire
@@ -83,8 +84,8 @@ Close/Finalize
 - Thanh toán T+2/T+3
 - Tính cổ tức, trái tức
 - Đồng bộ dữ liệu (ERP, CRM, DWH)
-- Sinh báo cáo bán hàng, tồn kho
-- Backup & archive
+- Sinh báo cáo bán hàng, tồn kho.
+- Backup & archive.
 
 ## Quy trình xử lý
 1. **Prepare**: Thu thập, làm sạch dữ liệu
