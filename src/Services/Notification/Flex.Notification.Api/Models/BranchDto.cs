@@ -1,6 +1,6 @@
  
 
-namespace Flex.System.Api.Models
+namespace Flex.Notification.Api.Models
 {
     public class BranchDto
     {

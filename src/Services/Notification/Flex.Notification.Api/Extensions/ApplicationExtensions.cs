@@ -1,8 +1,7 @@
 ﻿using Flex.Infrastructure.Middlewares;
 using Serilog;
-using Flex.System.Api.Grpc;
 
-namespace Flex.System.Api.Extensions
+namespace Flex.Notification.Api.Extensions
 {
     public static class ApplicationExtensions
     {
@@ -27,7 +26,6 @@ namespace Flex.System.Api.Extensions
             app.UseRouting();
 
             // Grpc
-            app.MapGrpcService<BranchGrpcService>();
 
             app.MapControllers();
         }

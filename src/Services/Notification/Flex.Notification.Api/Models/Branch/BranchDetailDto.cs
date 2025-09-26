@@ -1,4 +1,4 @@
-﻿namespace Flex.System.Api.Models.Branch
+﻿namespace Flex.Notification.Api.Models.Branch
 {
     public class BranchDetailDto
     {

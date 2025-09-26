@@ -1,6 +1,6 @@
 using Serilog;
 using Flex.SeriLog;
-using Flex.System.Api.Extensions;
+using Flex.Notification.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;

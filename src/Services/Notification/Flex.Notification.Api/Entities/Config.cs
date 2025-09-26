@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Flex.System.Api.Entities
+namespace Flex.Notification.Api.Entities
 {
     [Table("CONFIGS")]
     public class Config : EntityAuditBase<long>

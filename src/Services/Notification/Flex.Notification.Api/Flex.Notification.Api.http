@@ -1,0 +1,6 @@
+@Flex.Notification.Api_HostAddress = http://localhost:5015
+
+GET {{Flex.Notification.Api_HostAddress}}/health
+Accept: application/json
+
+###

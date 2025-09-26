@@ -1,6 +1,6 @@
 ﻿using Flex.Shared.SeedWork;
 
-namespace Flex.System.Api.Models.Branch
+namespace Flex.Notification.Api.Models.Branch
 {
     public class GetBranchPagingRequest : PagingRequest
     {

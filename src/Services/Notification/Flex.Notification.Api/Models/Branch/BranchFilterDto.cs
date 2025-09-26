@@ -1,4 +1,4 @@
-namespace Flex.System.Api.Models.Branch
+namespace Flex.Notification.Api.Models.Branch
 {
     /// <summary>
     /// DTO đơn giản cho filter dropdown - chỉ chứa thông tin cần thiết (Id, Name)

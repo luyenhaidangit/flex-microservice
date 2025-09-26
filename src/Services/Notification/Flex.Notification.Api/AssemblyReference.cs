@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Flex.System.Api
+namespace Flex.Notification.Api
 {
     public static class AssemblyReference
     {

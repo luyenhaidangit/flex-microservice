@@ -1,4 +1,4 @@
-﻿namespace Flex.System.Api.Extensions
+﻿namespace Flex.Notification.Api.Extensions
 {
     public static class HostExtensions
     {

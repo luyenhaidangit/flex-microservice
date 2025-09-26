@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Flex.System.Api.Persistence
+namespace Flex.Notification.Api.Persistence
 {
     public class SystemDbContext : DbContext
     {
@@ -10,9 +10,6 @@ namespace Flex.System.Api.Persistence
 
         #region DbSet
         public DbSet<Entities.Config> Configs { get; set; }
-        public DbSet<Entities.Branch> Branches { get; set; }
-        public DbSet<Entities.BranchRequest> BranchRequests { get; set; }
-        public DbSet<Entities.Views.BrandRequestView> ProposedBranches { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
