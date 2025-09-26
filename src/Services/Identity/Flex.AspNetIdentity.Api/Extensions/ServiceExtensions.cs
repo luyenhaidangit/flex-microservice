@@ -83,6 +83,8 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            services.AddScoped<IUserNotificationService, UserNotificationService>();
+            services.AddScoped<IPasswordGenerationService, PasswordGenerationService>();
 
             // Integrations
             services.AddScoped<IBranchIntegrationService, BranchGrpcService>();

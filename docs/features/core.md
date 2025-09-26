@@ -1,0 +1,1 @@
+- Khi database thêm mọt bảng thực hiện cấu hình entity của bảng đó tại Persistence/Configurations
