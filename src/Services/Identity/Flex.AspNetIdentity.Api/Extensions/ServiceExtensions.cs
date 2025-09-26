@@ -59,7 +59,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.ConfigureGrpcClients(configuration);
 
             // RabbitMQ
-            services.ConfigureRabbitMQ(configuration);
+            //services.ConfigureRabbitMQ(configuration);
 
             return services;
         }
