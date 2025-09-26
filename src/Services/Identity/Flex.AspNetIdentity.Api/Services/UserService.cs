@@ -924,7 +924,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 AccessFailedCount = 0,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 ConcurrencyStamp = Guid.NewGuid().ToString(),
-                PasswordChangeRequired = true // Mark that password change is required on first login
+                PasswordChangeRequired = true
             };
 
             // ===== Generate random password and hash it =====

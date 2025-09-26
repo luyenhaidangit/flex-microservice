@@ -22,5 +22,6 @@ namespace Flex.AspNetIdentity.Api.Entities
         public string FullName { get; set; } = default!;
         public long BranchId { get; set; }
         public bool IsActive { get; set; }
+        public bool PasswordChangeRequired { get; set; } = true; // New users must change password on first login
     }
 }
