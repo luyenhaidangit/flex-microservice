@@ -14,7 +14,6 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
         Task<PendingRequestDtoBase<UserRequestDataDto>> GetPendingUserRequestByIdAsync(long requestId);
         // Command
         Task<long> CreateUserRequestAsync(CreateUserRequest request);
-        Task<long> CreateUserDirectAsync(CreateUserDirectRequest request);
         Task<long> UpdateUserRequestAsync(UpdateUserRequest request);
         Task<long> DeleteUserRequestAsync(string userName);
         Task<bool> ApprovePendingUserRequestAsync(long requestId);

@@ -86,16 +86,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         /// <summary>
-        /// Create a new user directly (admin only, no approval needed).
-        /// </summary>
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateUserDirect([FromBody] CreateUserDirectRequest dto)
-        {
-            var id = await _userService.CreateUserDirectAsync(dto);
-            return Ok(Result.Success(id, "User created successfully and password sent via email"));
-        }
-
-        /// <summary>
         /// Create update user request.
         /// </summary>
         [HttpPost("request/update")]

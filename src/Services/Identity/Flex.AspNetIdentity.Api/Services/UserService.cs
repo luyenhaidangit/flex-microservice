@@ -322,93 +322,6 @@ namespace Flex.AspNetIdentity.Api.Services
         }
 
         /// <summary>
-        /// Create user directly (admin only, no approval needed).
-        /// </summary>
-        public async Task<long> CreateUserDirectAsync(CreateUserDirectRequest request)
-        {
-            // ===== Validate =====
-            var username = request.UserName.ToLower();
-            var email = request.Email.ToLower();
-
-            // Check if user already exists by username
-            if (await _userRepository.ExistsByUserNameAsync(username))
-            {
-                throw new ValidationException(ErrorCode.UserAlreadyExists);
-            }
-
-            // Check if user already exists by email
-            if (await _userRepository.ExistsByEmailAsync(email))
-            {
-                throw new ValidationException(ErrorCode.EmailAlreadyExists);
-            }
-
-            // ===== Create new user =====
-            var newUser = new User
-            {
-                UserName = request.UserName,
-                NormalizedUserName = request.UserName.ToUpperInvariant(),
-                Email = request.Email,
-                NormalizedEmail = request.Email?.ToUpperInvariant(),
-                FullName = request.FullName,
-                BranchId = request.BranchId,
-                IsActive = request.IsActive,
-                Status = RequestStatusConstant.Authorised,
-                EmailConfirmed = false,
-                PhoneNumberConfirmed = false,
-                TwoFactorEnabled = false,
-                LockoutEnabled = true,
-                AccessFailedCount = 0,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                ConcurrencyStamp = Guid.NewGuid().ToString(),
-                PasswordChangeRequired = true // Mark that password change is required on first login
-            };
-
-            // ===== Generate random password and hash it =====
-            var randomPassword = _passwordGenerationService.GenerateRandomPassword();
-            newUser.PasswordHash = _passwordHasher.HashPassword(newUser, randomPassword);
-
-            // ===== Create user using transaction =====
-            await using var transaction = await _userRepository.BeginTransactionAsync();
-            try
-            {
-                await _userRepository.CreateAsync(newUser);
-                await _userRepository.SaveChangesAsync();
-
-                // ===== Send password notification email =====
-                if (request.SendPasswordEmail)
-                {
-                    try
-                    {
-                        await _userNotificationService.SendPasswordNotificationAsync(
-                            request.Email, 
-                            request.UserName, 
-                            randomPassword, 
-                            request.FullName);
-                        
-                        _logger.LogInformation("Password notification email sent to {Email} for user {UserName}", 
-                            request.Email, request.UserName);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to send password notification email to {Email} for user {UserName}. " +
-                            "User was created successfully but email notification failed.", request.Email, request.UserName);
-                        // Don't throw exception here as user creation was successful
-                    }
-                }
-
-                await transaction.CommitAsync();
-                _logger.LogInformation("User created directly: {UserName} (ID: {UserId})", newUser.UserName, newUser.Id);
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-
-            return newUser.Id;
-        }
-
-        /// <summary>
         /// Create update user request.
         /// </summary>
         public async Task<long> UpdateUserRequestAsync(UpdateUserRequest request)
@@ -613,11 +526,13 @@ namespace Flex.AspNetIdentity.Api.Services
 
             if (request == null)
             {
+                _logger.LogWarning("Attempted to reject non-existent request ID: {RequestId}", requestId);
                 throw new ValidationException(ErrorCode.RequestNotFound);
             }
 
             if (request.Status != RequestStatusConstant.Unauthorised)
             {
+                _logger.LogWarning("Attempted to reject request ID: {RequestId} with status: {Status}", requestId, request.Status);
                 throw new ValidationException(ErrorCode.RequestNotPending);
             }
 
@@ -628,19 +543,34 @@ namespace Flex.AspNetIdentity.Api.Services
             await using var transaction = await _userRequestRepository.BeginTransactionAsync();
             try
             {
-                // Revert status user
-                if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) && request.EntityId > 0)
+                // ===== Handle different request types =====
+                if (request.Action == RequestTypeConstant.Create)
                 {
+                    // For CREATE requests, user doesn't exist yet, so no need to revert anything
+                    _logger.LogInformation("Rejecting CREATE request ID: {RequestId}, UserName: {UserName}, " +
+                        "RejectedBy: {RejectedBy}, Reason: {Reason}", requestId, GetUserNameFromRequestData(request), rejecter, reason);
+                }
+                else if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) && request.EntityId > 0)
+                {
+                    // For UPDATE/DELETE requests, revert user status
                     var user = await _userRepository.FindByCondition(x => x.Id == request.EntityId).FirstOrDefaultAsync();
 
                     if (user != null) 
                     {
                         user.Status = RequestStatusConstant.Authorised;
                         await _userRepository.UpdateAsync(user);
+                        
+                        _logger.LogInformation("Reverted user status to Authorised for UserId: {UserId}, UserName: {UserName} " +
+                            "due to rejected {Action} request ID: {RequestId}", user.Id, user.UserName, request.Action, requestId);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("User not found for EntityId: {EntityId} in rejected request ID: {RequestId}", 
+                            request.EntityId, requestId);
                     }
                 }
 
-                // Reject request
+                // ===== Update request status =====
                 request.Status = RequestStatusConstant.Rejected;
                 request.CheckerId = rejecter;
                 request.ApproveDate = DateTime.UtcNow;
@@ -648,14 +578,20 @@ namespace Flex.AspNetIdentity.Api.Services
 
                 await _userRequestRepository.UpdateAsync(request);
 
-                // Save changes through unit of work
+                // ===== Save changes through unit of work =====
                 await _userRequestRepository.SaveChangesAsync();
 
                 await transaction.CommitAsync();
+
+                // ===== Audit logging =====
+                _logger.LogInformation("User request rejected successfully - RequestId: {RequestId}, Action: {Action}, " +
+                    "MakerId: {MakerId}, RejectedBy: {RejectedBy}, Reason: {Reason}", 
+                    requestId, request.Action, request.MakerId, rejecter, reason);
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to reject user request ID: {RequestId}, RejectedBy: {RejectedBy}", requestId, rejecter);
                 throw new Exception($"Failed to reject user request ID '{requestId}'.");
             }
 
@@ -668,15 +604,17 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         public async Task<bool> ChangePasswordAsync(ChangePasswordRequest request)
         {
-            // ===== Validate request =====
+            // ===== Validate request parameters =====
             if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.CurrentPassword) || 
                 string.IsNullOrEmpty(request.NewPassword) || string.IsNullOrEmpty(request.ConfirmPassword))
             {
+                _logger.LogWarning("Invalid password change request - missing required fields for UserName: {UserName}", request.UserName);
                 throw new ValidationException(ErrorCode.InvalidRequest);
             }
 
             if (request.NewPassword != request.ConfirmPassword)
             {
+                _logger.LogWarning("Password mismatch for user: {UserName}", request.UserName);
                 throw new ValidationException(ErrorCode.PasswordMismatch);
             }
 
@@ -686,6 +624,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
             if (user == null)
             {
+                _logger.LogWarning("User not found for password change: {UserName}", request.UserName);
                 throw new ValidationException(ErrorCode.UserNotFound);
             }
 
@@ -693,14 +632,22 @@ namespace Flex.AspNetIdentity.Api.Services
             var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash!, request.CurrentPassword);
             if (passwordVerificationResult == PasswordVerificationResult.Failed)
             {
+                _logger.LogWarning("Invalid current password for user: {UserName}", request.UserName);
                 throw new ValidationException(ErrorCode.InvalidCurrentPassword);
             }
 
-            // ===== Update password =====
+            // ===== Additional validation: Check if password change is actually required =====
+            if (!user.PasswordChangeRequired)
+            {
+                _logger.LogWarning("Password change not required for user: {UserName} - this might be a security concern", request.UserName);
+                // Note: We still allow the password change, but log it as a warning
+            }
+
+            // ===== Update password with transaction =====
             await using var transaction = await _userRepository.BeginTransactionAsync();
             try
             {
-                // Hash new password
+                // ===== Hash new password =====
                 user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
                 user.PasswordChangeRequired = false; // Clear the password change requirement
                 user.SecurityStamp = Guid.NewGuid().ToString(); // Update security stamp
@@ -710,11 +657,16 @@ namespace Flex.AspNetIdentity.Api.Services
                 await _userRepository.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-                _logger.LogInformation("Password changed successfully for user {UserName}", request.UserName);
+                
+                // ===== Audit logging =====
+                _logger.LogInformation("Password changed successfully for user {UserName} (UserId: {UserId})", 
+                    request.UserName, user.Id);
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to change password for user {UserName} (UserId: {UserId})", 
+                    request.UserName, user.Id);
                 throw new Exception($"Failed to change password for user '{request.UserName}'.");
             }
 
@@ -736,6 +688,41 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             return user.PasswordChangeRequired;
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Extract username from request data for logging purposes
+        /// </summary>
+        private string GetUserNameFromRequestData(UserRequest request)
+        {
+            try
+            {
+                if (request.Action == RequestTypeConstant.Create)
+                {
+                    var dto = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
+                    return dto?.UserName ?? "Unknown";
+                }
+                else if (request.Action == RequestTypeConstant.Update)
+                {
+                    var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
+                    return data?.GetValueOrDefault("UserName")?.ToString() ?? "Unknown";
+                }
+                else if (request.Action == RequestTypeConstant.Delete)
+                {
+                    // For DELETE, we can get username from the user entity
+                    return "Unknown"; // Will be logged separately if needed
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to extract username from request data for request ID: {RequestId}", request.Id);
+            }
+            
+            return "Unknown";
         }
 
         #endregion
@@ -897,21 +884,25 @@ namespace Flex.AspNetIdentity.Api.Services
 
         private async Task<long> ProcessApproveCreateUser(UserRequest request)
         {
-            // ===== Validate =====
+            // ===== Validate request data =====
             if (string.IsNullOrEmpty(request.RequestedData))
             {
-                throw new Exception("Request data is empty for CREATE request.");
+                _logger.LogError("Request data is empty for CREATE request ID: {RequestId}", request.Id);
+                throw new ValidationException(ErrorCode.InvalidRequestData);
             }
 
             var dto = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
             if (dto == null)
             {
-                throw new Exception("Invalid CREATE request data format.");
+                _logger.LogError("Invalid CREATE request data format for request ID: {RequestId}", request.Id);
+                throw new ValidationException(ErrorCode.InvalidRequestData);
             }
 
+            // ===== Validate user data =====
             var isValid = await ValidateCreateUserRequestAsync(dto, request.Id);
             if (!isValid)
             {
+                _logger.LogError("Validation failed for CREATE request ID: {RequestId}, UserName: {UserName}", request.Id, dto.UserName);
                 throw new ValidationException(ErrorCode.InvalidRequest);
             }
 
@@ -952,15 +943,20 @@ namespace Flex.AspNetIdentity.Api.Services
                     randomPassword, 
                     dto.FullName);
                 
-                _logger.LogInformation("Password notification email sent to {Email} for user {UserName}", 
-                    dto.Email, dto.UserName);
+                _logger.LogInformation("Password notification email sent to {Email} for user {UserName} (Request ID: {RequestId})", 
+                    dto.Email, dto.UserName, request.Id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send password notification email to {Email} for user {UserName}. " +
-                    "User was created successfully but email notification failed.", dto.Email, dto.UserName);
+                _logger.LogError(ex, "Failed to send password notification email to {Email} for user {UserName} (Request ID: {RequestId}). " +
+                    "User was created successfully but email notification failed.", dto.Email, dto.UserName, request.Id);
                 // Don't throw exception here as user creation was successful
             }
+
+            // ===== Audit logging =====
+            _logger.LogInformation("User created successfully via approval process - UserName: {UserName}, UserId: {UserId}, " +
+                "RequestId: {RequestId}, ApprovedBy: {ApprovedBy}, MakerId: {MakerId}", 
+                newUser.UserName, newUser.Id, request.Id, request.CheckerId, request.MakerId);
 
             return newUser.Id;
         }

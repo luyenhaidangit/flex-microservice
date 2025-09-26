@@ -50,5 +50,6 @@ namespace Flex.Shared.Constants
         public const string PasswordMismatch = "PASSWORD_MISMATCH";
         public const string InvalidCurrentPassword = "INVALID_CURRENT_PASSWORD";
         public const string WeakPassword = "WEAK_PASSWORD";
+        public const string PasswordChangeRequired = "PASSWORD_CHANGE_REQUIRED";
     }
 }

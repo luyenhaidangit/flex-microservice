@@ -1,4 +1,5 @@
 ﻿using Flex.Infrastructure.Middlewares;
+using Flex.AspNetIdentity.Api.Middlewares;
 using Serilog;
 
 namespace Flex.AspNetIdentity.Api.Extensions
@@ -23,6 +24,9 @@ namespace Flex.AspNetIdentity.Api.Extensions
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // Password change required middleware - must be after authentication
+            app.UsePasswordChangeRequired();
 
             app.MapControllers();
         }
