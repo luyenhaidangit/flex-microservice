@@ -315,7 +315,33 @@ Implementation details:
 - Không có linting errors sau khi sửa
 
 # Scratchpad
-Goal: Thêm validation email trùng lặp vào CreateUserRequestAsync method
+Goal: Cấu hình User entity và UserConfiguration cho cột PASSWORD_CHANGE_REQUIRED theo migration V1.5
+
+[X] Kiểm tra migration V1.5: Thêm cột PASSWORD_CHANGE_REQUIRED CHAR(1) DEFAULT 'N' NOT NULL
+[X] Kiểm tra User entity: Đã có property PasswordChangeRequired bool = false
+[X] Kiểm tra UserConfiguration: Đã có mapping đầy đủ với CHAR(1), BoolToStringYNConverter, default false
+[X] Cải thiện UserConfiguration: Thêm comment rõ ràng cho property và index
+[X] Tạo migration V1.6: Thêm index IX_USERS_PASSWORD_CHANGE_REQUIRED cho performance
+[X] Kiểm tra linting: Không có lỗi
+
+## Cấu hình hoàn chỉnh:
+
+### 1. Migration V1.5 ✅
+- Thêm cột PASSWORD_CHANGE_REQUIRED CHAR(1) DEFAULT 'N' NOT NULL
+
+### 2. Migration V1.6 ✅  
+- Thêm index IX_USERS_PASSWORD_CHANGE_REQUIRED cho performance
+
+### 3. User Entity ✅
+- Property PasswordChangeRequired bool = false
+
+### 4. UserConfiguration ✅
+- Mapping đầy đủ với CHAR(1), BoolToStringYNConverter, default false
+- Index với comment rõ ràng
+- Comment giải thích mục đích sử dụng
+
+## Kết luận:
+Cấu hình đã tuân thủ hoàn toàn quy tắc core.md và sẵn sàng sử dụng.
 
 [X] Phân tích yêu cầu: Thêm kiểm tra email trùng lặp trong CreateUserRequestAsync
 [X] Kiểm tra cấu trúc hiện tại: CreateUserRequest có Email property

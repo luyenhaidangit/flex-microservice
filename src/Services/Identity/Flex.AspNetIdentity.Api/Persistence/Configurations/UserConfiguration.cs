@@ -83,6 +83,14 @@ namespace Flex.AspNetIdentity.Api.Persistence.Configurations
                    .HasMaxLength(1)
                    .HasDefaultValue(true);
 
+            // Password change required flag - tracks users who need to change password on first login
+            builder.Property(u => u.PasswordChangeRequired)
+                   .HasColumnName("PASSWORD_CHANGE_REQUIRED")
+                   .HasColumnType("CHAR(1)")
+                   .HasConversion(new BoolToStringYNConverter())
+                   .HasMaxLength(1)
+                   .HasDefaultValue(false);
+
             // Indexes (the same convention as Role)
             builder.HasIndex(u => u.NormalizedUserName)
                    .HasDatabaseName("UX_USERS_NORMALIZED_USER_NAME")
