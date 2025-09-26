@@ -1,0 +1,1 @@
+- Khi tạo người quản trị tạo user hệ thống, cần nhập thông tin email người dùng, sau đó hệ thống sinh mật khẩu ngẫu nhiên và gửi cho user. Sau đó người dùng bắt buộc đổi khi đăng nhập lần đầu.
