@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+    <Folder Include="Services\Interfaces\" />
+    <Folder Include="Validators\" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Contracts\Flex.Contracts.csproj" />
+	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.EventBus.Messages\Flex.EventBus.Messages.csproj" />
+	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.EntityFrameworkCore.Oracle\Flex.Infrastructure.EntityFrameworkCore.Oracle.csproj" />
+	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.Json\Flex.Infrastructure.Json.csproj" />
+	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
+	  <ProjectReference Include="..\..\..\Modules\Flex.Redis\Flex.Infrastructure.Redis.csproj" />
+  </ItemGroup>
+
+</Project>
