@@ -76,13 +76,23 @@ namespace Flex.AspNetIdentity.Api.Controllers
         #region Command
 
         /// <summary>
-        /// Create a new user request.
+        /// Create a new user request (requires approval).
         /// </summary>
         [HttpPost("request/create")]
         public async Task<IActionResult> CreateUserRequest([FromBody] CreateUserRequest dto)
         {
             var id = await _userService.CreateUserRequestAsync(dto);
             return Ok(Result.Success(id));
+        }
+
+        /// <summary>
+        /// Create a new user directly (admin only, no approval needed).
+        /// </summary>
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateUserDirect([FromBody] CreateUserDirectRequest dto)
+        {
+            var id = await _userService.CreateUserDirectAsync(dto);
+            return Ok(Result.Success(id, "User created successfully and password sent via email"));
         }
 
         /// <summary>
@@ -122,6 +132,26 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> RejectPendingUserRequest(long requestId, [FromBody] RejectRequest request)
         {
             var result = await _userService.RejectPendingUserRequestAsync(requestId, request.Reason);
+            return Ok(Result.Success(result));
+        }
+
+        /// <summary>
+        /// Change user password (required on first login).
+        /// </summary>
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var result = await _userService.ChangePasswordAsync(request);
+            return Ok(Result.Success(result, "Password changed successfully"));
+        }
+
+        /// <summary>
+        /// Check if user needs to change password on first login.
+        /// </summary>
+        [HttpGet("{userName}/password-change-required")]
+        public async Task<IActionResult> CheckPasswordChangeRequired(string userName)
+        {
+            var result = await _userService.CheckPasswordChangeRequiredAsync(userName);
             return Ok(Result.Success(result));
         }
 

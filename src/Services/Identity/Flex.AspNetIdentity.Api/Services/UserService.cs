@@ -26,6 +26,8 @@ namespace Flex.AspNetIdentity.Api.Services
         private readonly ICurrentUserService _userService;
         private readonly IBranchIntegrationService _branchIntegrationService;
         private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IPasswordGenerationService _passwordGenerationService;
+        private readonly IUserNotificationService _userNotificationService;
 
         public UserService(
             ILogger<UserService> logger,
@@ -34,7 +36,9 @@ namespace Flex.AspNetIdentity.Api.Services
             IUserRepository userRepository,
             IUserRequestRepository userRequestRepository,
             IBranchIntegrationService branchIntegrationService,
-            IPasswordHasher<User> passwordHasher)
+            IPasswordHasher<User> passwordHasher,
+            IPasswordGenerationService passwordGenerationService,
+            IUserNotificationService userNotificationService)
         {
             _logger = logger;
             _dbContext = dbContext;
@@ -43,6 +47,8 @@ namespace Flex.AspNetIdentity.Api.Services
             _userRequestRepository = userRequestRepository;
             _branchIntegrationService = branchIntegrationService;
             _passwordHasher = passwordHasher;
+            _passwordGenerationService = passwordGenerationService;
+            _userNotificationService = userNotificationService;
         }
 
         #region Query
@@ -286,7 +292,7 @@ namespace Flex.AspNetIdentity.Api.Services
         #region Command
 
         /// <summary>
-        /// Create user immediately.
+        /// Create user request (requires approval).
         /// </summary>
         public async Task<long> CreateUserRequestAsync(CreateUserRequest request)
         {
@@ -313,6 +319,93 @@ namespace Flex.AspNetIdentity.Api.Services
             await _userRequestRepository.CreateAsync(requestDto);
 
             return requestDto.Id;
+        }
+
+        /// <summary>
+        /// Create user directly (admin only, no approval needed).
+        /// </summary>
+        public async Task<long> CreateUserDirectAsync(CreateUserDirectRequest request)
+        {
+            // ===== Validate =====
+            var username = request.UserName.ToLower();
+            var email = request.Email.ToLower();
+
+            // Check if user already exists by username
+            if (await _userRepository.ExistsByUserNameAsync(username))
+            {
+                throw new ValidationException(ErrorCode.UserAlreadyExists);
+            }
+
+            // Check if user already exists by email
+            if (await _userRepository.ExistsByEmailAsync(email))
+            {
+                throw new ValidationException(ErrorCode.EmailAlreadyExists);
+            }
+
+            // ===== Create new user =====
+            var newUser = new User
+            {
+                UserName = request.UserName,
+                NormalizedUserName = request.UserName.ToUpperInvariant(),
+                Email = request.Email,
+                NormalizedEmail = request.Email?.ToUpperInvariant(),
+                FullName = request.FullName,
+                BranchId = request.BranchId,
+                IsActive = request.IsActive,
+                Status = RequestStatusConstant.Authorised,
+                EmailConfirmed = false,
+                PhoneNumberConfirmed = false,
+                TwoFactorEnabled = false,
+                LockoutEnabled = true,
+                AccessFailedCount = 0,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                ConcurrencyStamp = Guid.NewGuid().ToString(),
+                PasswordChangeRequired = true // Mark that password change is required on first login
+            };
+
+            // ===== Generate random password and hash it =====
+            var randomPassword = _passwordGenerationService.GenerateRandomPassword();
+            newUser.PasswordHash = _passwordHasher.HashPassword(newUser, randomPassword);
+
+            // ===== Create user using transaction =====
+            await using var transaction = await _userRepository.BeginTransactionAsync();
+            try
+            {
+                await _userRepository.CreateAsync(newUser);
+                await _userRepository.SaveChangesAsync();
+
+                // ===== Send password notification email =====
+                if (request.SendPasswordEmail)
+                {
+                    try
+                    {
+                        await _userNotificationService.SendPasswordNotificationAsync(
+                            request.Email, 
+                            request.UserName, 
+                            randomPassword, 
+                            request.FullName);
+                        
+                        _logger.LogInformation("Password notification email sent to {Email} for user {UserName}", 
+                            request.Email, request.UserName);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to send password notification email to {Email} for user {UserName}. " +
+                            "User was created successfully but email notification failed.", request.Email, request.UserName);
+                        // Don't throw exception here as user creation was successful
+                    }
+                }
+
+                await transaction.CommitAsync();
+                _logger.LogInformation("User created directly: {UserName} (ID: {UserId})", newUser.UserName, newUser.Id);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+
+            return newUser.Id;
         }
 
         /// <summary>
@@ -570,6 +663,81 @@ namespace Flex.AspNetIdentity.Api.Services
             return true;
         }
 
+        /// <summary>
+        /// Change user password (required on first login).
+        /// </summary>
+        public async Task<bool> ChangePasswordAsync(ChangePasswordRequest request)
+        {
+            // ===== Validate request =====
+            if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.CurrentPassword) || 
+                string.IsNullOrEmpty(request.NewPassword) || string.IsNullOrEmpty(request.ConfirmPassword))
+            {
+                throw new ValidationException(ErrorCode.InvalidRequest);
+            }
+
+            if (request.NewPassword != request.ConfirmPassword)
+            {
+                throw new ValidationException(ErrorCode.PasswordMismatch);
+            }
+
+            // ===== Find user =====
+            var user = await _userRepository.FindByCondition(u => u.UserName == request.UserName)
+                                            .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                throw new ValidationException(ErrorCode.UserNotFound);
+            }
+
+            // ===== Verify current password =====
+            var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash!, request.CurrentPassword);
+            if (passwordVerificationResult == PasswordVerificationResult.Failed)
+            {
+                throw new ValidationException(ErrorCode.InvalidCurrentPassword);
+            }
+
+            // ===== Update password =====
+            await using var transaction = await _userRepository.BeginTransactionAsync();
+            try
+            {
+                // Hash new password
+                user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
+                user.PasswordChangeRequired = false; // Clear the password change requirement
+                user.SecurityStamp = Guid.NewGuid().ToString(); // Update security stamp
+                user.ConcurrencyStamp = Guid.NewGuid().ToString(); // Update concurrency stamp
+
+                await _userRepository.UpdateAsync(user);
+                await _userRepository.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                _logger.LogInformation("Password changed successfully for user {UserName}", request.UserName);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Failed to change password for user '{request.UserName}'.");
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Check if user needs to change password on first login.
+        /// </summary>
+        public async Task<bool> CheckPasswordChangeRequiredAsync(string userName)
+        {
+            var user = await _userRepository.FindByCondition(u => u.UserName == userName)
+                                            .AsNoTracking()
+                                            .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                throw new ValidationException(ErrorCode.UserNotFound);
+            }
+
+            return user.PasswordChangeRequired;
+        }
+
         #endregion
 
         #region Process Functions
@@ -764,15 +932,35 @@ namespace Flex.AspNetIdentity.Api.Services
                 LockoutEnabled = true,
                 AccessFailedCount = 0,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                ConcurrencyStamp = Guid.NewGuid().ToString()
+                ConcurrencyStamp = Guid.NewGuid().ToString(),
+                PasswordChangeRequired = true // Mark that password change is required on first login
             };
 
-            // ===== Hash password and create user =====
-            var tempPassword = "TempPassword123!";
-            newUser.PasswordHash = _passwordHasher.HashPassword(newUser, tempPassword);
+            // ===== Generate random password and hash it =====
+            var randomPassword = _passwordGenerationService.GenerateRandomPassword();
+            newUser.PasswordHash = _passwordHasher.HashPassword(newUser, randomPassword);
 
             // ===== Create user using repository (no transaction - handled by caller) =====
             await _userRepository.CreateAsync(newUser);
+
+            // ===== Send password notification email =====
+            try
+            {
+                await _userNotificationService.SendPasswordNotificationAsync(
+                    dto.Email, 
+                    dto.UserName, 
+                    randomPassword, 
+                    dto.FullName);
+                
+                _logger.LogInformation("Password notification email sent to {Email} for user {UserName}", 
+                    dto.Email, dto.UserName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send password notification email to {Email} for user {UserName}. " +
+                    "User was created successfully but email notification failed.", dto.Email, dto.UserName);
+                // Don't throw exception here as user creation was successful
+            }
 
             return newUser.Id;
         }
