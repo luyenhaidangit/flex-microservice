@@ -107,8 +107,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Infrastructure.Grpc", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Infrastructure.Grpc.Client", "src\BuildingBlocks\Flex.Infrastructure.Grpc.Client\Flex.Infrastructure.Grpc.Client.csproj", "{95B98A22-409D-45FA-95F2-A6BA9FF008CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.EmailJob.Api", "src\Services\ScheduledJob\Flex.EmailJob.Api\Flex.EmailJob.Api.csproj", "{FAD626A3-84F8-4E5A-95D3-269AADD480D5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -243,10 +241,6 @@ Global
 		{95B98A22-409D-45FA-95F2-A6BA9FF008CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95B98A22-409D-45FA-95F2-A6BA9FF008CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95B98A22-409D-45FA-95F2-A6BA9FF008CA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FAD626A3-84F8-4E5A-95D3-269AADD480D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FAD626A3-84F8-4E5A-95D3-269AADD480D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FAD626A3-84F8-4E5A-95D3-269AADD480D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FAD626A3-84F8-4E5A-95D3-269AADD480D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -298,7 +292,6 @@ Global
 		{67A60FCF-6DFF-4EB7-80D2-14F4C1F70522} = {6930348E-6306-444F-9C44-7D59D69428DD}
 		{37D017F6-F6C9-406F-9CCD-B6190073E6E9} = {6930348E-6306-444F-9C44-7D59D69428DD}
 		{95B98A22-409D-45FA-95F2-A6BA9FF008CA} = {6930348E-6306-444F-9C44-7D59D69428DD}
-		{FAD626A3-84F8-4E5A-95D3-269AADD480D5} = {0B2FF970-E38E-4677-8564-4C67979E82EC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}
