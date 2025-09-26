@@ -46,7 +46,7 @@ namespace Flex.System.Api.Extensions
             services.AddGrpc();
 
             // RabbitMQ
-            //services.ConfigureRabbitMQ(configuration);
+            services.ConfigureRabbitMQ(configuration);
 
             return services;
         }
