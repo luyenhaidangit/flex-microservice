@@ -57,5 +57,3 @@ namespace Flex.Infrastructure.EntityFrameworkCore.Configurations
         }
     }
 }
-
-
