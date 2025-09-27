@@ -315,6 +315,27 @@ Implementation details:
 - Không có linting errors sau khi sửa
 
 # Scratchpad
+Goal: Tạo NotificationTemplateController để test lấy data NotificationTemplate
+
+[X] Phân tích cấu trúc hiện tại: NotificationTemplate entity và NotificationDbContext
+[X] Tạo NotificationTemplateController với các endpoints:
+  - GET /api/NotificationTemplate: Lấy tất cả templates
+  - GET /api/NotificationTemplate/{id}: Lấy template theo ID
+  - GET /api/NotificationTemplate/channel/{channel}: Lấy templates theo channel
+  - GET /api/NotificationTemplate/active: Lấy templates đang active
+[X] Tạo test script Python để verify API endpoints
+[X] Tạo documentation cho controller
+[X] Kiểm tra linting và không có lỗi
+
+Implementation details:
+- Controller sử dụng NotificationDbContext trực tiếp
+- Tất cả endpoints trả về Result<T> wrapper theo pattern chuẩn
+- Error handling đầy đủ với try-catch
+- Swagger documentation với XML comments
+- Test script có thể chạy để verify functionality
+- Không có compilation errors
+
+# Scratchpad
 Goal: Cấu hình User entity và UserConfiguration cho cột PASSWORD_CHANGE_REQUIRED theo migration V1.5
 
 [X] Kiểm tra migration V1.5: Thêm cột PASSWORD_CHANGE_REQUIRED CHAR(1) DEFAULT 'N' NOT NULL

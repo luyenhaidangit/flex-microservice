@@ -1,10 +1,9 @@
-﻿using Flex.Shared.SeedWork.Workflow.Constants;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
 namespace Flex.Shared.SeedWork.Workflow
 {
-    public abstract class RequestBase<TId> : ApprovalEntityBase<TId>
+    public class RequestBase<TId> : ApprovalEntityBase<TId>
     {
         [Column("ENTITY_ID")]
         public TId EntityId { get; set; } = default!;

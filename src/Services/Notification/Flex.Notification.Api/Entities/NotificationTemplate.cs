@@ -1,9 +1,9 @@
 ﻿using Flex.Shared.Constants.Notifications;
-using Flex.Shared.SeedWork;
+using Flex.Shared.SeedWork.Workflow;
 
 namespace Flex.Notification.Api.Entities
 {
-    public class NotificationTemplate : EntityKey<Guid>
+    public class NotificationTemplate : ApprovalEntityBase<Guid>
     {
         public string TemplateKey { get; set; } = default!;
         public string Name { get; set; } = default!;
