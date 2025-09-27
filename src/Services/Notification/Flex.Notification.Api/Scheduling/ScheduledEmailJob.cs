@@ -6,12 +6,12 @@ using Quartz;
 
 namespace Flex.Notification.Api.Scheduling
 {
-    public class NotificationScheduler : IJob
+    public class ScheduledEmailJob : IJob
     {
         private readonly INotificationService _email;
         private readonly NotificationDbContext _db;
 
-        public ScheduledEmailJob(IEnumerable<INotificationChannel> channels, NotificationDbContext db)
+        public ScheduledEmailJob(IEnumerable<INotificationService> channels, NotificationDbContext db)
         { _email = channels.First(c => c.ChannelName == "email"); _db = db; }
 
         public async Task Execute(Quartz.IJobExecutionContext context)
