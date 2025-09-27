@@ -111,6 +111,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Notification.Api", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Contracts.Events", "src\BuildingBlocks\Flex.Contracts.Events\Flex.Contracts.Events.csproj", "{C95F4C4A-F4FE-48A2-ABAC-3C3AFBB8E9DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Generators", "src\BuildingBlocks\Flex.Generators\Flex.Generators.csproj", "{15F566C3-966F-420E-9976-070DD5A17DE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -253,6 +255,10 @@ Global
 		{C95F4C4A-F4FE-48A2-ABAC-3C3AFBB8E9DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C95F4C4A-F4FE-48A2-ABAC-3C3AFBB8E9DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C95F4C4A-F4FE-48A2-ABAC-3C3AFBB8E9DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15F566C3-966F-420E-9976-070DD5A17DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F566C3-966F-420E-9976-070DD5A17DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15F566C3-966F-420E-9976-070DD5A17DE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15F566C3-966F-420E-9976-070DD5A17DE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -306,6 +312,7 @@ Global
 		{96192373-9842-451A-B48A-2A60911BCA7A} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
 		{3CDB879F-1C65-494B-B890-CC61A5C5A653} = {96192373-9842-451A-B48A-2A60911BCA7A}
 		{C95F4C4A-F4FE-48A2-ABAC-3C3AFBB8E9DB} = {6930348E-6306-444F-9C44-7D59D69428DD}
+		{15F566C3-966F-420E-9976-070DD5A17DE6} = {6930348E-6306-444F-9C44-7D59D69428DD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}

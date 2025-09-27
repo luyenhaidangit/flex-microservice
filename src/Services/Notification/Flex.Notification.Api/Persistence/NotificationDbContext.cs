@@ -1,6 +1,5 @@
 ﻿using Flex.Infrastructure.EntityFrameworkCore;
 using Flex.Notification.Api.Entities;
-using Flex.Shared.SeedWork.Workflow;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Notification.Api.Persistence

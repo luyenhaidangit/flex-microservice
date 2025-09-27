@@ -25,10 +25,15 @@
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Contracts.Events\Flex.Contracts.Events.csproj" />
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Contracts\Flex.Contracts.csproj" />
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.EventBus.Messages\Flex.EventBus.Messages.csproj" />
+	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Generators\Flex.Generators.csproj" />
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.EntityFrameworkCore.Oracle\Flex.Infrastructure.EntityFrameworkCore.Oracle.csproj" />
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.Json\Flex.Infrastructure.Json.csproj" />
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
 	  <ProjectReference Include="..\..\..\Modules\Flex.Redis\Flex.Infrastructure.Redis.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\BuildingBlocks\Flex.Generators\Flex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
 
 </Project>
