@@ -7,18 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.13.0" />
+    <PackageReference Include="MassTransit" Version="8.5.3" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+    <PackageReference Include="MimeKit" Version="4.13.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Controllers\" />
     <Folder Include="Persistence\Configurations\" />
     <Folder Include="Repositories\" />
-    <Folder Include="Services\Interfaces\" />
     <Folder Include="Validators\" />
   </ItemGroup>
 
   <ItemGroup>
+	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Contracts.Events\Flex.Contracts.Events.csproj" />
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Contracts\Flex.Contracts.csproj" />
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.EventBus.Messages\Flex.EventBus.Messages.csproj" />
 	  <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.EntityFrameworkCore.Oracle\Flex.Infrastructure.EntityFrameworkCore.Oracle.csproj" />

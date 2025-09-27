@@ -33,7 +33,7 @@ namespace Flex.Notification.Api.Extensions
             services.AddInfrastructureServices();
 
             // Database
-            services.ConfigureServiceDbContext<SystemDbContext>(configuration, useWallet: true);
+            services.ConfigureServiceDbContext<NotificationDbContext>(configuration, useWallet: true);
             services.ConfigureStackExchangeRedisCache(configuration);
 
             // Grpc
