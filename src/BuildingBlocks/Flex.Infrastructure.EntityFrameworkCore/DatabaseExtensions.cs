@@ -54,5 +54,20 @@ namespace Flex.Infrastructure.EntityFrameworkCore
                 });
             }
         }
+
+        public static IQueryable<object> GetRequest<TEntity>(this DbSet<TEntity> dbSet, DbContext context) where TEntity : class
+        {
+            var entityType = typeof(TEntity);
+            var requestTypeName = entityType.FullName!.Replace(entityType.Name, entityType.Name + "Request");
+
+            var requestType = entityType.Assembly.GetType(requestTypeName);
+            if (requestType == null)
+                throw new InvalidOperationException($"Không tìm thấy request type: {requestTypeName}");
+
+            var method = typeof(DbContext).GetMethod("Set", Type.EmptyTypes)!.MakeGenericMethod(requestType);
+            var requestDbSet = method.Invoke(context, null) as IQueryable<object>;
+
+            return requestDbSet!;
+        }
     }
 }

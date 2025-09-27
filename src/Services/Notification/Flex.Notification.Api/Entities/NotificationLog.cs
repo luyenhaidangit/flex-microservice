@@ -6,7 +6,7 @@
         public string Channel { get; set; } = default!;
         public string Recipient { get; set; } = default!;
         public string TemplateKey { get; set; } = default!;
-        public string Status { get; set; } = "Pending"; // Pending|Sent|Failed|Scheduled
+        public string Status { get; set; } = "Pending";
         public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
         public DateTime? SentAtUtc { get; set; }
         public int RetryCount { get; set; }
