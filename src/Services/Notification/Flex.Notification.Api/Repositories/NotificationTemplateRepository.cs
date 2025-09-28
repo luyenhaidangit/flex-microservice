@@ -5,7 +5,6 @@ using Flex.Infrastructure.EntityFrameworkCore;
 using Flex.Notification.Api.Entities;
 using Flex.Notification.Api.Persistence;
 using Flex.Shared.SeedWork.Workflow;
-using Google.Api;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.AspNetIdentity.Api.Repositories
@@ -19,7 +18,7 @@ namespace Flex.AspNetIdentity.Api.Repositories
 			_context = context;
 		}
 
-        public DbSet<RequestBase<Guid>> Test(string email, CancellationToken ct = default)
+        public DbSet<RequestBase<Guid>> NotificationTemplateRequests()
         {
             return _context.GetRequests<NotificationTemplate, Guid>();
         }
