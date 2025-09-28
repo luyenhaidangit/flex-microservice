@@ -1,15 +1,20 @@
-﻿using Flex.Notification.Api.Services.Interfaces;
+﻿using Flex.AspNetIdentity.Api.Repositories.Interfaces;
+using Flex.Infrastructure.EF;
+using Flex.Notification.Api.Models.NotificationTemplate;
+using Flex.Notification.Api.Services.Interfaces;
 using Flex.Shared.Constants;
+using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow;
 using Flex.Shared.SeedWork.Workflow.Constants;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Notification.Api.Services
 {
     public class NotificationTemplateService : INotificationTemplateService
     {
         private readonly ILogger<NotificationTemplateService> _logger;
-        //private readonly IUserRepository _userRepository;
+        private readonly INotificationTemplateRepository _notificationTemplateRepository;
         //private readonly IUserRequestRepository _userRequestRepository;
         //private readonly ICurrentUserService _userService;
         //private readonly IBranchIntegrationService _branchIntegrationService;
@@ -18,10 +23,10 @@ namespace Flex.Notification.Api.Services
         //private readonly IUserNotificationService _userNotificationService;
 
         public NotificationTemplateService(
-            ILogger<NotificationTemplateService> logger
+            ILogger<NotificationTemplateService> logger,
+            INotificationTemplateRepository notificationTemplateRepository
             //IdentityDbContext dbContext,
             //ICurrentUserService userService,
-            //IUserRepository userRepository,
             //IUserRequestRepository userRequestRepository,
             //IBranchIntegrationService branchIntegrationService,
             //IPasswordHasher<User> passwordHasher,
@@ -30,6 +35,7 @@ namespace Flex.Notification.Api.Services
             )
         {
             _logger = logger;
+            _notificationTemplateRepository = notificationTemplateRepository;
             //_dbContext = dbContext;
             //_userService = userService;
             //_userRepository = userRepository;
@@ -42,55 +48,61 @@ namespace Flex.Notification.Api.Services
 
         //#region Query
 
-        ///// <summary>
-        ///// Get all approved users with pagination.
-        ///// </summary>
-        //public async Task<PagedResult<UserPagingDto>> GetUsersPagedAsync(GetUsersPagingRequest request, CancellationToken ct)
-        //{
-        //    // ===== Process request parameters =====
-        //    var keyword = request.Keyword?.Trim().ToLower();
-        //    int pageIndex = request.PageIndexValue;
-        //    int pageSize = request.PageSizeValue;
+        /// <summary>
+        /// Get all approved notification templates with pagination.
+        /// </summary>
+        public async Task<PagedResult<NotificationTemplatePagingDto>> GetNotificationTemplatesPagedAsync(GetNotificationTemplatesPagingRequest request, CancellationToken ct)
+        {
+            // ===== Process request parameters =====
+            var keyword = request.Keyword?.Trim().ToLower();
+            int pageIndex = request.PageIndexValue;
+            int pageSize = request.PageSizeValue;
 
-        //    // ===== Build query =====
-        //    var query = _userRepository.FindAll().AsNoTracking()
-        //        .WhereIf(!string.IsNullOrEmpty(keyword),
-        //            u => EF.Functions.Like((u.UserName ?? string.Empty).ToLower(), $"%{keyword}%")
-        //              || EF.Functions.Like((u.Email ?? string.Empty).ToLower(), $"%{keyword}%")
-        //              || EF.Functions.Like((u.FullName ?? string.Empty).ToLower(), $"%{keyword}%"))
-        //        .WhereIf(request.BranchId.HasValue, u => u.BranchId == request.BranchId!.Value);
+            // ===== Build query =====
+            var query = _notificationTemplateRepository.FindAll().AsNoTracking()
+                .WhereIf(!string.IsNullOrEmpty(keyword),
+                    t => EF.Functions.Like((t.TemplateKey ?? string.Empty).ToLower(), $"%{keyword}%")
+                      || EF.Functions.Like((t.Name ?? string.Empty).ToLower(), $"%{keyword}%")
+                      || EF.Functions.Like((t.Subject ?? string.Empty).ToLower(), $"%{keyword}%"));
 
-        //    // ===== Execute query =====
-        //    var total = await query.CountAsync(ct);
-        //    var raw = await query
-        //        .OrderBy(u => u.Id)
-        //        .Skip((pageIndex - 1) * pageSize)
-        //        .Take(pageSize)
-        //        .Select(u => new { u.UserName, u.FullName, u.Email, u.PhoneNumber, u.BranchId, u.LockoutEnd, u.IsActive })
-        //        .ToListAsync(ct);
+            // ===== Execute query =====
+            var total = await query.CountAsync(ct);
+            var raw = await query
+                .OrderBy(t => t.Id)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(t => new { 
+                    t.TemplateKey, 
+                    t.Name, 
+                    t.Channel, 
+                    t.Format, 
+                    t.Language, 
+                    t.Subject, 
+                    t.BodyHtml, 
+                    t.BodyText, 
+                    t.IsActive, 
+                    t.VariablesSpecJson 
+                })
+                .ToListAsync(ct);
 
-        //    // ===== Get branch information =====
-        //    var branchIds = raw.Where(u => u.BranchId > 0).Select(u => u.BranchId).Distinct().ToList();
-        //    var branches = new Dictionary<long, string>();
-        //    if (branchIds.Any())
-        //    {
-        //        var branchDtos = await _branchIntegrationService.BatchGetBranchesAsync(branchIds, ct);
-        //        branches = branchDtos.ToDictionary(b => b.Id, b => b.Name);
-        //    }
+            // ===== Build result =====
+            var items = raw.Select(t => new NotificationTemplatePagingDto
+            {
+                TemplateKey = t.TemplateKey,
+                Name = t.Name,
+                Channel = t.Channel,
+                Format = t.Format,
+                Language = t.Language,
+                Subject = t.Subject,
+                BodyHtml = t.BodyHtml,
+                BodyText = t.BodyText,
+                IsActive = t.IsActive,
+                VariablesSpecJson = t.VariablesSpecJson
+            }).ToList();
 
-        //    // ===== Build result =====
-        //    var items = raw.Select(u => new UserPagingDto
-        //    {
-        //        UserName = u.UserName ?? string.Empty,
-        //        FullName = u.FullName,
-        //        Email = u.Email ?? "",
-        //        BranchName = branches.TryGetValue(u.BranchId, out var branchName) ? branchName : "",
-        //        IsActive = u.IsActive,
-        //    }).ToList();
-
-        //    // ===== Return result =====
-        //    return PagedResult<UserPagingDto>.Create(pageIndex, pageSize, total, items);
-        //}
+            // ===== Return result =====
+            return PagedResult<NotificationTemplatePagingDto>.Create(pageIndex, pageSize, total, items);
+        }
 
         ///// <summary>
         ///// Get approved user by username.
