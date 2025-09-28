@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Flex.Shared.SeedWork.Workflow
 {
-    public class RequestBase<TId> : ApprovalEntityBase<TId>
+    public class RequestBase<TId> : ApprovalEntityBase<long>
     {
         [Column("ENTITY_ID")]
         public TId EntityId { get; set; } = default!;

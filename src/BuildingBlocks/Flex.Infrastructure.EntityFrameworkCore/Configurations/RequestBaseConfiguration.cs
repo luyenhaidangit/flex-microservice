@@ -12,18 +12,12 @@ namespace Flex.Infrastructure.EntityFrameworkCore.Configurations
         {
             // ===== ID =====
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id)
+                   .HasColumnName("ID")
+                   .HasColumnType("NUMBER(19)");
 
             if (typeof(TKey) == typeof(Guid))
             {
-                builder.Property(x => x.Id)
-                       .HasColumnName("ID")
-                       .HasConversion(
-                           v => ((Guid)(object)v).ToByteArray(),  // Guid -> byte[]
-                           v => (TKey)(object)new Guid(v)         // byte[] -> Guid
-                       )
-                       .HasColumnType("RAW(16)")
-                       .IsRequired();
-
                 builder.Property(x => x.EntityId)
                        .HasColumnName("ENTITY_ID")
                        .HasConversion(
@@ -35,11 +29,6 @@ namespace Flex.Infrastructure.EntityFrameworkCore.Configurations
             }
             else
             {
-                builder.Property(x => x.Id)
-                       .HasColumnName("ID")
-                       .HasColumnType("NUMBER(19)")
-                       .IsRequired();
-
                 builder.Property(x => x.EntityId)
                        .HasColumnName("ENTITY_ID")
                        .HasColumnType("NUMBER(19)")

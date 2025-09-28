@@ -1,8 +1,9 @@
+using Flex.Infrastructure.EntityFrameworkCore;
+using Flex.Notification.Api.Entities;
+using Flex.Notification.Api.Persistence;
+using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Flex.Notification.Api.Persistence;
-using Flex.Notification.Api.Entities;
-using Flex.Shared.SeedWork;
 
 namespace Flex.Notification.Api.Controllers
 {
@@ -26,6 +27,8 @@ namespace Flex.Notification.Api.Controllers
         {
             try
             {
+                var test = await _context.GetRequests<NotificationTemplate, Guid>().AsNoTracking().ToListAsync();
+
                 var templates = await _context.NotificationTemplates
                     .OrderBy(t => t.Name)
                     .ToListAsync();
