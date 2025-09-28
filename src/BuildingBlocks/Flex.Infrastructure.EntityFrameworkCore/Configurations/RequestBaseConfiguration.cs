@@ -1,25 +1,52 @@
 using Flex.Shared.SeedWork.Workflow;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 
 namespace Flex.Infrastructure.EntityFrameworkCore.Configurations
 {
-    public abstract class RequestBaseConfiguration<TEntity, TKey> : IEntityTypeConfiguration<TEntity>
+    public class RequestBaseConfiguration<TEntity, TKey> : IEntityTypeConfiguration<TEntity>
         where TEntity : RequestBase<TKey>
     {
         public virtual void Configure(EntityTypeBuilder<TEntity> builder)
         {
-            // Id and primary key
+            // ===== ID =====
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.Id)
-                   .HasColumnName("ID")
-                   .HasColumnType("NUMBER(19)");
 
-            // Common columns for all request entities
-            builder.Property(x => x.EntityId)
-                   .HasColumnName("ENTITY_ID")
-                   .HasColumnType("NUMBER(19)");
+            if (typeof(TKey) == typeof(Guid))
+            {
+                builder.Property(x => x.Id)
+                       .HasColumnName("ID")
+                       .HasConversion(
+                           v => ((Guid)(object)v).ToByteArray(),  // Guid -> byte[]
+                           v => (TKey)(object)new Guid(v)         // byte[] -> Guid
+                       )
+                       .HasColumnType("RAW(16)")
+                       .IsRequired();
 
+                builder.Property(x => x.EntityId)
+                       .HasColumnName("ENTITY_ID")
+                       .HasConversion(
+                           v => ((Guid)(object)v).ToByteArray(),
+                           v => (TKey)(object)new Guid(v)
+                       )
+                       .HasColumnType("RAW(16)")
+                       .IsRequired();
+            }
+            else
+            {
+                builder.Property(x => x.Id)
+                       .HasColumnName("ID")
+                       .HasColumnType("NUMBER(19)")
+                       .IsRequired();
+
+                builder.Property(x => x.EntityId)
+                       .HasColumnName("ENTITY_ID")
+                       .HasColumnType("NUMBER(19)")
+                       .IsRequired();
+            }
+
+            // ===== COMMON FIELDS =====
             builder.Property(x => x.Action)
                    .HasColumnName("ACTION")
                    .HasColumnType("varchar2(20)")

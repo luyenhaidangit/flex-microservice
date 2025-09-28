@@ -1,6 +1,7 @@
 ﻿using Flex.Infrastructure.EntityFrameworkCore;
 using Flex.Notification.Api.Entities;
 using Microsoft.EntityFrameworkCore;
+using Flex.Infrastructure.EntityFrameworkCore;
 
 namespace Flex.Notification.Api.Persistence
 {

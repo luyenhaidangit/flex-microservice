@@ -1,12 +1,14 @@
-﻿using Flex.Contracts.Domains.Interfaces;
-using Flex.Infrastructure.Common.Repositories;
+﻿using Flex.AspNetIdentity.Api.Repositories;
+using Flex.AspNetIdentity.Api.Repositories.Interfaces;
+using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common;
-using Flex.Notification.Api.Persistence;
-using Flex.Infrastructure.Swashbuckle;
-using Flex.Shared.Extensions;
+using Flex.Infrastructure.Common.Repositories;
 using Flex.Infrastructure.EntityFrameworkCore.Oracle;
-using Flex.Infrastructure.Redis;
 using Flex.Infrastructure.Json;
+using Flex.Infrastructure.Redis;
+using Flex.Infrastructure.Swashbuckle;
+using Flex.Notification.Api.Persistence;
+using Flex.Shared.Extensions;
 
 namespace Flex.Notification.Api.Extensions
 {
@@ -48,8 +50,12 @@ namespace Flex.Notification.Api.Extensions
         #region Infrastructure
         private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
         {
-            return services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>))
-                           .AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+            // Repositories
+            services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>));
+            services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+            services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
+
+            return services;
         }
 
         private static IServiceCollection ConfigureRabbitMQ(this IServiceCollection services, IConfiguration configuration)
