@@ -1,5 +1,7 @@
 ﻿using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.Infrastructure.EF;
+using Flex.Infrastructure.Exceptions;
+using Flex.Infrastructure.Workflow.DTOs;
 using Flex.Notification.Api.Models.NotificationTemplate;
 using Flex.Notification.Api.Services.Interfaces;
 using Flex.Shared.Constants;
@@ -104,102 +106,69 @@ namespace Flex.Notification.Api.Services
             return PagedResult<NotificationTemplatePagingDto>.Create(pageIndex, pageSize, total, items);
         }
 
-        ///// <summary>
-        ///// Get approved user by username.
-        ///// </summary>
-        //public async Task<UserDetailDto> GetUserByUserNameAsync(string userName, CancellationToken ct)
-        //{
-        //    // ===== Find user by username =====
-        //    var user = await _userRepository.FindAll().AsNoTracking().FirstOrDefaultAsync(u => u.UserName.ToLower() == userName.ToLower(), ct);
+        /// <summary>
+        /// Get notification template by ID.
+        /// </summary>
+        public async Task<NotificationTemplateDetailDto> GetNotificationTemplateByIdAsync(Guid templateId, CancellationToken ct)
+        {
+            // ===== Find template by ID =====
+            var template = await _notificationTemplateRepository.FindAll().AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == templateId, ct);
 
-        //    if (user == null)
-        //    {
-        //        throw new Exception($"User '{userName}' not found.");
-        //    }
-        //    ;
+            if (template == null)
+            {
+                throw new ValidationException(ErrorCode.TemplateNotFound);
+            }
 
-        //    // ===== Get branch information =====
-        //    var branch = new BranchLookupDto(0, "");
-        //    if (user.BranchId > 0)
-        //    {
-        //        try
-        //        {
-        //            branch = await _branchIntegrationService.GetBranchByIdAsync(user.BranchId, ct) ?? new BranchLookupDto(0, "");
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            _logger.LogWarning(ex, "Failed to retrieve branch information for user {UserName} with BranchId {BranchId}", userName, user.BranchId);
-        //            throw;
-        //        }
-        //    }
+            // ===== Return result =====
+            return new NotificationTemplateDetailDto
+            {
+                TemplateKey = template.TemplateKey,
+                Name = template.Name,
+                Channel = template.Channel,
+                Format = template.Format,
+                Language = template.Language,
+                Subject = template.Subject,
+                BodyHtml = template.BodyHtml,
+                BodyText = template.BodyText,
+                IsActive = template.IsActive,
+                VariablesSpecJson = template.VariablesSpecJson
+            };
+        }
 
-        //    // ===== Get user roles =====
-        //    var roles = await _dbContext.Set<UserRole>()
-        //        .Where(ur => ur.UserId == user.Id)
-        //        .Join(_dbContext.Set<Role>(), ur => ur.RoleId, r => r.Id, (ur, r) => r.Code)
-        //        .ToListAsync(ct);
+        /// <summary>
+        /// Get notification template change history by template ID.
+        /// </summary>
+        public async Task<List<ChangeHistoryDto>> GetNotificationTemplateChangeHistoryAsync(Guid templateId, CancellationToken ct)
+        {
+            // ===== Find template by ID =====
+            var template = await _notificationTemplateRepository.FindAll().AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == templateId, ct);
 
-        //    // ===== Return result =====
-        //    return new UserDetailDto
-        //    {
-        //        UserName = user.UserName ?? string.Empty,
-        //        FullName = user.FullName,
-        //        Email = user.Email,
-        //        BranchName = branch.Name,
-        //        IsActive = user.IsActive,
-        //        Roles = roles,
-        //        Branch = branch ?? new BranchLookupDto(0, "")
-        //    };
-        //}
+            if (template == null)
+            {
+                throw new ValidationException(ErrorCode.TemplateNotFound);
+            }
 
-        ///// <summary>
-        ///// Get user change history by username.
-        ///// </summary>
-        //public async Task<List<UserChangeHistoryDto>> GetUserChangeHistoryAsync(string userName)
-        //{
-        //    // ===== Find user with username =====
-        //    var user = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower());
+            // ===== Placeholder implementation =====
+            
+            var historyItems = new List<ChangeHistoryDto>
+            {
+                new ChangeHistoryDto
+                {
+                    Id = templateId.GetHashCode(), // Convert Guid to long for compatibility
+                    MakerBy = "System", // Placeholder
+                    MakerTime = DateTime.UtcNow, // Placeholder
+                    ApproverBy = "System", // Placeholder
+                    ApproverTime = DateTime.UtcNow, // Placeholder
+                    Status = template.Status,
+                    Description = "Template created", // Placeholder
+                    Changes = $"Template: {template.TemplateKey} - {template.Name}" // Placeholder
+                }
+            };
 
-        //    if (user == null)
-        //    {
-        //        throw new Exception($"User with username '{userName}' not exists.");
-        //    }
-
-        //    // ===== Get user histories by user Id =====
-        //    var userId = user.Id;
-
-        //    var requests = await _userRequestRepository.FindByCondition(r => r.EntityId == userId)
-        //        .AsNoTracking()
-        //        .OrderByDescending(r => r.RequestedDate)
-        //        .Select(r => new
-        //        {
-        //            r.Id,
-        //            r.MakerId,
-        //            r.RequestedDate,
-        //            r.CheckerId,
-        //            r.ApproveDate,
-        //            r.Status,
-        //            r.Comments,
-        //            r.RequestedData
-        //        })
-        //        .AsNoTracking()
-        //        .ToListAsync();
-
-        //    // ===== Build result =====
-        //    var historyItems = requests.Select((req, idx) => new UserChangeHistoryDto
-        //    {
-        //        Id = req.Id,
-        //        MakerBy = req.MakerId,
-        //        MakerTime = req.RequestedDate,
-        //        ApproverBy = req.CheckerId,
-        //        ApproverTime = req.ApproveDate,
-        //        Status = req.Status,
-        //        Description = req.Comments,
-        //        Changes = req.RequestedData
-        //    }).ToList();
-
-        //    return historyItems;
-        //}
+            return historyItems;
+        }
 
         ///// <summary>
         ///// Get all pending user requests with pagination.

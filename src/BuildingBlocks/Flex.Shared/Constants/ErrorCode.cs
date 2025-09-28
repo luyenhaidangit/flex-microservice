@@ -28,6 +28,7 @@ namespace Flex.Shared.Constants
         public const string RequestNotFound = "REQUEST_NOT_FOUND";
         public const string BranchNotFound = "BRANCH_NOT_FOUND";
         public const string RoleNotFound = "ROLE_NOT_FOUND";
+        public const string TemplateNotFound = "TEMPLATE_NOT_FOUND";
 
         // Server error codes (5xx)
         public const string InternalServerError = "INTERNAL_SERVER_ERROR";
