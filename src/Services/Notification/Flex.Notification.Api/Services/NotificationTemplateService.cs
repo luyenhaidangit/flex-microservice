@@ -150,24 +150,25 @@ namespace Flex.Notification.Api.Services
                 throw new ValidationException(ErrorCode.TemplateNotFound);
             }
 
-            // ===== Placeholder implementation =====
-            
-            var historyItems = new List<ChangeHistoryDto>
-            {
-                new ChangeHistoryDto
+            // ===== Get template change history =====
+            var result = await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet()
+                .AsNoTracking()
+                .Where(r => r.EntityId == templateId)
+                .OrderByDescending(r => r.RequestedDate)
+                .Select(r => new ChangeHistoryDto
                 {
-                    Id = templateId.GetHashCode(), // Convert Guid to long for compatibility
-                    MakerBy = "System", // Placeholder
-                    MakerTime = DateTime.UtcNow, // Placeholder
-                    ApproverBy = "System", // Placeholder
-                    ApproverTime = DateTime.UtcNow, // Placeholder
-                    Status = template.Status,
-                    Description = "Template created", // Placeholder
-                    Changes = $"Template: {template.TemplateKey} - {template.Name}" // Placeholder
-                }
-            };
+                    Id = r.Id,
+                    MakerBy = r.MakerId,
+                    MakerTime = r.RequestedDate,
+                    ApproverBy = r.CheckerId,
+                    ApproverTime = r.ApproveDate,
+                    Status = r.Status,
+                    Description = r.Comments,
+                    Changes = r.RequestedData
+                })
+                .ToListAsync(ct);
 
-            return historyItems;
+            return result;
         }
 
         ///// <summary>

@@ -18,7 +18,7 @@ namespace Flex.AspNetIdentity.Api.Repositories
 			_context = context;
 		}
 
-        public DbSet<RequestBase<Guid>> NotificationTemplateRequests()
+        public DbSet<RequestBase<Guid>> GetNotificationTemplateRequestsDbSet()
         {
             return _context.GetRequests<NotificationTemplate, Guid>();
         }
