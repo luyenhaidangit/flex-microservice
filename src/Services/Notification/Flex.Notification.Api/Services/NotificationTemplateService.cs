@@ -1,10 +1,12 @@
-﻿using Flex.Infrastructure.Exceptions;
+﻿using Flex.Infrastructure.EF;
+using Flex.Infrastructure.Exceptions;
 using Flex.Infrastructure.Workflow.DTOs;
 using Flex.Notification.Api.Models.NotificationTemplate;
 using Flex.Notification.Api.Repositories.Interfaces;
 using Flex.Notification.Api.Services.Interfaces;
 using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
+using Flex.Infrastructure.Workflow.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Notification.Api.Services
@@ -143,6 +145,79 @@ namespace Flex.Notification.Api.Services
                 .ToListAsync(ct);
 
             return result;
+        }
+
+        /// <summary>
+        /// Get all pending notification template requests with pagination.
+        /// </summary>
+        public async Task<PagedResult<NotificationTemplatePendingPagingDto>> GetPendingNotificationTemplateRequestsPagedAsync(GetNotificationTemplateRequestsPagingRequest request, CancellationToken ct)
+        {
+            return null;
+            //// ===== Process request parameters =====
+            //var keyword = request.Keyword?.Trim().ToLower();
+            //var requestType = request.Type?.Trim().ToUpperInvariant();
+            //int pageIndex = request.PageIndexValue;
+            //int pageSize = request.PageSizeValue;
+
+            //// ===== Build query =====
+            //var pendingQuery = _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet()
+            //    .WhereIf(!string.IsNullOrEmpty(keyword),
+            //        r => EF.Functions.Like((r.RequestedData ?? string.Empty).ToLower(), $"%{keyword}%"))
+            //    .Where(x => x.Status == RequestStatus.Unauthorised)
+            //    .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
+            //        r => r.Action == requestType)
+            //    .AsNoTracking()
+            //    .Select(r => new NotificationTemplatePendingPagingDto
+            //    {
+            //        RequestId = r.Id,
+            //        EntityId = r.EntityId,
+            //        Action = r.Action,
+            //        RequestedBy = r.MakerId,
+            //        RequestedDate = r.RequestedDate,
+            //        Status = r.Status,
+            //        TemplateKey = "", // Will be populated from template if exists
+            //        Name = "", // Will be populated from template if exists
+            //        Channel = "", // Will be populated from template if exists
+            //        Subject = "" // Will be populated from template if exists
+            //    });
+
+            //// ===== Execute query =====
+            //var total = await pendingQuery.CountAsync(ct);
+            //var items = await pendingQuery
+            //    .OrderByDescending(dto => dto.RequestedDate)
+            //    .ThenBy(dto => dto.RequestId)
+            //    .Skip((pageIndex - 1) * pageSize)
+            //    .Take(pageSize)
+            //    .ToListAsync(ct);
+
+            //// ===== Populate template information =====
+            //foreach (var item in items)
+            //{
+            //    if (item.EntityId != Guid.Empty)
+            //    {
+            //        try
+            //        {
+            //            var template = await _notificationTemplateRepository.FindAll()
+            //                .AsNoTracking()
+            //                .FirstOrDefaultAsync(t => t.Id == item.EntityId, ct);
+                        
+            //            if (template != null)
+            //            {
+            //                item.TemplateKey = template.TemplateKey ?? string.Empty;
+            //                item.Name = template.Name ?? string.Empty;
+            //                item.Channel = template.Channel ?? string.Empty;
+            //                item.Subject = template.Subject ?? string.Empty;
+            //            }
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            _logger.LogWarning(ex, "Failed to get template information for EntityId: {EntityId}", item.EntityId);
+            //        }
+            //    }
+            //}
+
+            //// ===== Return result =====
+            //return PagedResult<NotificationTemplatePendingPagingDto>.Create(pageIndex, pageSize, total, items);
         }
 
         #endregion
