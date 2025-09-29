@@ -4,7 +4,7 @@ using Flex.Notification.Api.Persistence;
 using Flex.Shared.SeedWork.Workflow;
 using Microsoft.EntityFrameworkCore;
 
-namespace Flex.AspNetIdentity.Api.Repositories.Interfaces
+namespace Flex.Notification.Api.Repositories.Interfaces
 {
 	public interface INotificationTemplateRepository : IRepositoryBase<NotificationTemplate, Guid, NotificationDbContext>
     {
