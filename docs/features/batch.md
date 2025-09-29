@@ -1,0 +1,2 @@
+- Insert BatchLog thông tin bước batch (user, auto hay manual,...).
+- Bắt đầu bước batch.
