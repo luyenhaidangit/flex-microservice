@@ -2,7 +2,7 @@ using Flex.EventBus.Messages.IntegrationEvents.Events;
 using Flex.Infrastructure.EF;
 using Flex.Shared.DTOs.Common;
 using Flex.Shared.SeedWork;
-using Flex.Shared.SeedWork.Workflow.Constants;
+using Flex.Infrastructure.Workflow.Constants;
 using Flex.System.Api.Entities;
 using Flex.System.Api.Models;
 using Flex.System.Api.Models.Branch;
@@ -77,7 +77,7 @@ namespace Flex.System.Api.Services
         public async Task<BranchDetailDto> GetApprovedBranchByCodeAsync(string code)
         {
             var entity = await _branchRepository.GetByCodeAsync(code);
-            if (entity == null || entity.Status != RequestStatusConstant.Authorised)
+            if (entity == null || entity.Status != RequestStatus.Authorised)
             {
                 throw new Exception($"Branch with code '{code}' not found or not approved.");
             }
@@ -197,7 +197,7 @@ namespace Flex.System.Api.Services
             // ===== Check duplicate pending request via view =====
             var hasPending = await _dbContext.ProposedBranches
                 .AsNoTracking()
-                .CountAsync(v => v.Status == RequestStatusConstant.Unauthorised && v.Code == request.Code) > 0;
+                .CountAsync(v => v.Status == RequestStatus.Unauthorised && v.Code == request.Code) > 0;
             if (hasPending)
             {
                 throw new Exception($"Pending branch request already exists for code '{request.Code}'.");
@@ -207,8 +207,8 @@ namespace Flex.System.Api.Services
             var requester = _userService.GetCurrentUsername() ?? "anonymous";
             var branchRequest = new BranchRequest
             {
-                Action = RequestTypeConstant.Create,
-                Status = RequestStatusConstant.Unauthorised,
+                Action = RequestType.Create,
+                Status = RequestStatus.Unauthorised,
                 EntityId = 0,
                 MakerId = requester,
                 RequestedDate = DateTime.UtcNow,
@@ -224,7 +224,7 @@ namespace Flex.System.Api.Services
         {
             // ===== Validation =====
             var existingEntity = await _branchRepository.GetByCodeAsync(code);
-            if (existingEntity == null || existingEntity.Status != RequestStatusConstant.Authorised)
+            if (existingEntity == null || existingEntity.Status != RequestStatus.Authorised)
             {
                 throw new Exception($"Branch with code '{code}' not found or not approved.");
             }
@@ -239,7 +239,7 @@ namespace Flex.System.Api.Services
             // ===== Check duplicate pending request via view =====
             var hasPending = await _dbContext.ProposedBranches
                 .AsNoTracking()
-                .CountAsync(v => v.Status == RequestStatusConstant.Unauthorised && v.EntityId == existingEntity.Id) > 0;
+                .CountAsync(v => v.Status == RequestStatus.Unauthorised && v.EntityId == existingEntity.Id) > 0;
             if (hasPending)
             {
                 throw new Exception($"Pending branch update request already exists for code '{code}'.");
@@ -247,10 +247,10 @@ namespace Flex.System.Api.Services
 
             var branchRequest = new BranchRequest
             {
-                Action = RequestTypeConstant.Update,
+                Action = RequestType.Update,
                 EntityId = existingEntity.Id,
                 //EntityCode = code,
-                Status = RequestStatusConstant.Unauthorised,
+                Status = RequestStatus.Unauthorised,
                 RequestedData = JsonSerializer.Serialize(new
                 {
                     Name = dto.Name?.Trim(),
@@ -268,7 +268,7 @@ namespace Flex.System.Api.Services
             };
 
             // ===== Update entity status =====
-            existingEntity.Status = RequestStatusConstant.Unauthorised;
+            existingEntity.Status = RequestStatus.Unauthorised;
             await _branchRepository.UpdateAsync(existingEntity);
 
             await _branchRequestRepository.CreateAsync(branchRequest);
@@ -279,7 +279,7 @@ namespace Flex.System.Api.Services
         {
             // ===== Validation =====
             var existingEntity = await _branchRepository.GetByCodeAsync(code);
-            if (existingEntity == null || existingEntity.Status != RequestStatusConstant.Authorised)
+            if (existingEntity == null || existingEntity.Status != RequestStatus.Authorised)
             {
                 throw new Exception($"Branch with code '{code}' not found or not approved.");
             }
@@ -300,7 +300,7 @@ namespace Flex.System.Api.Services
             // ===== Check duplicate pending request via view =====
             var hasPending = await _dbContext.ProposedBranches
                 .AsNoTracking()
-                .CountAsync(v => v.Status == RequestStatusConstant.Unauthorised && v.EntityId == existingEntity.Id) > 0;
+                .CountAsync(v => v.Status == RequestStatus.Unauthorised && v.EntityId == existingEntity.Id) > 0;
             if (hasPending)
             {
                 throw new Exception($"Pending branch delete request already exists for code '{code}'.");
@@ -319,9 +319,9 @@ namespace Flex.System.Api.Services
 
             var branchRequest = new BranchRequest
             {
-                Action = RequestTypeConstant.Delete,
+                Action = RequestType.Delete,
                 EntityId = existingEntity.Id,
-                Status = RequestStatusConstant.Unauthorised,
+                Status = RequestStatus.Unauthorised,
                 RequestedData = JsonSerializer.Serialize(currentSnapshot),
                 MakerId = requester,
                 RequestedDate = DateTime.UtcNow,
@@ -334,7 +334,7 @@ namespace Flex.System.Api.Services
             {
                 await _branchRequestRepository.CreateAsync(branchRequest);
 
-                existingEntity.Status = RequestStatusConstant.Unauthorised;
+                existingEntity.Status = RequestStatus.Unauthorised;
                 await _branchRepository.UpdateAsync(existingEntity);
 
                 await transaction.CommitAsync();
@@ -360,11 +360,11 @@ namespace Flex.System.Api.Services
 
             // ===== Build query =====
             var proposedBranchQuery = _branchRepository.GetBranchCombinedQuery()
-                .Where(r => r.Status == RequestStatusConstant.Unauthorised)
+                .Where(r => r.Status == RequestStatus.Unauthorised)
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     r => EF.Functions.Like(r.Code.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(r.Description.ToLower(), $"%{keyword}%"))
-                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestType.All,
                     r => r.Action == requestType)
                 .AsNoTracking();
 
@@ -420,7 +420,7 @@ namespace Flex.System.Api.Services
             };
 
             // ===== Populate request data for DELETE (snapshot of current entity) =====
-            if (request.Action == RequestTypeConstant.Delete && !string.IsNullOrEmpty(request.RequestedData))
+            if (request.Action == RequestType.Delete && !string.IsNullOrEmpty(request.RequestedData))
             {
                 try
                 {
@@ -458,7 +458,7 @@ namespace Flex.System.Api.Services
             var request = await _branchRequestRepository
                 .FindAll()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatus.Unauthorised);
 
             if (request == null)
             {
@@ -475,13 +475,13 @@ namespace Flex.System.Api.Services
                 // ===== Default approval comment by action (optional) =====
                 switch (request.Action)
                 {
-                    case RequestTypeConstant.Create:
+                    case RequestType.Create:
                         comment ??= "Yêu cầu thêm mới chi nhánh.";
                         break;
-                    case RequestTypeConstant.Update:
+                    case RequestType.Update:
                         comment ??= "Yêu cầu cập nhật chi nhánh.";
                         break;
-                    case RequestTypeConstant.Delete:
+                    case RequestType.Delete:
                         comment ??= "Yêu cầu hủy kích hoạt chi nhánh.";
                         break;
                 }
@@ -496,7 +496,7 @@ namespace Flex.System.Api.Services
                 {
                     RequestId = request.Id,
                     RequestType = request.Action,
-                    Status = RequestStatusConstant.Authorised,
+                    Status = RequestStatus.Authorised,
                     ApprovedBy = approver,
                     ApprovedDate = DateTime.UtcNow,
                     Comment = comment ?? "Approved"
@@ -527,7 +527,7 @@ namespace Flex.System.Api.Services
             var request = await _branchRequestRepository
                 .FindAll()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatus.Unauthorised);
 
             if (request == null)
             {
@@ -551,7 +551,7 @@ namespace Flex.System.Api.Services
                 {
                     RequestId = request.Id,
                     RequestType = request.Action,
-                    Status = RequestStatusConstant.Rejected,
+                    Status = RequestStatus.Rejected,
                     ApprovedBy = rejecter,
                     ApprovedDate = DateTime.UtcNow,
                     Comment = reason ?? "Rejected"
@@ -570,13 +570,13 @@ namespace Flex.System.Api.Services
         {
             switch (request.Action)
             {
-                case RequestTypeConstant.Create:
+                case RequestType.Create:
                     await ProcessCreateBranch(request);
                     break;
-                case RequestTypeConstant.Update:
+                case RequestType.Update:
                     await ProcessUpdateBranch(request);
                     break;
-                case RequestTypeConstant.Delete:
+                case RequestType.Delete:
                     await ProcessDeleteBranch(request);
                     break;
                 default:
@@ -597,7 +597,7 @@ namespace Flex.System.Api.Services
                 Code = requestData.Code,
                 Name = requestData.Name,
                 Description = requestData.Description ?? string.Empty,
-                Status = RequestStatusConstant.Authorised,
+                Status = RequestStatus.Authorised,
                 BranchType = requestData.BranchType,
                 IsActive = true
             };
@@ -641,7 +641,7 @@ namespace Flex.System.Api.Services
             branch.Description = requestData.Description?.Trim() ?? string.Empty;
             branch.BranchType = requestData.BranchType;
             branch.IsActive = requestData.IsActive;
-            branch.Status = RequestStatusConstant.Authorised;
+            branch.Status = RequestStatus.Authorised;
 
             await _branchRepository.UpdateAsync(branch);
 
@@ -672,7 +672,7 @@ namespace Flex.System.Api.Services
             }
 
             branch.IsActive = false;
-            branch.Status = RequestStatusConstant.Authorised;
+            branch.Status = RequestStatus.Authorised;
 
             await _branchRepository.DeleteAsync(branch);
 
@@ -692,13 +692,13 @@ namespace Flex.System.Api.Services
 
         private async Task RevertBranchStatusIfNeeded(BranchRequest request)
         {
-            if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) 
+            if ((request.Action == RequestType.Update || request.Action == RequestType.Delete) 
                 && request.EntityId > 0)
             {
                 var branch = await _branchRepository.GetByIdAsync(request.EntityId);
                 if (branch != null)
                 {
-                    branch.Status = RequestStatusConstant.Authorised; // Revert to approved status
+                    branch.Status = RequestStatus.Authorised; // Revert to approved status
                     await _branchRepository.UpdateAsync(branch);
                 }
             }
@@ -706,7 +706,7 @@ namespace Flex.System.Api.Services
 
         private async Task UpdateRequestStatus(BranchRequest request, string approver, string? comment)
         {
-            request.Status = RequestStatusConstant.Authorised;
+            request.Status = RequestStatus.Authorised;
             request.CheckerId = approver;
             request.ApproveDate = DateTime.UtcNow;
             request.Comments = comment ?? "Approved";
@@ -716,7 +716,7 @@ namespace Flex.System.Api.Services
 
         private async Task UpdateRejectedRequestStatus(BranchRequest request, string rejecter, string? reason)
         {
-            request.Status = RequestStatusConstant.Rejected;
+            request.Status = RequestStatus.Rejected;
             request.CheckerId = rejecter;
             request.ApproveDate = DateTime.UtcNow;
             request.Comments = reason ?? "Rejected";

@@ -2,13 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common.Repositories;
 using Flex.System.Api.Entities;
-using Flex.System.Api.Models;
 using Flex.System.Api.Repositories.Interfaces;
-using Flex.Shared.SeedWork;
-using Flex.Shared.SeedWork.Workflow.Constants;
+using Flex.Infrastructure.Workflow.Constants;
 using Flex.System.Api.Persistence;
-using Flex.Infrastructure.EF;
-using Flex.System.Api.Models.Branch;
 
 namespace Flex.System.Api.Repositories
 {
@@ -24,7 +20,7 @@ namespace Flex.System.Api.Repositories
         public async Task<BranchRequest?> GetPendingByIdAsync(long requestId)
         {
             return await _context.BranchRequests
-                .FirstOrDefaultAsync(x => x.Id == requestId && x.Status == RequestStatusConstant.Unauthorised);
+                .FirstOrDefaultAsync(x => x.Id == requestId && x.Status == RequestStatus.Unauthorised);
         }
     }
 }
