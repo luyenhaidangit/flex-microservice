@@ -1,6 +1,6 @@
 using Flex.AspNetIdentity.Api.Models.User;
+using Flex.Infrastructure.Workflow.DTOs;
 using Flex.Shared.SeedWork;
-using Flex.Shared.SeedWork.Workflow;
 
 namespace Flex.AspNetIdentity.Api.Services.Interfaces
 {

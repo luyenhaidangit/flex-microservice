@@ -7,6 +7,7 @@ using Flex.Notification.Api.Repositories.Interfaces;
 using Flex.Notification.Api.Services.Interfaces;
 using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
+using Flex.Shared.SeedWork.Workflow;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Notification.Api.Services
@@ -193,6 +194,120 @@ namespace Flex.Notification.Api.Services
 
             // ===== Return result =====
             return PagedResult<NotificationTemplatePendingPagingDto>.Create(pageIndex, pageSize, total, items);
+        }
+
+        /// <summary>
+        /// Get pending notification template request detail by request ID.
+        /// </summary>
+        public async Task<PendingRequestDtoBase<NotificationTemplateRequestDataDto>> GetPendingNotificationTemplateRequestDetailAsync(long requestId, CancellationToken ct)
+        {
+            // ===== Get request data =====
+            var request = await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == requestId, ct);
+
+            if (request == null)
+            {
+                throw new ValidationException(ErrorCode.RequestNotFound);
+            }
+
+            // ===== Build base result =====
+            var result = new PendingRequestDtoBase<NotificationTemplateRequestDataDto>
+            {
+                RequestId = request.Id.ToString(),
+                Type = request.Action,
+                CreatedBy = request.MakerId.ToString(),
+                CreatedDate = request.RequestedDate.ToString("yyyy-MM-dd HH:mm:ss")
+            };
+
+            // ===== Process request data based on action type =====
+            switch (request.Action)
+            {
+                case RequestType.Create:
+                    await ConvertCreateNotificationTemplateRequestData(request, result);
+                    break;
+                case RequestType.Update:
+                    await ConvertUpdateNotificationTemplateRequestData(request, result);
+                    break;
+                case RequestType.Delete:
+                    await ConvertDeleteNotificationTemplateRequestData(request, result);
+                    break;
+                default:
+                    throw new ValidationException(ErrorCode.InvalidRequestType);
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Convert create notification template request data.
+        /// </summary>
+        private async Task ConvertCreateNotificationTemplateRequestData(RequestBase<Guid> request, PendingRequestDtoBase<NotificationTemplateRequestDataDto> result)
+        {
+            try
+            {
+                var newData = System.Text.Json.JsonSerializer.Deserialize<NotificationTemplateRequestDataDto>(request.RequestedData ?? "{}");
+                result.NewData = newData;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to deserialize create notification template request data for request {RequestId}", request.Id);
+                result.NewData = new NotificationTemplateRequestDataDto();
+            }
+        }
+
+        /// <summary>
+        /// Convert update notification template request data.
+        /// </summary>
+        private async Task ConvertUpdateNotificationTemplateRequestData(RequestBase<Guid> request, PendingRequestDtoBase<NotificationTemplateRequestDataDto> result)
+        {
+            try
+            {
+                // Parse the requested data JSON
+                var requestData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData ?? "{}");
+                
+                if (requestData != null && requestData.ContainsKey("newData") && requestData.ContainsKey("oldData"))
+                {
+                    var newDataJson = requestData["newData"].ToString();
+                    var oldDataJson = requestData["oldData"].ToString();
+                    
+                    result.NewData = System.Text.Json.JsonSerializer.Deserialize<NotificationTemplateRequestDataDto>(newDataJson ?? "{}");
+                    result.OldData = System.Text.Json.JsonSerializer.Deserialize<NotificationTemplateRequestDataDto>(oldDataJson ?? "{}");
+                }
+                else
+                {
+                    // Fallback: try to deserialize directly
+                    var templateData = System.Text.Json.JsonSerializer.Deserialize<NotificationTemplateRequestDataDto>(request.RequestedData ?? "{}");
+                    result.NewData = templateData;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to deserialize update notification template request data for request {RequestId}", request.Id);
+                result.NewData = new NotificationTemplateRequestDataDto();
+                result.OldData = new NotificationTemplateRequestDataDto();
+            }
+        }
+
+        /// <summary>
+        /// Convert delete notification template request data.
+        /// </summary>
+        private async Task ConvertDeleteNotificationTemplateRequestData(RequestBase<Guid> request, PendingRequestDtoBase<NotificationTemplateRequestDataDto> result)
+        {
+            try
+            {
+                var oldData = System.Text.Json.JsonSerializer.Deserialize<NotificationTemplateRequestDataDto>(request.RequestedData ?? "{}");
+                result.OldData = oldData;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to deserialize delete notification template request data for request {RequestId}", request.Id);
+                result.OldData = new NotificationTemplateRequestDataDto();
+            }
         }
 
         #endregion

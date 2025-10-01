@@ -1,4 +1,4 @@
-﻿namespace Flex.Shared.SeedWork.Workflow
+﻿namespace Flex.Infrastructure.Workflow.DTOs
 {
     public class PendingRequestDtoBase<T>
     {

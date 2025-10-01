@@ -9,11 +9,11 @@ using Flex.Infrastructure.EF;
 using Flex.Infrastructure.Exceptions;
 using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
-using Flex.Shared.SeedWork.Workflow;
 using Flex.Infrastructure.Workflow.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Flex.Infrastructure.Workflow.DTOs;
 
 namespace Flex.AspNetIdentity.Api.Services
 {

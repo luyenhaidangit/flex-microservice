@@ -8,6 +8,8 @@ using Flex.Infrastructure.Swashbuckle;
 using Flex.Notification.Api.Persistence;
 using Flex.Notification.Api.Repositories;
 using Flex.Notification.Api.Repositories.Interfaces;
+using Flex.Notification.Api.Services;
+using Flex.Notification.Api.Services.Interfaces;
 using Flex.Shared.Extensions;
 
 namespace Flex.Notification.Api.Extensions
@@ -54,6 +56,9 @@ namespace Flex.Notification.Api.Extensions
             services.AddScoped(typeof(IRepositoryBase<,,>), typeof(RepositoryBase<,,>));
             services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
             services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
+
+            // Services
+            services.AddScoped<INotificationTemplateService, NotificationTemplateService>();
 
             return services;
         }

@@ -25,5 +25,10 @@ namespace Flex.Notification.Api.Services.Interfaces
         /// Get all pending notification template requests with pagination.
         /// </summary>
         Task<PagedResult<NotificationTemplatePendingPagingDto>> GetPendingNotificationTemplateRequestsPagedAsync(GetNotificationTemplateRequestsPagingRequest request, CancellationToken ct);
+
+        /// <summary>
+        /// Get pending notification template request detail by request ID.
+        /// </summary>
+        Task<PendingRequestDtoBase<NotificationTemplateRequestDataDto>> GetPendingNotificationTemplateRequestDetailAsync(long requestId, CancellationToken ct);
     }
 }
