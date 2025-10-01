@@ -1,7 +1,8 @@
 ﻿using Flex.Infrastructure.EntityFrameworkCore;
-using Flex.Notification.Api.Entities;
-using Microsoft.EntityFrameworkCore;
 using Flex.Infrastructure.EntityFrameworkCore;
+using Flex.Notification.Api.Entities;
+using Flex.Notification.Api.Entities.Views;
+using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Notification.Api.Persistence
 {
@@ -12,8 +13,12 @@ namespace Flex.Notification.Api.Persistence
         }
 
         #region DbSet
+        // Entities
         public DbSet<NotificationLog> NotificationLogs { get; set; }
         public DbSet<NotificationTemplate> NotificationTemplates { get; set; }
+
+        // Views
+        public DbSet<NotificationTemplateRequestView> NotificationTemplateRequestViews { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

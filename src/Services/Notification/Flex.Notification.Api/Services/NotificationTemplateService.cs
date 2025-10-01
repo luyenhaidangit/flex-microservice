@@ -6,7 +6,6 @@ using Flex.Notification.Api.Repositories.Interfaces;
 using Flex.Notification.Api.Services.Interfaces;
 using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
-using Flex.Infrastructure.Workflow.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Notification.Api.Services
