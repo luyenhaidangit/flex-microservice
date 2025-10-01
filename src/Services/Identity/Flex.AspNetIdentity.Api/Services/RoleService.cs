@@ -8,7 +8,7 @@ using Flex.Infrastructure.EF;
 using Flex.Shared.Authorization;
 using Flex.Shared.Cache;
 using Flex.Shared.SeedWork;
-using Flex.Shared.SeedWork.Workflow.Constants;
+using Flex.Infrastructure.Workflow.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Security.Claims;
@@ -104,7 +104,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 Code = role.Code,
                 IsActive = role.IsActive,
                 Description = role.Description,
-                Status = RequestStatusConstant.Authorised,
+                Status = RequestStatus.Authorised,
                 PermissionTree = includeTree ? flags.Root : new List<PermissionNodeDto>()
             };
 
@@ -172,11 +172,11 @@ namespace Flex.AspNetIdentity.Api.Services
 
             // ===== Build query =====
             var proposedBranchQuery = _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Status == RequestStatusConstant.Unauthorised)
+                .Where(r => r.Status == RequestStatus.Unauthorised)
                 .WhereIf(!string.IsNullOrEmpty(keyword),
                     r => EF.Functions.Like(r.Code.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(r.Description.ToLower(), $"%{keyword}%"))
-                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All,
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestType.All,
                     r => r.Action == requestType)
                 .AsNoTracking();
 
@@ -233,15 +233,15 @@ namespace Flex.AspNetIdentity.Api.Services
             // ===== Process by request type =====
             switch (request.Action)
             {
-                case RequestTypeConstant.Create:
+                case RequestType.Create:
                     ProcessCreateRequestData(request, result);
                     break;
 
-                case RequestTypeConstant.Update:
+                case RequestType.Update:
                     await ProcessUpdateRequestData(request, result);
                     break;
 
-                case RequestTypeConstant.Delete:
+                case RequestType.Delete:
                     ProcessDeleteRequestData(request, result);
                     break;
 
@@ -431,7 +431,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
             // ===== Check role request unauthorised is exits =====
             var existingPendingRequest = await _roleRequestRepository.GetBranchCombinedQuery()
-                .Where(r => r.Code == dto.Code && r.Status == RequestStatusConstant.Unauthorised)
+                .Where(r => r.Code == dto.Code && r.Status == RequestStatus.Unauthorised)
                 .FirstOrDefaultAsync();
             if (existingPendingRequest != null)
             {
@@ -443,8 +443,8 @@ namespace Flex.AspNetIdentity.Api.Services
             var requestedJson = JsonSerializer.Serialize(dto);
             var request = new RoleRequest
             {
-                Action = RequestTypeConstant.Create,
-                Status = RequestStatusConstant.Unauthorised,
+                Action = RequestType.Create,
+                Status = RequestStatus.Unauthorised,
                 EntityId = 0,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
@@ -470,7 +470,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // ===== Check role request is exits =====
-            if (role.Status == RequestStatusConstant.Unauthorised)
+            if (role.Status == RequestStatus.Unauthorised)
             {
                 throw new Exception("A pending update request already exists for this role.");
             }
@@ -482,8 +482,8 @@ namespace Flex.AspNetIdentity.Api.Services
             var requestedJson = JsonSerializer.Serialize(dto);
             var request = new RoleRequest
             {
-                Action = RequestTypeConstant.Update,
-                Status = RequestStatusConstant.Unauthorised,
+                Action = RequestType.Update,
+                Status = RequestStatus.Unauthorised,
                 EntityId = role.Id,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
@@ -491,7 +491,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 Comments = dto.Comment ?? "Yêu cầu cập nhật vai trò."
             };
             // ===== Update status process role =====
-            role.Status = RequestStatusConstant.Unauthorised;
+            role.Status = RequestStatus.Unauthorised;
 
             // ===== Transaction =====
             await using var transaction = await _roleRequestRepository.BeginTransactionAsync();
@@ -526,7 +526,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // ===== Check role request is exits =====
-            if (role.Status == RequestStatusConstant.Unauthorised)
+            if (role.Status == RequestStatus.Unauthorised)
             {
                 throw new Exception("A pending update request already exists for this role.");
             }
@@ -544,8 +544,8 @@ namespace Flex.AspNetIdentity.Api.Services
             var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
             var request = new RoleRequest
             {
-                Action = RequestTypeConstant.Delete,
-                Status = RequestStatusConstant.Unauthorised,
+                Action = RequestType.Delete,
+                Status = RequestStatus.Unauthorised,
                 EntityId = role.Id,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
@@ -554,7 +554,7 @@ namespace Flex.AspNetIdentity.Api.Services
             };
 
             // ===== Update status process role =====
-            role.Status = RequestStatusConstant.Unauthorised;
+            role.Status = RequestStatus.Unauthorised;
 
             // ===== Transaction =====
             await using var transaction = await _roleRequestRepository.BeginTransactionAsync();
@@ -586,7 +586,7 @@ namespace Flex.AspNetIdentity.Api.Services
             var request = await _roleRequestRepository
                 .FindAll()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatus.Unauthorised);
 
             if (request == null)
             {
@@ -603,15 +603,15 @@ namespace Flex.AspNetIdentity.Api.Services
                 // ===== Process by request type =====
                 switch (request.Action)
                 {
-                    case RequestTypeConstant.Create:
+                    case RequestType.Create:
                         createdRoleId = await ProcessCreateApproval(request, approver);
                         break;
 
-                    case RequestTypeConstant.Update:
+                    case RequestType.Update:
                         await ProcessUpdateApproval(request, approver);
                         break;
 
-                    case RequestTypeConstant.Delete:
+                    case RequestType.Delete:
                         await ProcessDeleteApproval(request, approver);
                         break;
 
@@ -622,15 +622,15 @@ namespace Flex.AspNetIdentity.Api.Services
                 // ===== Update request status =====
                 switch (request.Action)
                 {
-                    case RequestTypeConstant.Create:
+                    case RequestType.Create:
                         comment = "Yêu cầu thêm mới vai trò.";
                         break;
 
-                    case RequestTypeConstant.Update:
+                    case RequestType.Update:
                         comment = "Yêu cầu cập nhật vai trò.";
                         break;
 
-                    case RequestTypeConstant.Delete:
+                    case RequestType.Delete:
                         comment = "Yêu cầu xóa vai trò.";
                         break;
 
@@ -647,7 +647,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 {
                     RequestId = request.Id,
                     RequestType = request.Action,
-                    Status = RequestStatusConstant.Authorised,
+                    Status = RequestStatus.Authorised,
                     ApprovedBy = approver,
                     ApprovedDate = DateTime.UtcNow,
                     Comment = comment,
@@ -679,7 +679,7 @@ namespace Flex.AspNetIdentity.Api.Services
             {
                 Description = dto.Description,
                 IsActive = dto.IsActive,
-                Status = RequestStatusConstant.Authorised
+                Status = RequestStatus.Authorised
             };
 
             await _dbContext.Set<Role>().AddAsync(newRole);
@@ -728,7 +728,7 @@ namespace Flex.AspNetIdentity.Api.Services
             role.Name = dto.Name;
             role.Description = dto.Description;
             role.IsActive = dto.IsActive;
-            role.Status = RequestStatusConstant.Authorised;
+            role.Status = RequestStatus.Authorised;
 
             _dbContext.Update(role);
             await _dbContext.SaveChangesAsync();
@@ -768,7 +768,7 @@ namespace Flex.AspNetIdentity.Api.Services
 
         private async Task UpdateRequestStatus(RoleRequest request, string approver, string? comment)
         {
-            request.Status = RequestStatusConstant.Authorised;
+            request.Status = RequestStatus.Authorised;
             request.CheckerId = approver;
             request.ApproveDate = DateTime.UtcNow;
             request.Comments = comment ?? "Approved";
@@ -797,7 +797,7 @@ namespace Flex.AspNetIdentity.Api.Services
             var request = await _roleRequestRepository
                 .FindAll()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatusConstant.Unauthorised);
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatus.Unauthorised);
 
             if (request == null)
             {
@@ -821,7 +821,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 {
                     RequestId = request.Id,
                     RequestType = request.Action,
-                    Status = RequestStatusConstant.Rejected,
+                    Status = RequestStatus.Rejected,
                     ApprovedBy = rejecter,
                     ApprovedDate = DateTime.UtcNow,
                     Comment = reason ?? "Rejected"
@@ -839,13 +839,13 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         private async Task RevertRoleStatusIfNeeded(RoleRequest request)
         {
-            if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) 
+            if ((request.Action == RequestType.Update || request.Action == RequestType.Delete) 
                 && request.EntityId > 0)
             {
                 var role = await _dbContext.Set<Role>().FirstOrDefaultAsync(r => r.Id == request.EntityId);
                 if (role != null)
                 {
-                    role.Status = RequestStatusConstant.Authorised; // Revert to approved status
+                    role.Status = RequestStatus.Authorised; // Revert to approved status
                     _dbContext.Update(role);
                     await _dbContext.SaveChangesAsync();
                 }
@@ -857,7 +857,7 @@ namespace Flex.AspNetIdentity.Api.Services
         /// </summary>
         private async Task UpdateRejectedRequestStatus(RoleRequest request, string rejecter, string? reason)
         {
-            request.Status = RequestStatusConstant.Rejected;
+            request.Status = RequestStatus.Rejected;
             request.CheckerId = rejecter;
             request.ApproveDate = DateTime.UtcNow;
             request.Comments = reason ?? "Rejected";

@@ -4,7 +4,7 @@ using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.Contracts.Domains.Interfaces;
 using Flex.Infrastructure.Common.Repositories;
-using Flex.Shared.SeedWork.Workflow.Constants;
+using Flex.Infrastructure.Workflow.Constants;
 using Microsoft.EntityFrameworkCore;
 
 namespace Flex.AspNetIdentity.Api.Repositories
@@ -28,7 +28,7 @@ namespace Flex.AspNetIdentity.Api.Repositories
 		{
 			var query = GetAllUserRequests()
 				.Where(ur => EF.Functions.Like(ur.UserName.ToLower(), userName.ToLower()) 
-					&& ur.Status == RequestStatusConstant.Unauthorised);
+					&& ur.Status == RequestStatus.Unauthorised);
 
 			// Exclude current request if specified
 			if (excludeRequestId.HasValue)
@@ -44,7 +44,7 @@ namespace Flex.AspNetIdentity.Api.Repositories
 		{
 			var query = GetAllUserRequests()
 				.Where(ur => EF.Functions.Like(ur.Email.ToLower(), email.ToLower()) 
-					&& ur.Status == RequestStatusConstant.Unauthorised);
+					&& ur.Status == RequestStatus.Unauthorised);
 
 			// Exclude current request if specified
 			if (excludeRequestId.HasValue)
