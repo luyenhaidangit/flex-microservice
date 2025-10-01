@@ -224,13 +224,13 @@ namespace Flex.Notification.Api.Services
             switch (request.Action)
             {
                 case RequestType.Create:
-                    await ConvertCreateNotificationTemplateRequestData(request, result);
+                    this.ConvertCreateNotificationTemplateRequestData(request, result);
                     break;
                 case RequestType.Update:
-                    await ConvertUpdateNotificationTemplateRequestData(request, result);
+                    this.ConvertUpdateNotificationTemplateRequestData(request, result);
                     break;
                 case RequestType.Delete:
-                    await ConvertDeleteNotificationTemplateRequestData(request, result);
+                    this.ConvertDeleteNotificationTemplateRequestData(request, result);
                     break;
                 default:
                     throw new ValidationException(ErrorCode.InvalidRequestType);
@@ -246,7 +246,7 @@ namespace Flex.Notification.Api.Services
         /// <summary>
         /// Convert create notification template request data.
         /// </summary>
-        private async Task ConvertCreateNotificationTemplateRequestData(RequestBase<Guid> request, PendingRequestDtoBase<NotificationTemplateRequestDataDto> result)
+        private void ConvertCreateNotificationTemplateRequestData(RequestBase<Guid> request, PendingRequestDtoBase<NotificationTemplateRequestDataDto> result)
         {
             try
             {
@@ -263,7 +263,7 @@ namespace Flex.Notification.Api.Services
         /// <summary>
         /// Convert update notification template request data.
         /// </summary>
-        private async Task ConvertUpdateNotificationTemplateRequestData(RequestBase<Guid> request, PendingRequestDtoBase<NotificationTemplateRequestDataDto> result)
+        private void ConvertUpdateNotificationTemplateRequestData(RequestBase<Guid> request, PendingRequestDtoBase<NotificationTemplateRequestDataDto> result)
         {
             try
             {
@@ -296,7 +296,7 @@ namespace Flex.Notification.Api.Services
         /// <summary>
         /// Convert delete notification template request data.
         /// </summary>
-        private async Task ConvertDeleteNotificationTemplateRequestData(RequestBase<Guid> request, PendingRequestDtoBase<NotificationTemplateRequestDataDto> result)
+        private void ConvertDeleteNotificationTemplateRequestData(RequestBase<Guid> request, PendingRequestDtoBase<NotificationTemplateRequestDataDto> result)
         {
             try
             {
