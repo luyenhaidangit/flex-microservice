@@ -15,4 +15,3 @@ namespace Flex.Notification.Api.Repositories.Interfaces
     }
 }
 
-

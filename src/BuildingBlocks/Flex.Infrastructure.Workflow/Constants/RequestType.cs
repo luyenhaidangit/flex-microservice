@@ -1,6 +1,6 @@
 ﻿namespace Flex.Infrastructure.Workflow.Constants
 {
-    public static class RequestTypeConstant
+    public static class RequestType
     {
         public const string All = "ALL";
         public const string Create = "CREATE";
