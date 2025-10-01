@@ -1,5 +1,4 @@
 ﻿using Flex.Infrastructure.EntityFrameworkCore;
-using Flex.Infrastructure.EntityFrameworkCore;
 using Flex.Notification.Api.Entities;
 using Flex.Notification.Api.Entities.Views;
 using Microsoft.EntityFrameworkCore;
