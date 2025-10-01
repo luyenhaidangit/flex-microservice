@@ -1,36 +1,21 @@
 ﻿using Flex.Notification.Api.Entities.Views;
+using Flex.Infrastructure.EntityFrameworkCore.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Flex.Notification.Api.Persistence.Configurations.Views
 {
-    public class NotificationTemplateViewConfiguration : IEntityTypeConfiguration<NotificationTemplateRequestView>
+    public class NotificationTemplateViewConfiguration : RequestViewBaseConfiguration<NotificationTemplateRequestView>
     {
-        public void Configure(EntityTypeBuilder<NotificationTemplateRequestView> builder)
+        protected override void ConfigureView(EntityTypeBuilder<NotificationTemplateRequestView> builder)
         {
             // ===== View Configuration =====
             builder.ToView("V_NOTIFICATION_TEMPLATE_REQUESTS");
             builder.HasNoKey();
+        }
 
-            // ===== Request Base Properties =====
-            builder.Property(x => x.RequestId)
-                .HasColumnName("REQUEST_ID");
-
-            builder.Property(x => x.EntityId)
-                .HasColumnName("ENTITY_ID");
-
-            builder.Property(x => x.Status)
-                .HasColumnName("STATUS");
-
-            builder.Property(x => x.Action)
-                .HasColumnName("ACTION");
-
-            builder.Property(x => x.RequestedBy)
-                .HasColumnName("REQUESTED_BY");
-
-            builder.Property(x => x.RequestedDate)
-                .HasColumnName("REQUESTED_DATE");
-
+        protected override void ConfigureEntitySpecificProperties(EntityTypeBuilder<NotificationTemplateRequestView> builder)
+        {
             // ===== Notification Template Properties =====
             builder.Property(x => x.TemplateKey)
                 .HasColumnName("TEMPLATE_KEY");

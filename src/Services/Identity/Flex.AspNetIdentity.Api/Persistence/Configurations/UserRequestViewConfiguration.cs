@@ -1,36 +1,22 @@
 using Flex.AspNetIdentity.Api.Entities.Views;
+using Flex.Infrastructure.EntityFrameworkCore.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Flex.AspNetIdentity.Api.Persistence.Configurations
 {
-	public class UserRequestViewConfiguration : IEntityTypeConfiguration<UserRequestView>
+	public class UserRequestViewConfiguration : RequestViewBaseConfiguration<UserRequestView>
 	{
-		public void Configure(EntityTypeBuilder<UserRequestView> builder)
+		protected override void ConfigureView(EntityTypeBuilder<UserRequestView> builder)
 		{
 			// Map to database view
 			builder.ToView("V_USER_REQUESTS");
 			builder.HasNoKey();
+		}
 
-			// Map properties to view columns
-			builder.Property(x => x.RequestId)
-				.HasColumnName("REQUEST_ID");
-
-			builder.Property(x => x.EntityId)
-				.HasColumnName("ENTITY_ID");
-
-			builder.Property(x => x.Status)
-				.HasColumnName("STATUS");
-
-			builder.Property(x => x.Action)
-				.HasColumnName("ACTION");
-
-			builder.Property(x => x.RequestedBy)
-				.HasColumnName("REQUESTED_BY");
-
-			builder.Property(x => x.RequestedDate)
-				.HasColumnName("REQUESTED_DATE");
-
+		protected override void ConfigureEntitySpecificProperties(EntityTypeBuilder<UserRequestView> builder)
+		{
+			// ===== User Specific Properties =====
 			builder.Property(x => x.UserName)
 				.HasColumnName("USER_NAME");
 
