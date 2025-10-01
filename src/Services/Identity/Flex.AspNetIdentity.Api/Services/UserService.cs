@@ -10,7 +10,7 @@ using Flex.Infrastructure.Exceptions;
 using Flex.Shared.Constants;
 using Flex.Shared.SeedWork;
 using Flex.Shared.SeedWork.Workflow;
-using Flex.Shared.SeedWork.Workflow.Constants;
+using Flex.Infrastructure.Workflow.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -217,8 +217,8 @@ namespace Flex.AspNetIdentity.Api.Services
                     r => EF.Functions.Like(r.UserName.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(r.FullName.ToLower(), $"%{keyword}%") ||
                          EF.Functions.Like(r.Email.ToLower(), $"%{keyword}%"))
-                .Where(x => x.Status == RequestStatusConstant.Unauthorised)
-                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestTypeConstant.All, 
+                .Where(x => x.Status == RequestStatus.Unauthorised)
+                .WhereIf(!string.IsNullOrEmpty(requestType) && requestType != RequestType.All, 
                     r => r.Action == requestType)
                 .AsNoTracking()
                 .Select(r => new UserPendingPagingDto
@@ -272,13 +272,13 @@ namespace Flex.AspNetIdentity.Api.Services
             // ===== Process request data based on action type =====
             switch (request.Action)
             {
-                case RequestTypeConstant.Create:
+                case RequestType.Create:
                     await ConvertCreateUserRequestData(request, result);
                     break;
-                case RequestTypeConstant.Update:
+                case RequestType.Update:
                     await ConvertUpdateUserRequestData(request, result);
                     break;
-                case RequestTypeConstant.Delete:
+                case RequestType.Delete:
                     await ConvertDeleteUserRequestData(request, result);
                     break;
                 default:
@@ -308,8 +308,8 @@ namespace Flex.AspNetIdentity.Api.Services
             var requestedJson = JsonSerializer.Serialize(request);
             var requestDto = new UserRequest
             {
-                Action = RequestTypeConstant.Create,
-                Status = RequestStatusConstant.Unauthorised,
+                Action = RequestType.Create,
+                Status = RequestStatus.Unauthorised,
                 EntityId = 0,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
@@ -346,7 +346,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // ===== Check user request exists =====
-            if (user.Status == RequestStatusConstant.Unauthorised)
+            if (user.Status == RequestStatus.Unauthorised)
             {
                 throw new Exception("A pending update request already exists for this user.");
             }
@@ -357,8 +357,8 @@ namespace Flex.AspNetIdentity.Api.Services
             var requestedJson = JsonSerializer.Serialize(request);
             var userRequest = new UserRequest
             {
-                Action = RequestTypeConstant.Update,
-                Status = RequestStatusConstant.Unauthorised,
+                Action = RequestType.Update,
+                Status = RequestStatus.Unauthorised,
                 EntityId = user.Id,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
@@ -367,7 +367,7 @@ namespace Flex.AspNetIdentity.Api.Services
             };
 
             // ===== Update status process user =====
-            user.Status = RequestStatusConstant.Unauthorised;
+            user.Status = RequestStatus.Unauthorised;
 
             // ===== Transaction =====
             await using var transaction = await _userRequestRepository.BeginTransactionAsync();
@@ -407,7 +407,7 @@ namespace Flex.AspNetIdentity.Api.Services
             }
 
             // ===== Check pending request =====
-            if (user.Status == RequestStatusConstant.Unauthorised)
+            if (user.Status == RequestStatus.Unauthorised)
             {
                 throw new Exception("A pending delete request already exists for this user.");
             }
@@ -425,8 +425,8 @@ namespace Flex.AspNetIdentity.Api.Services
             var requestedBy = _userService.GetCurrentUsername() ?? "anonymous";
             var request = new UserRequest
             {
-                Action = RequestTypeConstant.Delete,
-                Status = RequestStatusConstant.Unauthorised,
+                Action = RequestType.Delete,
+                Status = RequestStatus.Unauthorised,
                 EntityId = user.Id,
                 MakerId = requestedBy,
                 RequestedDate = DateTime.UtcNow,
@@ -435,7 +435,7 @@ namespace Flex.AspNetIdentity.Api.Services
             };
 
             // ===== Update user status =====
-            user.Status = RequestStatusConstant.Unauthorised;
+            user.Status = RequestStatus.Unauthorised;
 
             // ===== Transaction =====
             await using var transaction = await _userRequestRepository.BeginTransactionAsync();
@@ -470,7 +470,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.RequestNotFound);
             }
 
-            if (request.Status != RequestStatusConstant.Unauthorised)
+            if (request.Status != RequestStatus.Unauthorised)
             {
                 throw new ValidationException(ErrorCode.RequestNotPending);
             }
@@ -484,19 +484,19 @@ namespace Flex.AspNetIdentity.Api.Services
                 // Process approval based on action type
                 switch (request.Action)
                 {
-                    case RequestTypeConstant.Create:
+                    case RequestType.Create:
                         await ProcessApproveCreateUser(request);
                         break;
-                    case RequestTypeConstant.Update:
+                    case RequestType.Update:
                         await ProcessApproveUpdateUser(request);
                         break;
-                    case RequestTypeConstant.Delete:
+                    case RequestType.Delete:
                         await ProcessApproveDeleteUser(request);
                         break;
                 }
 
                 // Update request status to approved
-                request.Status = RequestStatusConstant.Authorised;
+                request.Status = RequestStatus.Authorised;
                 request.CheckerId = approver;
                 request.ApproveDate = DateTime.UtcNow;
 
@@ -530,7 +530,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 throw new ValidationException(ErrorCode.RequestNotFound);
             }
 
-            if (request.Status != RequestStatusConstant.Unauthorised)
+            if (request.Status != RequestStatus.Unauthorised)
             {
                 _logger.LogWarning("Attempted to reject request ID: {RequestId} with status: {Status}", requestId, request.Status);
                 throw new ValidationException(ErrorCode.RequestNotPending);
@@ -544,20 +544,20 @@ namespace Flex.AspNetIdentity.Api.Services
             try
             {
                 // ===== Handle different request types =====
-                if (request.Action == RequestTypeConstant.Create)
+                if (request.Action == RequestType.Create)
                 {
                     // For CREATE requests, user doesn't exist yet, so no need to revert anything
                     _logger.LogInformation("Rejecting CREATE request ID: {RequestId}, UserName: {UserName}, " +
                         "RejectedBy: {RejectedBy}, Reason: {Reason}", requestId, GetUserNameFromRequestData(request), rejecter, reason);
                 }
-                else if ((request.Action == RequestTypeConstant.Update || request.Action == RequestTypeConstant.Delete) && request.EntityId > 0)
+                else if ((request.Action == RequestType.Update || request.Action == RequestType.Delete) && request.EntityId > 0)
                 {
                     // For UPDATE/DELETE requests, revert user status
                     var user = await _userRepository.FindByCondition(x => x.Id == request.EntityId).FirstOrDefaultAsync();
 
                     if (user != null) 
                     {
-                        user.Status = RequestStatusConstant.Authorised;
+                        user.Status = RequestStatus.Authorised;
                         await _userRepository.UpdateAsync(user);
                         
                         _logger.LogInformation("Reverted user status to Authorised for UserId: {UserId}, UserName: {UserName} " +
@@ -571,7 +571,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 }
 
                 // ===== Update request status =====
-                request.Status = RequestStatusConstant.Rejected;
+                request.Status = RequestStatus.Rejected;
                 request.CheckerId = rejecter;
                 request.ApproveDate = DateTime.UtcNow;
                 request.Comments = reason;
@@ -701,17 +701,17 @@ namespace Flex.AspNetIdentity.Api.Services
         {
             try
             {
-                if (request.Action == RequestTypeConstant.Create)
+                if (request.Action == RequestType.Create)
                 {
                     var dto = JsonSerializer.Deserialize<CreateUserRequest>(request.RequestedData);
                     return dto?.UserName ?? "Unknown";
                 }
-                else if (request.Action == RequestTypeConstant.Update)
+                else if (request.Action == RequestType.Update)
                 {
                     var data = JsonSerializer.Deserialize<Dictionary<string, object>>(request.RequestedData);
                     return data?.GetValueOrDefault("UserName")?.ToString() ?? "Unknown";
                 }
-                else if (request.Action == RequestTypeConstant.Delete)
+                else if (request.Action == RequestType.Delete)
                 {
                     // For DELETE, we can get username from the user entity
                     return "Unknown"; // Will be logged separately if needed
@@ -916,7 +916,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 FullName = dto.FullName,
                 BranchId = dto.BranchId,
                 IsActive = dto.IsActive,
-                Status = RequestStatusConstant.Authorised,
+                Status = RequestStatus.Authorised,
                 EmailConfirmed = false,
                 PhoneNumberConfirmed = false,
                 TwoFactorEnabled = false,
@@ -988,13 +988,13 @@ namespace Flex.AspNetIdentity.Api.Services
             user.Email = dto.Email;
             user.BranchId = dto.BranchId;
             user.IsActive = dto.IsActive;
-            user.Status = RequestStatusConstant.Authorised;
+            user.Status = RequestStatus.Authorised;
 
             // ===== Update user (no transaction - handled by caller) =====
             await _userRepository.UpdateAsync(user);
 
             // ===== Update request status =====
-            request.Status = RequestStatusConstant.Authorised;
+            request.Status = RequestStatus.Authorised;
             request.EntityId = user.Id;
             request.CheckerId = _userService.GetCurrentUsername() ?? "system";
             request.ApproveDate = DateTime.UtcNow;
@@ -1023,7 +1023,7 @@ namespace Flex.AspNetIdentity.Api.Services
             _logger.LogInformation("User deleted successfully: {UserId}", user.Id);
 
             // ===== Update request status =====
-            request.Status = RequestStatusConstant.Authorised;
+            request.Status = RequestStatus.Authorised;
             request.EntityId = user.Id;
             request.CheckerId = _userService.GetCurrentUsername() ?? "system";
             request.ApproveDate = DateTime.UtcNow;

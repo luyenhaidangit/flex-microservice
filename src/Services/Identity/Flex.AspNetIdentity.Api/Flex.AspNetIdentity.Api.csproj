@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.EntityFrameworkCore.Oracle\Flex.Infrastructure.EntityFrameworkCore.Oracle.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.Grpc.Client\Flex.Infrastructure.Grpc.Client.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.Json\Flex.Infrastructure.Json.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.Workflow\Flex.Infrastructure.Workflow.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.Security\Flex.Security.csproj" />
     <ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
