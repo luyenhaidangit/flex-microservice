@@ -11,6 +11,7 @@ using Flex.Notification.Api.Repositories.Interfaces;
 using Flex.Notification.Api.Services;
 using Flex.Notification.Api.Services.Interfaces;
 using Flex.Shared.Extensions;
+using MassTransit;
 
 namespace Flex.Notification.Api.Extensions
 {
@@ -44,7 +45,7 @@ namespace Flex.Notification.Api.Extensions
             services.AddGrpc();
 
             // RabbitMQ
-            services.ConfigureRabbitMQ(configuration);
+            services.ConfigureMassTransit(configuration);
 
             return services;
         }
@@ -63,10 +64,20 @@ namespace Flex.Notification.Api.Extensions
             return services;
         }
 
-        private static IServiceCollection ConfigureRabbitMQ(this IServiceCollection services, IConfiguration configuration)
+        private static IServiceCollection ConfigureMassTransit(this IServiceCollection services, IConfiguration configuration)
         {
-            var rabbitMQConfig = configuration.GetSection("RabbitMQ");
-           
+            services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("213.35.100.75", 5672, "/", h =>
+                    {
+                        h.Username("admin");
+                        h.Password("Admin#12345");
+                    });
+                });
+            });
+
             return services;
         }
         #endregion

@@ -1,0 +1,3 @@
+- Kết nối rabbitmq có 2 nuget phổ biến là RabbitMQ.Client và MassTransit.
+Trong đó RabbitMQ.Client là thư viện chính thức RabbitMQ cung cấp. Khi sử dụng phải tự quản lý Tạo connection, channel, Declare exchange/queue, binding, Publish message (convert object → byte[]),...
+Còn MassTransit là service bus framework cho .NET open source, dùng RabbitMQ.Client bên dưới.Nó cung cấp abstraction cao hơn: Đăng ký consumer → MassTransit tự tạo queue/exchange, Publish/Send message chỉ cần await bus.Publish(obj); → nó serialize + gửi, Có sẵn middleware: Retry, Circuit Breaker, Saga, Outbox, OpenTelemetry, HealthCheck… Hỗ trợ nhiều broker: RabbitMQ, Kafka, Azure Service Bus, ActiveMQ, Amazon SQS.
