@@ -1,14 +1,9 @@
-using Flex.Contracts.Events.Test;
-using Flex.Infrastructure.EntityFrameworkCore;
 using Flex.Infrastructure.Workflow.DTOs;
-using Flex.Notification.Api.Entities;
 using Flex.Notification.Api.Models.NotificationTemplate;
-using Flex.Notification.Api.Persistence;
 using Flex.Notification.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Notification.Api.Controllers
 {
@@ -16,17 +11,11 @@ namespace Flex.Notification.Api.Controllers
     [Route("api/[controller]")]
     public class NotificationTemplateController : ControllerBase
     {
-        private readonly NotificationDbContext _context;
         private readonly INotificationTemplateService _notificationTemplateService;
-        private readonly IPublishEndpoint _publishEndpoint;
 
-        public NotificationTemplateController(
-            NotificationDbContext context,
-            INotificationTemplateService notificationTemplateService, IPublishEndpoint publishEndpoint)
+        public NotificationTemplateController(INotificationTemplateService notificationTemplateService)
         {
-            _context = context;
             _notificationTemplateService = notificationTemplateService;
-            _publishEndpoint = publishEndpoint;
         }
 
         /// <summary>
