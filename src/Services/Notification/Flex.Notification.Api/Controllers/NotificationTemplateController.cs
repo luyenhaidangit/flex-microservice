@@ -1,3 +1,4 @@
+using Flex.Contracts.Events.Test;
 using Flex.Infrastructure.EntityFrameworkCore;
 using Flex.Infrastructure.Workflow.DTOs;
 using Flex.Notification.Api.Entities;
@@ -5,6 +6,7 @@ using Flex.Notification.Api.Models.NotificationTemplate;
 using Flex.Notification.Api.Persistence;
 using Flex.Notification.Api.Services.Interfaces;
 using Flex.Shared.SeedWork;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,13 +18,35 @@ namespace Flex.Notification.Api.Controllers
     {
         private readonly NotificationDbContext _context;
         private readonly INotificationTemplateService _notificationTemplateService;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public NotificationTemplateController(
             NotificationDbContext context,
-            INotificationTemplateService notificationTemplateService)
+            INotificationTemplateService notificationTemplateService, IPublishEndpoint publishEndpoint)
         {
             _context = context;
             _notificationTemplateService = notificationTemplateService;
+            _publishEndpoint = publishEndpoint;
+        }
+
+        /// <summary>
+        /// Get all notification templates
+        /// </summary>
+        /// <returns>List of notification templates</returns>
+        [HttpGet("publish-test")]
+        public async Task<IActionResult> PublishTestEvent()
+        {
+            var evt = new TestEvent(
+                Guid.NewGuid(),
+                "WELCOME",
+                "test@example.com",
+                "Hello from Notification API!",
+                DateTime.UtcNow
+            );
+
+            await _publishEndpoint.Publish(evt);
+
+            return Ok(Result.Success($"Published TestEvent with ID {evt.MessageId}"));
         }
 
         /// <summary>
