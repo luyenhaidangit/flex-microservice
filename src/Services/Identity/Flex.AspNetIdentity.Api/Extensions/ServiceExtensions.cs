@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Flex.AspNetIdentity.Api.Consumers;
 using Flex.AspNetIdentity.Api.Entities;
+using Flex.AspNetIdentity.Api.Integrations;
+using Flex.AspNetIdentity.Api.Integrations.Configurations;
+using Flex.AspNetIdentity.Api.Integrations.Interfaces;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
@@ -17,10 +19,9 @@ using Flex.Shared.Authorization;
 using Flex.Shared.Constants;
 using Flex.Shared.Extensions;
 using Flex.System.Grpc.Services;
-using Flex.AspNetIdentity.Api.Integrations.Interfaces;
-using Flex.AspNetIdentity.Api.Integrations;
-using Flex.AspNetIdentity.Api.Integrations.Configurations;
 using MassTransit;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace Flex.AspNetIdentity.Api.Extensions
 {
@@ -59,7 +60,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.ConfigureGrpcClients(configuration);
 
             // RabbitMQ
-            //services.ConfigureRabbitMQ(configuration);
+            services.ConfigureMassTransit(configuration);
 
             return services;
         }
@@ -103,6 +104,27 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddGrpcClient<BranchService.BranchServiceClient>(o =>
             {
                 o.Address = new Uri(grpcSettings.SystemUrl);
+            });
+
+            return services;
+        }
+
+        private static IServiceCollection ConfigureMassTransit(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("213.35.100.75", 5672, "/", h =>
+                    {
+                        h.Username("admin");
+                        h.Password("Admin#12345");
+                    });
+
+                    cfg.ConfigureEndpoints(context);
+                });
+
+                x.AddConsumer<TestEventConsumer>();
             });
 
             return services;
