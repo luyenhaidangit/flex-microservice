@@ -30,5 +30,14 @@ namespace Flex.Notification.Api.Services.Interfaces
         /// Get pending notification template request detail by request ID.
         /// </summary>
         Task<PendingRequestDtoBase<NotificationTemplateRequestDataDto>> GetPendingNotificationTemplateRequestDetailAsync(long requestId, CancellationToken ct);
+
+        // Commands — maker (create pending requests)
+        Task<long> CreateNotificationTemplateRequestAsync(CreateNotificationTemplateRequestDto dto, CancellationToken ct);
+        Task<long> CreateUpdateNotificationTemplateRequestAsync(Guid templateId, UpdateNotificationTemplateRequestDto dto, CancellationToken ct);
+        Task<long> CreateDeleteNotificationTemplateRequestAsync(Guid templateId, DeleteNotificationTemplateRequestDto dto, CancellationToken ct);
+
+        // Commands — checker (approve/reject)
+        Task<NotificationTemplateApprovalResultDto> ApprovePendingNotificationTemplateRequestAsync(long requestId, string? comment, CancellationToken ct);
+        Task<NotificationTemplateApprovalResultDto> RejectPendingNotificationTemplateRequestAsync(long requestId, string? reason, CancellationToken ct);
     }
 }

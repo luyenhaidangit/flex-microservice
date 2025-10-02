@@ -60,6 +60,7 @@ namespace Flex.Notification.Api.Extensions
 
             // Services
             services.AddScoped<INotificationTemplateService, NotificationTemplateService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             return services;
         }

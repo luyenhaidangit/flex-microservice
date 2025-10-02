@@ -16,13 +16,16 @@ namespace Flex.Notification.Api.Services
     {
         private readonly ILogger<NotificationTemplateService> _logger;
         private readonly INotificationTemplateRepository _notificationTemplateRepository;
+        private readonly ICurrentUserService _currentUserService;
 
         public NotificationTemplateService(
             ILogger<NotificationTemplateService> logger,
-            INotificationTemplateRepository notificationTemplateRepository)
+            INotificationTemplateRepository notificationTemplateRepository,
+            ICurrentUserService currentUserService)
         {
             _logger = logger;
             _notificationTemplateRepository = notificationTemplateRepository;
+            _currentUserService = currentUserService;
         }
 
         #region Query
@@ -237,6 +240,386 @@ namespace Flex.Notification.Api.Services
             }
 
             return result;
+        }
+
+        #endregion
+
+        #region Command — Maker
+
+        public async Task<long> CreateNotificationTemplateRequestAsync(CreateNotificationTemplateRequestDto dto, CancellationToken ct)
+        {
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
+            // Uniqueness checks
+            var exists = await _notificationTemplateRepository.FindAll()
+                .AnyAsync(t => t.TemplateKey == dto.TemplateKey, ct);
+            if (exists)
+                throw new ValidationException(ErrorCode.Conflict);
+
+            var pendingExists = await _notificationTemplateRepository.GetNotificationTemplateRequests()
+                .AnyAsync(r => r.TemplateKey == dto.TemplateKey && r.Status == RequestStatus.Unauthorised, ct);
+            if (pendingExists)
+                throw new ValidationException(ErrorCode.Conflict);
+
+            // Create request
+            var maker = _currentUserService.GetCurrentUsername() ?? "anonymous";
+            var requestedJson = System.Text.Json.JsonSerializer.Serialize(new NotificationTemplateRequestDataDto
+            {
+                TemplateKey = dto.TemplateKey,
+                Name = dto.Name,
+                Channel = dto.Channel,
+                Format = dto.Format,
+                Language = dto.Language,
+                Subject = dto.Subject,
+                BodyHtml = dto.BodyHtml,
+                BodyText = dto.BodyText,
+                IsActive = dto.IsActive,
+                VariablesSpecJson = dto.VariablesSpecJson
+            });
+
+            var req = new RequestBase<Guid>
+            {
+                EntityId = Guid.Empty,
+                Action = RequestType.Create,
+                Status = RequestStatus.Unauthorised,
+                MakerId = maker,
+                RequestedDate = DateTime.UtcNow,
+                RequestedData = requestedJson,
+                Comments = string.IsNullOrWhiteSpace(dto.Comment) ? "Yêu cầu thêm mới mẫu thông báo." : dto.Comment
+            };
+
+            await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet().AddAsync(req, ct);
+            await _notificationTemplateRepository.SaveChangesAsync();
+            return req.Id;
+        }
+
+        public async Task<long> CreateUpdateNotificationTemplateRequestAsync(Guid templateId, UpdateNotificationTemplateRequestDto dto, CancellationToken ct)
+        {
+            // Find template
+            var template = await _notificationTemplateRepository.FindAll().FirstOrDefaultAsync(t => t.Id == templateId, ct)
+                           ?? throw new ValidationException(ErrorCode.TemplateNotFound);
+
+            if (template.Status == RequestStatus.Unauthorised)
+                throw new ValidationException(ErrorCode.Conflict);
+
+            // Build new/old snapshot
+            var oldData = new NotificationTemplateRequestDataDto
+            {
+                TemplateKey = template.TemplateKey,
+                Name = template.Name,
+                Channel = template.Channel,
+                Format = template.Format,
+                Language = template.Language,
+                Subject = template.Subject,
+                BodyHtml = template.BodyHtml,
+                BodyText = template.BodyText,
+                IsActive = template.IsActive,
+                VariablesSpecJson = template.VariablesSpecJson
+            };
+            var newData = new NotificationTemplateRequestDataDto
+            {
+                TemplateKey = template.TemplateKey, // immutable
+                Name = dto.Name,
+                Channel = dto.Channel,
+                Format = dto.Format,
+                Language = dto.Language,
+                Subject = dto.Subject,
+                BodyHtml = dto.BodyHtml,
+                BodyText = dto.BodyText,
+                IsActive = dto.IsActive,
+                VariablesSpecJson = dto.VariablesSpecJson
+            };
+
+            var requestedJson = System.Text.Json.JsonSerializer.Serialize(new { newData, oldData });
+            var maker = _currentUserService.GetCurrentUsername() ?? "anonymous";
+
+            // Update status to lock
+            template.Status = RequestStatus.Unauthorised;
+
+            await using var tx = await _notificationTemplateRepository.BeginTransactionAsync();
+            try
+            {
+                var req = new RequestBase<Guid>
+                {
+                    EntityId = template.Id,
+                    Action = RequestType.Update,
+                    Status = RequestStatus.Unauthorised,
+                    MakerId = maker,
+                    RequestedDate = DateTime.UtcNow,
+                    RequestedData = requestedJson,
+                    Comments = string.IsNullOrWhiteSpace(dto.Comment) ? "Yêu cầu cập nhật mẫu thông báo." : dto.Comment
+                };
+
+                await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet().AddAsync(req, ct);
+                await _notificationTemplateRepository.SaveChangesAsync();
+
+                await _notificationTemplateRepository.UpdateAsync(template);
+                await tx.CommitAsync();
+                return req.Id;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<long> CreateDeleteNotificationTemplateRequestAsync(Guid templateId, DeleteNotificationTemplateRequestDto dto, CancellationToken ct)
+        {
+            // Find template
+            var template = await _notificationTemplateRepository.FindAll().FirstOrDefaultAsync(t => t.Id == templateId, ct)
+                           ?? throw new ValidationException(ErrorCode.TemplateNotFound);
+
+            if (template.Status == RequestStatus.Unauthorised)
+                throw new ValidationException(ErrorCode.Conflict);
+
+            var oldData = new NotificationTemplateRequestDataDto
+            {
+                TemplateKey = template.TemplateKey,
+                Name = template.Name,
+                Channel = template.Channel,
+                Format = template.Format,
+                Language = template.Language,
+                Subject = template.Subject,
+                BodyHtml = template.BodyHtml,
+                BodyText = template.BodyText,
+                IsActive = template.IsActive,
+                VariablesSpecJson = template.VariablesSpecJson
+            };
+            var requestedJson = System.Text.Json.JsonSerializer.Serialize(oldData);
+
+            var maker = _currentUserService.GetCurrentUsername() ?? "anonymous";
+            template.Status = RequestStatus.Unauthorised;
+
+            await using var tx = await _notificationTemplateRepository.BeginTransactionAsync();
+            try
+            {
+                var req = new RequestBase<Guid>
+                {
+                    EntityId = template.Id,
+                    Action = RequestType.Delete,
+                    Status = RequestStatus.Unauthorised,
+                    MakerId = maker,
+                    RequestedDate = DateTime.UtcNow,
+                    RequestedData = requestedJson,
+                    Comments = string.IsNullOrWhiteSpace(dto.Comment) ? "Yêu cầu xóa mẫu thông báo." : dto.Comment
+                };
+
+                await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet().AddAsync(req, ct);
+                await _notificationTemplateRepository.SaveChangesAsync();
+
+                await _notificationTemplateRepository.UpdateAsync(template);
+                await tx.CommitAsync();
+                return req.Id;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region Command — Checker
+
+        public async Task<NotificationTemplateApprovalResultDto> ApprovePendingNotificationTemplateRequestAsync(long requestId, string? comment, CancellationToken ct)
+        {
+            if (requestId <= 0) throw new ArgumentException("RequestId must be greater than 0.", nameof(requestId));
+
+            var approver = _currentUserService.GetCurrentUsername() ?? "system";
+            var request = await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatus.Unauthorised, ct)
+                ?? throw new ValidationException(ErrorCode.RequestNotFound);
+
+            // SoD: maker != checker
+            if (!string.IsNullOrWhiteSpace(request.MakerId) && string.Equals(request.MakerId, approver, StringComparison.OrdinalIgnoreCase))
+                throw new ValidationException(ErrorCode.Forbidden);
+
+            await using var tx = await _notificationTemplateRepository.BeginTransactionAsync();
+            try
+            {
+                Guid? createdId = null;
+
+                switch (request.Action)
+                {
+                    case RequestType.Create:
+                        createdId = await ApplyCreateAsync(request, ct);
+                        comment = "Yêu cầu thêm mới mẫu thông báo.";
+                        break;
+                    case RequestType.Update:
+                        await ApplyUpdateAsync(request, ct);
+                        comment = "Yêu cầu cập nhật mẫu thông báo.";
+                        break;
+                    case RequestType.Delete:
+                        await ApplyDeleteAsync(request, ct);
+                        comment = "Yêu cầu xóa mẫu thông báo.";
+                        break;
+                    default:
+                        throw new ValidationException(ErrorCode.InvalidRequestType);
+                }
+
+                // Update request status
+                var reqEntity = await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet()
+                    .FirstAsync(r => r.Id == request.Id, ct);
+                reqEntity.Status = RequestStatus.Authorised;
+                reqEntity.CheckerId = approver;
+                reqEntity.ApproveDate = DateTime.UtcNow;
+                reqEntity.Comments = comment ?? "Approved";
+                await _notificationTemplateRepository.SaveChangesAsync();
+
+                await tx.CommitAsync();
+
+                return new NotificationTemplateApprovalResultDto
+                {
+                    RequestId = request.Id,
+                    RequestType = request.Action,
+                    Status = RequestStatus.Authorised,
+                    ApprovedBy = approver,
+                    ApprovedDate = DateTime.UtcNow,
+                    Comment = comment,
+                    CreatedTemplateId = createdId
+                };
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<NotificationTemplateApprovalResultDto> RejectPendingNotificationTemplateRequestAsync(long requestId, string? reason, CancellationToken ct)
+        {
+            if (requestId <= 0) throw new ArgumentException("RequestId must be greater than 0.", nameof(requestId));
+
+            var rejecter = _currentUserService.GetCurrentUsername() ?? "system";
+            var request = await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.Status == RequestStatus.Unauthorised, ct)
+                ?? throw new ValidationException(ErrorCode.RequestNotFound);
+
+            await using var tx = await _notificationTemplateRepository.BeginTransactionAsync();
+            try
+            {
+                // Revert status for update/delete
+                if ((request.Action == RequestType.Update || request.Action == RequestType.Delete) && request.EntityId != Guid.Empty)
+                {
+                    var entity = await _notificationTemplateRepository.FindAll().FirstOrDefaultAsync(t => t.Id == request.EntityId, ct);
+                    if (entity != null)
+                    {
+                        entity.Status = RequestStatus.Authorised;
+                        await _notificationTemplateRepository.UpdateAsync(entity);
+                    }
+                }
+
+                // Update request status
+                var reqEntity = await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet()
+                    .FirstAsync(r => r.Id == request.Id, ct);
+                reqEntity.Status = RequestStatus.Rejected;
+                reqEntity.CheckerId = rejecter;
+                reqEntity.ApproveDate = DateTime.UtcNow;
+                reqEntity.Comments = reason ?? "Rejected";
+                await _notificationTemplateRepository.SaveChangesAsync();
+
+                await tx.CommitAsync();
+
+                return new NotificationTemplateApprovalResultDto
+                {
+                    RequestId = request.Id,
+                    RequestType = request.Action,
+                    Status = RequestStatus.Rejected,
+                    ApprovedBy = rejecter,
+                    ApprovedDate = DateTime.UtcNow,
+                    Comment = reason
+                };
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+        }
+
+        private async Task<Guid> ApplyCreateAsync(RequestBase<Guid> request, CancellationToken ct)
+        {
+            var data = SafeParseNewData(request.RequestedData);
+            if (data == null) throw new ValidationException(ErrorCode.InvalidRequestData);
+
+            var entity = new Entities.NotificationTemplate
+            {
+                Id = Guid.NewGuid(),
+                TemplateKey = data.TemplateKey,
+                Name = data.Name,
+                Channel = data.Channel,
+                Format = data.Format,
+                Language = data.Language,
+                Subject = data.Subject,
+                BodyHtml = data.BodyHtml,
+                BodyText = data.BodyText,
+                IsActive = data.IsActive,
+                VariablesSpecJson = data.VariablesSpecJson,
+                Status = RequestStatus.Authorised
+            };
+            await _notificationTemplateRepository.CreateAsync(entity);
+
+            // Attach created Id back to request
+            var reqEntity = await _notificationTemplateRepository.GetNotificationTemplateRequestsDbSet()
+                .FirstAsync(r => r.Id == request.Id, ct);
+            reqEntity.EntityId = entity.Id;
+            await _notificationTemplateRepository.SaveChangesAsync();
+
+            return entity.Id;
+        }
+
+        private async Task ApplyUpdateAsync(RequestBase<Guid> request, CancellationToken ct)
+        {
+            var data = SafeParseNewData(request.RequestedData);
+            if (data == null) throw new ValidationException(ErrorCode.InvalidRequestData);
+
+            var entity = await _notificationTemplateRepository.FindAll().FirstOrDefaultAsync(t => t.Id == request.EntityId, ct)
+                         ?? throw new ValidationException(ErrorCode.TemplateNotFound);
+
+            entity.Name = data.Name;
+            entity.Channel = data.Channel;
+            entity.Format = data.Format;
+            entity.Language = data.Language;
+            entity.Subject = data.Subject;
+            entity.BodyHtml = data.BodyHtml;
+            entity.BodyText = data.BodyText;
+            entity.IsActive = data.IsActive;
+            entity.VariablesSpecJson = data.VariablesSpecJson;
+            entity.Status = RequestStatus.Authorised;
+
+            await _notificationTemplateRepository.UpdateAsync(entity);
+        }
+
+        private async Task ApplyDeleteAsync(RequestBase<Guid> request, CancellationToken ct)
+        {
+            var entity = await _notificationTemplateRepository.FindAll().FirstOrDefaultAsync(t => t.Id == request.EntityId, ct)
+                         ?? throw new ValidationException(ErrorCode.TemplateNotFound);
+            await _notificationTemplateRepository.DeleteAsync(entity);
+        }
+
+        private NotificationTemplateRequestDataDto? SafeParseNewData(string rawJson)
+        {
+            try
+            {
+                // Support both direct object and wrapper { newData, oldData }
+                // Try wrapper first
+                var wrapper = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(rawJson);
+                if (wrapper != null && wrapper.ContainsKey("newData"))
+                {
+                    var newDataJson = wrapper["newData"]?.ToString() ?? "{}";
+                    return System.Text.Json.JsonSerializer.Deserialize<NotificationTemplateRequestDataDto>(newDataJson);
+                }
+
+                return System.Text.Json.JsonSerializer.Deserialize<NotificationTemplateRequestDataDto>(rawJson);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #endregion
