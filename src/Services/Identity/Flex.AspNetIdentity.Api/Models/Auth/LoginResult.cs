@@ -1,4 +1,4 @@
-﻿namespace Flex.Shared.DTOs.Identity
+namespace Flex.AspNetIdentity.Api.Models.Auth
 {
     public class LoginResult
     {
@@ -9,8 +9,9 @@
         public LoginResult(string? accessToken)
         {
             AccessToken = accessToken;
-        }   
+        }
 
         public string? AccessToken { get; set; }
     }
 }
+

@@ -1,5 +1,5 @@
 using FluentValidation;
-using Flex.Shared.DTOs.Identity;
+using Flex.AspNetIdentity.Api.Models.Auth;
 
 namespace Flex.AspNetIdentity.Api.Validators
 {

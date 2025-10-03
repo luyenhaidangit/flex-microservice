@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Flex.AspNetIdentity.Api.Entities;
-using Flex.Shared.DTOs.Identity;
 
 namespace Flex.AspNetIdentity.Api
 {
@@ -9,7 +7,6 @@ namespace Flex.AspNetIdentity.Api
         public MappingProfile()
         {
             // Identity
-            CreateMap<RegisterUserRequest, User>();
         }
     }
 }

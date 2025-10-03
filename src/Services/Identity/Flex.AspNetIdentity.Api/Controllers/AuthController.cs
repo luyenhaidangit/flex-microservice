@@ -2,7 +2,7 @@
 using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.Security;
-using Flex.Shared.DTOs.Identity;
+using Flex.AspNetIdentity.Api.Models.Auth;
 using Flex.Shared.SeedWork;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -90,35 +90,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
 
             _logger.LogInformation("User {Username} logged in successfully.", request.UserName);
             return Ok(Result.Success(message: "Login success!", data: result));
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
-        {
-            _logger.LogInformation("Attempting to register user: {Email}", request.Email);
-
-            // Validate
-            var existingUser = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (existingUser != null)
-            {
-                return BadRequest(Result.Failure(message: "User already exists with this email."));
-            }
-
-            var existingUsername = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName == request.Email);
-            if (existingUsername != null)
-            {
-                return BadRequest(Result.Failure(message: "User already exists with this username."));
-            }
-
-            // Process
-            var user = _mapper.Map<User>(request);
-            user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
-
-            await _dbContext.Set<User>().AddAsync(user);
-            await _dbContext.SaveChangesAsync();
-
-            _logger.LogInformation("User {Email} registered successfully.", request.Email);
-            return Ok(Result.Success(message: "User registered successfully"));
         }
 
         [HttpPost("logout")]

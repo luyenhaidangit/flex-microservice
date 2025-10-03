@@ -1,4 +1,4 @@
-﻿namespace Flex.Shared.DTOs.Identity
+namespace Flex.AspNetIdentity.Api.Models.Auth
 {
     public class UserInfoResult
     {
@@ -6,3 +6,4 @@
         public string Email { get; set; } = string.Empty;
     }
 }
+
