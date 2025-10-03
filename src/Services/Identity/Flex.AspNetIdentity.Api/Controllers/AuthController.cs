@@ -37,6 +37,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         [HttpPost("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             var ok = await _authService.LogoutAsync(User, HttpContext.RequestAborted);
@@ -49,6 +50,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         }
 
         [HttpGet("me")]
+        [Authorize]
         public async Task<IActionResult> GetCurrentUserInfo()
         {
             var userInfo = await _authService.GetCurrentUserInfoAsync(User, HttpContext.RequestAborted);
