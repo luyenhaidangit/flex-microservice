@@ -1,8 +1,8 @@
 # Hệ Thống Workflow Duyệt (Maker-Checker)  
 
 ## 1. Thông tin chung
-- **Mã tính năng**: `FT-WORKFLOW-001`  
-- **Module liên quan**: Flex.AspNetIdentity.Api, Flex.System.Api, Flex.Notification.Api  
+- **Mã tính năng**: `FT-WORKFLOW-GENERIC`  
+- **Module liên quan**: Tất cả modules có entity cần duyệt  
 - **Người phụ trách**: Development Team  
 - **Ngày viết**: 2025-01-03  
 - **Phiên bản**: v1.0
@@ -17,22 +17,22 @@ Hệ thống workflow duyệt (Maker-Checker) được thiết kế để đảm
 - Kiểm soát quyền hạn và trách nhiệm rõ ràng
 - Audit trail đầy đủ cho các thay đổi quan trọng
 - Tuân thủ các quy định về kiểm soát nội bộ
+- Pattern có thể áp dụng cho bất kỳ entity nào
 
 ---
 
 ## 3. Phạm vi
 - **In-scope**: 
-  - Quản lý User (tạo, sửa, xóa người dùng)
-  - Quản lý Role (tạo, sửa, xóa vai trò)
-  - Quản lý Branch (tạo, sửa, xóa chi nhánh)
-  - Quản lý NotificationTemplate (tạo, sửa, xóa template)
+  - Bất kỳ entity nào cần kiểm soát thay đổi
   - Luồng duyệt: PENDING → APPROVED/REJECTED
   - Audit trail và history tracking
+  - Generic pattern cho tất cả modules
 
 - **Out-of-scope**: 
   - Các thao tác đọc dữ liệu (GET operations)
   - Authentication/Authorization (đã có hệ thống riêng)
   - Real-time notifications (chỉ có basic notification)
+  - Business logic cụ thể của từng entity
 
 ---
 
@@ -60,7 +60,7 @@ sequenceDiagram
 
     Maker->>Frontend: Tạo yêu cầu (CREATE/UPDATE/DELETE)
     Frontend->>API: POST /api/{entity}/requests
-    API->>DB: Lưu Request với status PENDING
+    API->>DB: Lưu {Entity}Request với status PENDING
     DB-->>API: Trả Request ID
     API-->>Frontend: Thông báo thành công
     Frontend-->>Maker: Hiển thị "Đã gửi yêu cầu"
@@ -74,7 +74,7 @@ sequenceDiagram
 
     Checker->>Frontend: Chọn Approve/Reject
     Frontend->>API: POST /api/{entity}/requests/{id}/approve hoặc /reject
-    API->>DB: Cập nhật status và thực thi logic
+    API->>DB: Cập nhật status và thực thi business logic
     DB-->>API: Kết quả thực thi
     API-->>Frontend: Thông báo kết quả
     Frontend-->>Checker: Hiển thị kết quả
@@ -107,51 +107,46 @@ sequenceDiagram
 ---
 
 ## 6. Thiết kế API
-### 6.1 Endpoints
-**User Management:**
-- `POST /api/users/requests` - Tạo yêu cầu user
-- `GET /api/users/requests/pending` - Lấy danh sách pending requests
-- `GET /api/users/requests/pending/{id}` - Lấy chi tiết request
-- `POST /api/users/requests/pending/{id}/approve` - Phê duyệt request
-- `POST /api/users/requests/pending/{id}/reject` - Từ chối request
-
-**Role Management:**
-- `POST /api/roles/requests` - Tạo yêu cầu role
-- `GET /api/roles/requests/pending` - Lấy danh sách pending requests
-- `POST /api/roles/requests/pending/{id}/approve` - Phê duyệt request
-- `POST /api/roles/requests/pending/{id}/reject` - Từ chối request
-
-**Branch Management:**
-- `POST /api/branches/requests` - Tạo yêu cầu branch
-- `GET /api/branches/requests/pending` - Lấy danh sách pending requests
-- `POST /api/branches/requests/pending/{id}/approve` - Phê duyệt request
-- `POST /api/branches/requests/pending/{id}/reject` - Từ chối request
+### 6.1 Generic Endpoints Pattern
+**Cho bất kỳ entity nào:**
+- `POST /api/{entity}/requests` - Tạo yêu cầu thay đổi entity
+- `GET /api/{entity}/requests/pending` - Lấy danh sách pending requests
+- `GET /api/{entity}/requests/pending/{id}` - Lấy chi tiết request
+- `POST /api/{entity}/requests/pending/{id}/approve` - Phê duyệt request
+- `POST /api/{entity}/requests/pending/{id}/reject` - Từ chối request
+- `GET /api/{entity}/history/{entityId}` - Lấy lịch sử thay đổi entity
 
 ### 6.2 Request Examples
-**Create User Request:**
+**Create Entity Request:**
 ```json
 {
-  "userName": "john.doe",
-  "fullName": "John Doe",
-  "email": "john.doe@example.com",
-  "phoneNumber": "0123456789",
-  "branchId": 1,
-  "isActive": true,
-  "comments": "Tạo user mới cho phòng IT"
+  "field1": "value1",
+  "field2": "value2",
+  "comments": "Lý do tạo mới"
+}
+```
+
+**Update Entity Request:**
+```json
+{
+  "entityId": 123,
+  "field1": "newValue1",
+  "field2": "newValue2",
+  "comments": "Lý do cập nhật"
 }
 ```
 
 **Approve Request:**
 ```json
 {
-  "comments": "Phê duyệt tạo user mới"
+  "comments": "Phê duyệt thay đổi"
 }
 ```
 
 **Reject Request:**
 ```json
 {
-  "rejectionReason": "Thiếu thông tin xác thực"
+  "rejectionReason": "Lý do từ chối"
 }
 ```
 
@@ -164,10 +159,9 @@ sequenceDiagram
     "items": [
       {
         "requestId": 123,
-        "userName": "john.doe",
-        "fullName": "John Doe",
+        "entityName": "Entity Name",
         "requestType": "CREATE",
-        "requestedBy": "admin",
+        "requestedBy": "maker",
         "requestedDate": "2025-01-03T10:30:00Z",
         "status": "PENDING"
       }
@@ -186,14 +180,13 @@ sequenceDiagram
   "data": {
     "requestId": 123,
     "type": "CREATE",
-    "requestedBy": "admin",
+    "requestedBy": "maker",
     "requestedDate": "2025-01-03T10:30:00Z",
     "newData": {
-      "userName": "john.doe",
-      "fullName": "John Doe",
-      "email": "john.doe@example.com",
-      "branchName": "Hà Nội"
-    }
+      "field1": "value1",
+      "field2": "value2"
+    },
+    "oldData": null
   }
 }
 ```
@@ -211,23 +204,21 @@ sequenceDiagram
 ---
 
 ## 7. Database Impact
-### 7.1 Cấu trúc Database
-**Base Tables:**
-- `USERS` - Bảng người dùng chính
-- `ROLES` - Bảng vai trò
-- `BRANCHES` - Bảng chi nhánh
-- `NOTIFICATION_TEMPLATES` - Bảng template thông báo
+### 7.1 Generic Database Pattern
+**Base Entity Tables:**
+- `{ENTITY_NAME}` - Bảng entity chính (ví dụ: USERS, ROLES, BRANCHES)
+- `{ENTITY_NAME}_REQUESTS` - Bảng yêu cầu thay đổi entity
 
-**Request Tables:**
-- `USER_REQUESTS` - Yêu cầu thay đổi user
-- `ROLE_REQUESTS` - Yêu cầu thay đổi role  
-- `BRANCH_REQUESTS` - Yêu cầu thay đổi branch
-- `NOTIFICATION_TEMPLATE_REQUESTS` - Yêu cầu thay đổi template
+**Common Fields cho tất cả Entity Tables:**
+- `STATUS` VARCHAR2(3) - Trạng thái entity (UNA, AUT, REJ)
+- `CREATED_DATE` TIMESTAMP - Ngày tạo
+- `CREATED_BY` VARCHAR2(256) - Người tạo
+- `UPDATED_DATE` TIMESTAMP - Ngày cập nhật
+- `UPDATED_BY` VARCHAR2(256) - Người cập nhật
 
-### 7.2 Schema Design
-**RequestBase Table Structure:**
+### 7.2 RequestBase Table Structure
 ```sql
--- Base structure cho tất cả request tables
+-- Generic structure cho tất cả request tables
 CREATE TABLE {ENTITY}_REQUESTS (
     ID NUMBER(19) PRIMARY KEY,
     ENTITY_ID NUMBER(19) NOT NULL,
@@ -245,27 +236,23 @@ CREATE TABLE {ENTITY}_REQUESTS (
     UPDATED_BY VARCHAR2(256)
 );
 
--- Indexes cho performance
+-- Generic indexes cho performance
 CREATE INDEX IX_{ENTITY}_REQUESTS_STATUS ON {ENTITY}_REQUESTS(STATUS);
 CREATE INDEX IX_{ENTITY}_REQUESTS_ENTITY_ID ON {ENTITY}_REQUESTS(ENTITY_ID);
 CREATE INDEX IX_{ENTITY}_REQUESTS_MAKER_ID ON {ENTITY}_REQUESTS(MAKER_ID);
 CREATE INDEX IX_{ENTITY}_REQUESTS_REQUESTED_DATE ON {ENTITY}_REQUESTS(REQUESTED_DATE);
 ```
 
-**Entity Tables với Status:**
+### 7.3 Entity Tables với Status
 ```sql
 -- Tất cả entity tables đều có cột STATUS
-ALTER TABLE USERS ADD STATUS VARCHAR2(3) DEFAULT 'AUT';
-ALTER TABLE ROLES ADD STATUS VARCHAR2(3) DEFAULT 'AUT';
-ALTER TABLE BRANCHES ADD STATUS VARCHAR2(3) DEFAULT 'AUT';
+ALTER TABLE {ENTITY} ADD STATUS VARCHAR2(3) DEFAULT 'AUT';
 
--- Indexes cho STATUS
-CREATE INDEX IX_USERS_STATUS ON USERS(STATUS);
-CREATE INDEX IX_ROLES_STATUS ON ROLES(STATUS);
-CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
+-- Generic index cho STATUS
+CREATE INDEX IX_{ENTITY}_STATUS ON {ENTITY}(STATUS);
 ```
 
-### 7.3 Data Flow
+### 7.4 Data Flow Pattern
 1. **CREATE Request**: `ENTITY_ID = 0`, `REQUESTED_DATA` chứa data mới
 2. **UPDATE Request**: `ENTITY_ID = actual_id`, `REQUESTED_DATA` chứa oldData + newData
 3. **DELETE Request**: `ENTITY_ID = actual_id`, `REQUESTED_DATA` chứa snapshot data
@@ -273,52 +260,55 @@ CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
 ---
 
 ## 8. UI/UX Design Guidelines
-### 8.1 Visual Design
-- **Màu sắc**: 
+### 8.1 Generic Visual Design
+- **Màu sắc chuẩn**: 
   - Pending: #ffc107 (Warning - Vàng)
   - Approved: #28a745 (Success - Xanh lá)
   - Rejected: #dc3545 (Danger - Đỏ)
   - Primary: #007bff (Bootstrap blue)
 
-### 8.2 User Experience
+### 8.2 Generic User Experience
 - **Pending Requests List**: 
   - Hiển thị badge màu theo trạng thái
   - Icon phân biệt loại request (CREATE/UPDATE/DELETE)
   - Search và filter theo keyword
+  - Pagination cho danh sách lớn
 - **Request Detail Modal**: 
   - Side-by-side comparison cho UPDATE requests
   - Highlight các field thay đổi
   - Loading states khi approve/reject
+  - Responsive design
 - **Action Buttons**: 
   - Approve: Màu xanh với icon check
   - Reject: Màu đỏ với icon X
   - Disabled state khi đang xử lý
 
-### 8.3 Responsive Design
+### 8.3 Generic Component Pattern
+- **Entity List Component**: Hiển thị danh sách entity đã approved
+- **Pending Requests Component**: Hiển thị danh sách requests chờ duyệt
+- **Request Detail Modal**: Chi tiết request với oldData/newData
+- **Approve/Reject Modal**: Form để approve hoặc reject request
+- **History Component**: Lịch sử thay đổi entity
+
+### 8.4 Responsive Design
 - **Desktop**: Table layout với đầy đủ thông tin
 - **Tablet**: Card layout với thông tin cơ bản
 - **Mobile**: List layout với action buttons
 
-### 8.4 Accessibility
-- ARIA labels cho screen readers
-- Keyboard navigation support
-- High contrast mode support
-- Focus indicators rõ ràng
-
 ---
 
 ## 9. Logging & Audit
-### 9.1 Log Format
+### 9.1 Generic Log Format
 ```json
 {
   "timestamp": "2025-01-03T10:30:00Z",
   "level": "INFO",
-  "message": "User request approved",
+  "message": "{Entity} request {action}",
   "requestId": "123",
-  "entityType": "USER",
-  "action": "CREATE",
-  "makerId": "admin",
-  "checkerId": "supervisor",
+  "entityType": "{ENTITY}",
+  "action": "CREATE|UPDATE|DELETE",
+  "makerId": "maker_user",
+  "checkerId": "checker_user",
   "ipAddress": "192.168.1.100",
   "userAgent": "Mozilla/5.0...",
   "correlationId": "abc-123-def",
@@ -326,17 +316,17 @@ CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
 }
 ```
 
-### 9.2 Log Levels
+### 9.2 Generic Log Levels
 - **ERROR**: Request processing failures, system errors
 - **WARN**: Validation failures, suspicious activity
 - **INFO**: Successful approve/reject operations
 - **DEBUG**: Detailed request/response data
 
-### 9.3 Audit Trail Fields
+### 9.3 Generic Audit Trail Fields
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | requestId | NUMBER(19) | Yes | ID của request |
-| entityType | VARCHAR2(50) | Yes | Loại entity (USER, ROLE, BRANCH) |
+| entityType | VARCHAR2(50) | Yes | Loại entity (generic) |
 | action | VARCHAR2(20) | Yes | Action performed (CREATE, UPDATE, DELETE) |
 | makerId | VARCHAR2(256) | Yes | ID của người tạo request |
 | checkerId | VARCHAR2(256) | No | ID của người duyệt request |
@@ -346,7 +336,7 @@ CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
 | ipAddress | VARCHAR2(45) | Yes | IP address của client |
 | userAgent | VARCHAR2(500) | No | Browser/client information |
 
-### 9.4 Retention Policy
+### 9.4 Generic Retention Policy
 - **Request History**: 2 năm
 - **Audit Logs**: 3 năm
 - **Error Logs**: 6 tháng
@@ -354,12 +344,12 @@ CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
 ---
 
 ## 10. Test Cases
-### 10.1 Functional Tests
+### 10.1 Generic Functional Tests
 | ID | Test Case | Input | Expected Output | Priority |
 |----|-----------|-------|-----------------|----------|
-| TC-001 | Tạo CREATE request thành công | Valid user data | Request với status PENDING | High |
-| TC-002 | Approve CREATE request | Valid request ID | User được tạo, status APPROVED | High |
-| TC-003 | Reject CREATE request | Valid request ID + reason | Status REJECTED, user không được tạo | High |
+| TC-001 | Tạo CREATE request thành công | Valid entity data | Request với status PENDING | High |
+| TC-002 | Approve CREATE request | Valid request ID | Entity được tạo, status APPROVED | High |
+| TC-003 | Reject CREATE request | Valid request ID + reason | Status REJECTED, entity không được tạo | High |
 | TC-004 | Tạo UPDATE request | Valid update data | Request với oldData + newData | High |
 | TC-005 | Approve UPDATE request | Valid request ID | Entity được cập nhật | High |
 | TC-006 | Tạo DELETE request | Valid entity ID | Request với snapshot data | High |
@@ -368,14 +358,14 @@ CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
 | TC-009 | Invalid request ID | Non-existent ID | 404 Not Found | Medium |
 | TC-010 | Unauthorized access | Invalid permissions | 403 Forbidden | High |
 
-### 10.2 Performance Tests
+### 10.2 Generic Performance Tests
 | ID | Test Case | Load | Expected Response Time | Priority |
 |----|-----------|------|----------------------|----------|
 | PT-001 | Load test approve/reject | 100 concurrent operations | <500ms average | High |
 | PT-002 | Load test pending list | 1000 concurrent requests | <200ms average | Medium |
 | PT-003 | Volume test | 10,000 requests/hour | 99.9% success rate | Medium |
 
-### 10.3 Security Tests
+### 10.3 Generic Security Tests
 | ID | Test Case | Description | Expected Result | Priority |
 |----|-----------|-------------|-----------------|----------|
 | ST-001 | SQL Injection | Malicious input in comments | Input sanitized | High |
@@ -383,18 +373,18 @@ CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
 | ST-003 | Authorization bypass | Direct API calls | Proper permission check | High |
 | ST-004 | Data tampering | Modify request data | Validation prevents | High |
 
-### 10.4 Integration Tests
+### 10.4 Generic Integration Tests
 | ID | Test Case | Description | Expected Result | Priority |
 |----|-----------|-------------|-----------------|----------|
-| IT-001 | User workflow end-to-end | CREATE → APPROVE → Verify | User created successfully | High |
-| IT-002 | Role workflow end-to-end | UPDATE → APPROVE → Verify | Role updated successfully | High |
-| IT-003 | Branch workflow end-to-end | DELETE → APPROVE → Verify | Branch deleted successfully | High |
-| IT-004 | Cross-module integration | User with branch reference | Data consistency maintained | Medium |
+| IT-001 | Generic workflow end-to-end | CREATE → APPROVE → Verify | Entity created successfully | High |
+| IT-002 | Update workflow end-to-end | UPDATE → APPROVE → Verify | Entity updated successfully | High |
+| IT-003 | Delete workflow end-to-end | DELETE → APPROVE → Verify | Entity deleted successfully | High |
+| IT-004 | Cross-module integration | Entity with references | Data consistency maintained | Medium |
 
 ---
 
 ## 11. Security Considerations
-### 11.1 OWASP Top 10 Compliance
+### 11.1 Generic OWASP Top 10 Compliance
 - **A01 - Broken Access Control**: Role-based permissions cho approve/reject
 - **A02 - Cryptographic Failures**: HTTPS only, secure data transmission
 - **A03 - Injection**: Parameterized queries, input validation
@@ -402,19 +392,21 @@ CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
 - **A05 - Security Misconfiguration**: Proper CORS, security headers
 - **A07 - Identification Failures**: Audit trail cho tất cả operations
 
-### 11.2 Authorization Security
+### 11.2 Generic Authorization Security
 - Permission-based access control cho từng endpoint
 - Maker chỉ có thể tạo request, không thể approve
 - Checker chỉ có thể approve/reject, không thể tạo request
 - Admin có thể thực hiện tất cả operations
+- Entity-specific permissions khi cần thiết
 
-### 11.3 Data Security
+### 11.3 Generic Data Security
 - Sensitive data được hash/encrypt khi cần thiết
 - Request data được validate và sanitize
 - Audit trail không thể bị modify
 - Database constraints đảm bảo data integrity
+- Generic validation patterns
 
-### 11.4 Network Security
+### 11.4 Generic Network Security
 - HTTPS only (TLS 1.2+)
 - CORS configuration
 - Security headers (HSTS, CSP, X-Frame-Options)
@@ -423,39 +415,44 @@ CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
 ---
 
 ## 12. Monitoring & Alerting
-### 12.1 Metrics
-- Request approval rate
-- Average processing time
+### 12.1 Generic Metrics
+- Request approval rate by entity type
+- Average processing time by operation
 - Error rate by operation type
-- Pending requests count
+- Pending requests count by entity
 - Maker/Checker activity patterns
+- System performance metrics
 
-### 12.2 Alerts
+### 12.2 Generic Alerts
 - **Critical**: Approval rate < 80%
 - **Warning**: Processing time > 1 second
 - **Info**: High volume of pending requests
 - **Critical**: System errors in workflow processing
+- **Warning**: Unusual activity patterns
 
-### 12.3 Health Checks
+### 12.3 Generic Health Checks
 - Database connectivity
 - Request processing pipeline
 - External service availability
 - Cache performance
+- Entity-specific health checks
 
 ---
 
 ## 13. Deployment & Rollback
-### 13.1 Deployment Strategy
+### 13.1 Generic Deployment Strategy
 - Blue-green deployment
 - Database migration compatibility
 - Feature flags for gradual rollout
 - Zero-downtime deployment
+- Entity-specific deployment considerations
 
-### 13.2 Rollback Plan
+### 13.2 Generic Rollback Plan
 - Database rollback scripts
 - Application version rollback
 - Configuration rollback
 - Data consistency checks
+- Entity-specific rollback procedures
 
 ---
 
@@ -467,21 +464,43 @@ CREATE INDEX IX_BRANCHES_STATUS ON BRANCHES(STATUS);
 | Data inconsistency | High | Low | ACID transactions, constraints |
 | Performance degradation | Medium | Medium | Database optimization, caching |
 | Security breach | High | Low | Audit logging, permission controls |
+| Entity-specific business logic errors | Medium | Medium | Comprehensive testing, validation |
 
 ---
 
-## 15. Tài liệu tham khảo
+## 15. Implementation Guidelines
+### 15.1 Generic Implementation Steps
+1. **Entity Setup**: Tạo entity class kế thừa từ `ApprovalEntityBase<TKey>`
+2. **Request Setup**: Tạo request class kế thừa từ `RequestBase<TKey>`
+3. **Configuration**: Tạo configuration cho entity và request
+4. **Repository**: Implement repository với workflow methods
+5. **Service**: Implement service với approve/reject logic
+6. **Controller**: Tạo controller với generic endpoints
+7. **Frontend**: Tạo components theo generic pattern
+8. **Testing**: Implement test cases theo generic pattern
+
+### 15.2 Generic Code Patterns
+- Sử dụng generic base classes và interfaces
+- Implement common validation patterns
+- Sử dụng generic DTOs và mappers
+- Apply consistent error handling
+- Follow naming conventions
+
+---
+
+## 16. Tài liệu tham khảo
 - [Flex Microservice Architecture](docs/architecture.md)
 - [Entity Management Workflow](docs/agents/ENTITY_MANAGEMENT_WORKFLOW.md)
 - [API Documentation](docs/apis/)
 - [Database Schema](flex-database/)
 - [Frontend Components](flex-microfrontend/src/app/pages/system/)
+- [Generic Workflow Pattern](docs/patterns/workflow-pattern.md)
 
 ---
 
-## 16. Changelog
+## 17. Changelog
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
-| v1.0 | 2025-01-03 | Initial workflow documentation | Development Team |
+| v1.0 | 2025-01-03 | Generic workflow documentation | Development Team |
 
 ---
