@@ -2,6 +2,7 @@ using Flex.Shared.SeedWork;
 using Flex.Workflow.Api.Models.Requests;
 using Flex.Workflow.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Flex.Workflow.Api.Controllers
 {
@@ -37,6 +38,7 @@ namespace Flex.Workflow.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpPost("{id:long}/approve")]
         public async Task<IActionResult> Approve([FromRoute] long id, [FromBody] ApproveRequestDto dto, CancellationToken ct)
         {
@@ -44,6 +46,7 @@ namespace Flex.Workflow.Api.Controllers
             return Ok(Result.Success());
         }
 
+        [Authorize]
         [HttpPost("{id:long}/reject")]
         public async Task<IActionResult> Reject([FromRoute] long id, [FromBody] RejectRequestDto dto, CancellationToken ct)
         {
@@ -52,4 +55,3 @@ namespace Flex.Workflow.Api.Controllers
         }
     }
 }
-

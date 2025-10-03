@@ -7,6 +7,8 @@ using Flex.Workflow.Api.Entities;
 using Flex.Workflow.Api.Models.Requests;
 using Flex.Workflow.Api.Repositories.Interfaces;
 using Flex.Workflow.Api.Services.Interfaces;
+using Flex.Workflow.Api.Services.Policy;
+using Flex.Workflow.Api.Services.Steps;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
@@ -22,6 +24,8 @@ namespace Flex.Workflow.Api.Services
         private readonly IOutboxRepository _outboxRepo;
         private readonly IWorkflowDefinitionRepository _definitionRepo;
         private readonly IMapper _mapper;
+        private readonly IPolicyEvaluator _policy;
+        private readonly IStepResolver _steps;
 
         public RequestService(
             IApprovalRequestRepository requestRepo,
@@ -29,7 +33,9 @@ namespace Flex.Workflow.Api.Services
             IWorkflowAuditLogRepository auditRepo,
             IOutboxRepository outboxRepo,
             IWorkflowDefinitionRepository definitionRepo,
-            IMapper mapper)
+            IMapper mapper,
+            IPolicyEvaluator policy,
+            IStepResolver steps)
         {
             _requestRepo = requestRepo;
             _actionRepo = actionRepo;
@@ -37,6 +43,8 @@ namespace Flex.Workflow.Api.Services
             _outboxRepo = outboxRepo;
             _definitionRepo = definitionRepo;
             _mapper = mapper;
+            _policy = policy;
+            _steps = steps;
         }
 
         public async Task<long> CreateAsync(CreateApprovalRequestDto dto, CancellationToken ct = default)
@@ -67,17 +75,49 @@ namespace Flex.Workflow.Api.Services
 
             await _requestRepo.CreateAsync(request);
 
-            // Audit genesis
-            await WriteAuditAsync(request.Id, "request.created", dto.MakerId, new { dto.Domain, dto.WorkflowCode, dto.Action, dto.BusinessId }, ct);
-
-            // Outbox
-            await _outboxRepo.CreateAsync(new OutboxEvent
+            // Policy evaluation
+            JsonDocument? payloadDoc = null;
+            if (!string.IsNullOrWhiteSpace(request.RequestedData))
             {
-                Aggregate = "workflow.request",
-                AggregateId = request.Id.ToString(),
-                EventType = "request.created",
-                Payload = JsonSerializer.Serialize(new { request.Id, request.Domain, request.WorkflowCode, request.Action, request.Status, request.MakerId, request.RequestedDate })
-            });
+                try { payloadDoc = JsonDocument.Parse(request.RequestedData); } catch { }
+            }
+            var decision = _policy.Evaluate(definition.Policy, payloadDoc);
+
+            // Steps parse
+            var stepDoc = _steps.Parse(definition.Steps);
+            var totalStages = _steps.GetCurrentStage(Array.Empty<ApprovalAction>(), stepDoc).totalStages;
+
+            if (decision.Result.Equals("auto", StringComparison.OrdinalIgnoreCase) && totalStages == 0)
+            {
+                // Auto-approve when no manual steps defined
+                request.Status = RequestStatus.Authorised;
+                request.CheckerId = "policy:auto";
+                request.ApproveDate = DateTime.UtcNow;
+                await _requestRepo.UpdateAsync(request);
+
+                await WriteAuditAsync(request.Id, "request.auto_approved", request.CheckerId!, new { decision = decision.Result }, ct);
+                await _outboxRepo.CreateAsync(new OutboxEvent
+                {
+                    Aggregate = "workflow.request",
+                    AggregateId = request.Id.ToString(),
+                    EventType = "request.auto_approved",
+                    Payload = JsonSerializer.Serialize(new { request.Id, request.Domain, request.WorkflowCode, request.Action, request.Status })
+                });
+            }
+            else
+            {
+                // Audit genesis
+                await WriteAuditAsync(request.Id, "request.created", dto.MakerId, new { dto.Domain, dto.WorkflowCode, dto.Action, dto.BusinessId }, ct);
+
+                // Outbox
+                await _outboxRepo.CreateAsync(new OutboxEvent
+                {
+                    Aggregate = "workflow.request",
+                    AggregateId = request.Id.ToString(),
+                    EventType = "request.created",
+                    Payload = JsonSerializer.Serialize(new { request.Id, request.Domain, request.WorkflowCode, request.Action, request.Status, request.MakerId, request.RequestedDate })
+                });
+            }
 
             return request.Id;
         }
@@ -130,7 +170,16 @@ namespace Flex.Workflow.Api.Services
 
             // In a real engine, determine the required step; for MVP, step = count(actions)+1
             var existingActions = await _actionRepo.GetByRequestAsync(requestId, ct);
-            var nextStep = (existingActions?.Count ?? 0) + 1;
+
+            // Resolve stage & steps
+            var definition = await _definitionRepo.GetActiveByCodeAsync(request.WorkflowCode, ct) ?? new Entities.WorkflowDefinition();
+            var stepDoc = _steps.Parse(definition.Steps);
+            var (currentStage, totalStages) = _steps.GetCurrentStage(existingActions, stepDoc);
+            var nextStep = Math.Min(currentStage + 1, Math.Max(1, totalStages));
+
+            // SoD (maker != approver)
+            if (string.Equals(request.MakerId, dto.ApproverId, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Approver cannot be the same as maker (SoD)");
 
             var action = new ApprovalAction
             {
@@ -144,11 +193,16 @@ namespace Flex.Workflow.Api.Services
             };
             await _actionRepo.CreateAsync(action);
 
-            // For MVP, single-step -> finalise
-            request.Status = RequestStatus.Authorised;
-            request.CheckerId = dto.ApproverId;
-            request.ApproveDate = DateTime.UtcNow;
-            await _requestRepo.UpdateAsync(request);
+            // Check if stage completes and if this is final stage
+            var newActions = await _actionRepo.GetByRequestAsync(requestId, ct);
+            var stageComplete = _steps.IsStageComplete(nextStep - 1, newActions, stepDoc);
+            if (stageComplete && nextStep >= totalStages)
+            {
+                request.Status = RequestStatus.Authorised;
+                request.CheckerId = dto.ApproverId;
+                request.ApproveDate = DateTime.UtcNow;
+                await _requestRepo.UpdateAsync(request);
+            }
 
             await WriteAuditAsync(requestId, "request.approved", dto.ApproverId, new { action.Step, dto.Comment }, ct);
 
@@ -156,7 +210,7 @@ namespace Flex.Workflow.Api.Services
             {
                 Aggregate = "workflow.request",
                 AggregateId = requestId.ToString(),
-                EventType = "request.approved",
+                EventType = request.Status == RequestStatus.Authorised ? "request.approved_final" : "request.approved_progress",
                 Payload = JsonSerializer.Serialize(new { requestId, request.Domain, request.WorkflowCode, request.Action, request.Status, dto.ApproverId })
             });
         }

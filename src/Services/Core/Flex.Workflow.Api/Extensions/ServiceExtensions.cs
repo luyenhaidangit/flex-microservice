@@ -11,6 +11,8 @@ using Flex.Workflow.Api.Repositories;
 using Flex.Workflow.Api.Repositories.Interfaces;
 using Flex.Workflow.Api.Services;
 using Flex.Workflow.Api.Services.Interfaces;
+using Flex.Workflow.Api.Services.Policy;
+using Flex.Workflow.Api.Services.Steps;
 using MassTransit;
 
 namespace Flex.Workflow.Api.Extensions
@@ -45,6 +47,9 @@ namespace Flex.Workflow.Api.Extensions
             // DI
             services.AddInfrastructureServices();
 
+            // Hosted services
+            services.AddHostedService<OutboxDispatcherHostedService>();
+
             return services;
         }
 
@@ -59,7 +64,9 @@ namespace Flex.Workflow.Api.Extensions
                 .AddScoped<IWorkflowAuditLogRepository, WorkflowAuditLogRepository>()
                 .AddScoped<IOutboxRepository, OutboxRepository>()
                 .AddScoped<IWorkflowDefinitionService, WorkflowDefinitionService>()
-                .AddScoped<IRequestService, RequestService>();
+                .AddScoped<IRequestService, RequestService>()
+                .AddSingleton<IPolicyEvaluator, SimplePolicyEvaluator>()
+                .AddSingleton<IStepResolver, SimpleStepResolver>();
         }
 
         private static IServiceCollection ConfigureRabbitMQ(this IServiceCollection services, IConfiguration configuration)
@@ -88,4 +95,3 @@ namespace Flex.Workflow.Api.Extensions
         }
     }
 }
-
