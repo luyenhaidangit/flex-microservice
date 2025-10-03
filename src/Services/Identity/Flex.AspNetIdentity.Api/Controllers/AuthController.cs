@@ -32,10 +32,6 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> Login([FromBody] LoginByUserNameRequest request)
         {
             var login = await _authService.LoginAsync(request, HttpContext.RequestAborted);
-            if (login is null)
-            {
-                return BadRequest(Result.Failure(message: "Invalid username or password."));
-            }
 
             return Ok(Result.Success(message: "Login success!", data: login));
         }
@@ -44,7 +40,7 @@ namespace Flex.AspNetIdentity.Api.Controllers
         public async Task<IActionResult> Logout()
         {
             var ok = await _authService.LogoutAsync(User, HttpContext.RequestAborted);
-            _logger.LogInformation("User {UserName} logged out.", User.FindFirstValue(ClaimTypesApp.Sub));
+
             if (!ok)
             {
                 return BadRequest(Result.Failure("Invalid token."));
@@ -62,8 +58,10 @@ namespace Flex.AspNetIdentity.Api.Controllers
                 {
                     return Unauthorized(Result.Failure(message: "Unauthorized"));
                 }
+
                 return BadRequest(Result.Failure(message: "User not found"));
             }
+
             return Ok(Result.Success(message: "Get info user success!", data: userInfo));
         }
     }

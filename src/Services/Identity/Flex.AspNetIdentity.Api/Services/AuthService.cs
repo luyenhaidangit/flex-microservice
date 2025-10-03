@@ -4,6 +4,8 @@ using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.Security;
+using Flex.Infrastructure.Exceptions;
+using Flex.Shared.Constants;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
@@ -34,23 +36,23 @@ namespace Flex.AspNetIdentity.Api.Services
             _userRepository = userRepository;
         }
 
-        public async Task<LoginResult?> LoginAsync(LoginByUserNameRequest request, CancellationToken cancellationToken = default)
+        public async Task<LoginResult> LoginAsync(LoginByUserNameRequest request, CancellationToken cancellationToken = default)
         {
             var user = await _userRepository.GetByUserNameAsync(request.UserName, cancellationToken);
             if (user is null)
             {
-                return null;
+                throw new ValidationException(ErrorCode.InvalidCredentials);
             }
 
             if (string.IsNullOrEmpty(user.PasswordHash))
             {
-                return null;
+                throw new ValidationException(ErrorCode.InvalidCredentials);
             }
 
             var verify = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
             if (verify == PasswordVerificationResult.Failed)
             {
-                return null;
+                throw new ValidationException(ErrorCode.InvalidCredentials);
             }
 
             var roleNames = await _userRepository.GetRoleNamesAsync(user.Id, cancellationToken);
@@ -97,24 +99,21 @@ namespace Flex.AspNetIdentity.Api.Services
             return true;
         }
 
-        public async Task<UserInfoResult?> GetCurrentUserInfoAsync(ClaimsPrincipal user, CancellationToken cancellationToken = default)
+        public async Task<UserInfoResult> GetCurrentUserInfoAsync(ClaimsPrincipal user, CancellationToken cancellationToken = default)
         {
             var userName = user.FindFirstValue(ClaimTypesApp.Sub);
             if (string.IsNullOrEmpty(userName))
             {
-                return null;
+                throw new ValidationException(ErrorCode.Unauthorized);
             }
 
-            var entity = await _userRepository.GetByUserNameAsync(userName, cancellationToken);
-            if (entity is null)
-            {
-                return null;
-            }
+            var entity = await _userRepository.GetByUserNameAsync(userName, cancellationToken)
+                ?? throw new ValidationException(ErrorCode.UserNotFound);
 
             var userInfo = new UserInfoResult
             {
-                UserName = entity.UserName,
-                Email = entity.Email
+                UserName = entity.UserName ?? string.Empty,
+                Email = entity.Email ?? string.Empty
             };
 
             return userInfo;

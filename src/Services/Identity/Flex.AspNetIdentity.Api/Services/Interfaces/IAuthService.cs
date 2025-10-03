@@ -5,8 +5,8 @@ namespace Flex.AspNetIdentity.Api.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<LoginResult?> LoginAsync(LoginByUserNameRequest request, CancellationToken cancellationToken = default);
+        Task<LoginResult> LoginAsync(LoginByUserNameRequest request, CancellationToken cancellationToken = default);
         Task<bool> LogoutAsync(ClaimsPrincipal user, CancellationToken cancellationToken = default);
-        Task<UserInfoResult?> GetCurrentUserInfoAsync(ClaimsPrincipal user, CancellationToken cancellationToken = default);
+        Task<UserInfoResult> GetCurrentUserInfoAsync(ClaimsPrincipal user, CancellationToken cancellationToken = default);
     }
 }
