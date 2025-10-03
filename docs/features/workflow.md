@@ -31,7 +31,6 @@ Hệ thống workflow duyệt (Maker-Checker) được thiết kế để đảm
 - **Out-of-scope**: 
   - Các thao tác đọc dữ liệu (GET operations)
   - Authentication/Authorization (đã có hệ thống riêng)
-  - Real-time notifications (chỉ có basic notification)
   - Business logic cụ thể của từng entity
 
 ---
