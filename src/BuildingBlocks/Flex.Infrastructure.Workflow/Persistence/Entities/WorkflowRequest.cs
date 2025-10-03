@@ -1,13 +1,12 @@
-using Flex.Infrastructure.Workflow.Abstractions.Enums;
+using Flex.Contracts.Domains;
 
 namespace Flex.Infrastructure.Workflow.Persistence.Entities;
 
-public class WorkflowRequest
+public class WorkflowRequest : EntityBase<long>
 {
-    public long Id { get; set; }
     public string WorkflowType { get; set; } = string.Empty;
     public string EntityId { get; set; } = string.Empty;
-    public WorkflowStatus Status { get; set; } = WorkflowStatus.Pending;
+    public string Status { get; set; } = string.Empty; // Use RequestStatus constants
     public string RequestedBy { get; set; } = string.Empty;
     public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
     public string PayloadJson { get; set; } = string.Empty;
@@ -15,4 +14,3 @@ public class WorkflowRequest
     public string? CorrelationId { get; set; }
     public string? MetadataJson { get; set; }
 }
-

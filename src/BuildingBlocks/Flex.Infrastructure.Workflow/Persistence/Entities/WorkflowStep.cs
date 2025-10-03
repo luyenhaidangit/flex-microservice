@@ -1,18 +1,16 @@
-using Flex.Infrastructure.Workflow.Abstractions.Enums;
+using Flex.Contracts.Domains;
 
 namespace Flex.Infrastructure.Workflow.Persistence.Entities;
 
-public class WorkflowStep
+public class WorkflowStep : EntityBase<long>
 {
-    public long Id { get; set; }
     public long RequestId { get; set; }
     public int Level { get; set; }
     public int Order { get; set; }
     public string? ApproverRole { get; set; }
     public string? ApproverUser { get; set; }
-    public Decision Decision { get; set; } = Decision.None;
+    public string Decision { get; set; } = string.Empty; // e.g., "APP"/"REJ" or use constants later
     public string? DecidedBy { get; set; }
     public DateTime? DecidedAt { get; set; }
     public string? Comment { get; set; }
 }
-

@@ -1,5 +1,5 @@
 using Flex.Infrastructure.Workflow.Abstractions.DTOs;
-using Flex.Infrastructure.Workflow.Abstractions.Enums;
+using Flex.Infrastructure.Workflow.Constants;
 using Flex.Infrastructure.Workflow.Abstractions.Interfaces;
 using Flex.Infrastructure.Workflow.Abstractions.Interfaces.Stores;
 using Flex.Infrastructure.Workflow.Core.Models;
@@ -24,7 +24,7 @@ public class WorkflowService : IWorkflowService
         {
             WorkflowType = request.WorkflowType,
             EntityId = request.EntityId,
-            Status = WorkflowStatus.Pending,
+            Status = RequestStatus.Unauthorised,
             RequestedBy = "system", // integrate ICurrentUserContext later
             RequestedAt = DateTime.UtcNow,
             PayloadJson = request.PayloadJson,
@@ -39,21 +39,21 @@ public class WorkflowService : IWorkflowService
     public async Task ApproveAsync(long requestId, string? comment, CancellationToken ct = default)
     {
         var req = await _requestStore.GetAsync(requestId, ct) ?? throw new InvalidOperationException("Request not found");
-        req.Status = WorkflowStatus.Approved;
+        req.Status = RequestStatus.Authorised;
         await _requestStore.UpdateAsync(req, ct);
     }
 
     public async Task RejectAsync(long requestId, string? comment, CancellationToken ct = default)
     {
         var req = await _requestStore.GetAsync(requestId, ct) ?? throw new InvalidOperationException("Request not found");
-        req.Status = WorkflowStatus.Rejected;
+        req.Status = RequestStatus.Rejected;
         await _requestStore.UpdateAsync(req, ct);
     }
 
     public async Task CancelAsync(long requestId, string? comment, CancellationToken ct = default)
     {
         var req = await _requestStore.GetAsync(requestId, ct) ?? throw new InvalidOperationException("Request not found");
-        req.Status = WorkflowStatus.Cancelled;
+        req.Status = RequestStatus.Cancelled;
         await _requestStore.UpdateAsync(req, ct);
     }
 
@@ -73,4 +73,3 @@ public class WorkflowService : IWorkflowService
         };
     }
 }
-
