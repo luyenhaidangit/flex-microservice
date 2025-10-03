@@ -117,6 +117,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{CA28503B-6
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Infrastructure.Workflow", "src\BuildingBlocks\Flex.Infrastructure.Workflow\Flex.Infrastructure.Workflow.csproj", "{659E543C-486E-9F56-BE19-C3C900C27294}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flex.Workflow.Api", "src\Services\Core\Flex.Workflow.Api\Flex.Workflow.Api.csproj", "{DD2EE314-D128-4A81-AACE-128FE3527B34}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -267,6 +269,10 @@ Global
 		{659E543C-486E-9F56-BE19-C3C900C27294}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{659E543C-486E-9F56-BE19-C3C900C27294}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{659E543C-486E-9F56-BE19-C3C900C27294}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD2EE314-D128-4A81-AACE-128FE3527B34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD2EE314-D128-4A81-AACE-128FE3527B34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD2EE314-D128-4A81-AACE-128FE3527B34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD2EE314-D128-4A81-AACE-128FE3527B34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -323,6 +329,7 @@ Global
 		{15F566C3-966F-420E-9976-070DD5A17DE6} = {6930348E-6306-444F-9C44-7D59D69428DD}
 		{CA28503B-6BC2-49F3-B4B1-963CA14E28C0} = {3BE3E9BA-E248-4A09-A26F-49F1733FCC4D}
 		{659E543C-486E-9F56-BE19-C3C900C27294} = {6930348E-6306-444F-9C44-7D59D69428DD}
+		{DD2EE314-D128-4A81-AACE-128FE3527B34} = {CA28503B-6BC2-49F3-B4B1-963CA14E28C0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F88DBCEE-4301-44B0-8236-94C5D6EDA695}

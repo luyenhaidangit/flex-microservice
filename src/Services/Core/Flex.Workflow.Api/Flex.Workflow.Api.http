@@ -1,0 +1,6 @@
+@Flex.Workflow.Api_HostAddress = http://localhost:5241
+
+GET {{Flex.Workflow.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
