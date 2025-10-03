@@ -8,6 +8,18 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
+    <PackageReference Include="MassTransit" Version="8.3.4" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.4" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.EntityFrameworkCore.Oracle\Flex.Infrastructure.EntityFrameworkCore.Oracle.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure\Flex.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.Workflow\Flex.Infrastructure.Workflow.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Flex.Infrastructure.Json\Flex.Infrastructure.Json.csproj" />
+    <ProjectReference Include="..\..\..\Modules\Flex.SeriLog\Flex.SeriLog.csproj" />
+    <ProjectReference Include="..\..\..\Modules\Flex.Redis\Flex.Infrastructure.Redis.csproj" />
   </ItemGroup>
 
 </Project>
