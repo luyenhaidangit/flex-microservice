@@ -1,0 +1,1 @@
+- Không sử dụng Data Annotation mapping DB khi khai báo entity mà sử dụng Fluent API trong IEntityTypeConfiguration<T>
