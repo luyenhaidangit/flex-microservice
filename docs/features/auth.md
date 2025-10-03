@@ -1,3 +1,6 @@
+----------
+Role name không được trùng nhau vì khi tạo token có thể trùng tên claim role gây sai logic.
+----------
 Xác thực & Phân quyền
 ======================
 

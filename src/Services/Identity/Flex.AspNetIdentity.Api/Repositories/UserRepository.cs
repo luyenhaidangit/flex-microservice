@@ -1,5 +1,4 @@
 using Flex.AspNetIdentity.Api.Entities;
-using Flex.AspNetIdentity.Api.Models.User;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.Contracts.Domains.Interfaces;
@@ -31,14 +30,24 @@ namespace Flex.AspNetIdentity.Api.Repositories
 			return count > 0;
 		}
 
-		public async Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default)
-		{
-			var count = await _context.Users.AsNoTracking()
-				.Where(u => u.Email!.ToLower() == email.ToLower())
-				.CountAsync(ct);
-			return count > 0;
-		}
-	}
+        public async Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default)
+        {
+            var count = await _context.Users.AsNoTracking()
+                .Where(u => u.Email!.ToLower() == email.ToLower())
+                .CountAsync(ct);
+            return count > 0;
+        }
+
+        public async Task<IReadOnlyList<string>> GetRoleNamesAsync(long userId, CancellationToken ct = default)
+        {
+            var roleNames = await _context.Set<UserRole>()
+                .Where(ur => ur.UserId == userId)
+                .Join(_context.Set<Role>(), ur => ur.RoleId, r => r.Id, (ur, r) => r.Name!)
+                .AsNoTracking()
+                .Distinct()
+                .ToListAsync(ct);
+
+            return roleNames;
+        }
+    }
 }
-
-

@@ -25,6 +25,7 @@ namespace Flex.AspNetIdentity.Api.Persistence
 
         #region Tables
         public DbSet<User> Users { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<RoleClaim> RoleClaims { get; set; }
         public DbSet<RoleRequest> RoleRequests { get; set; }

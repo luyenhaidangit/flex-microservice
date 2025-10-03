@@ -54,12 +54,9 @@ namespace Flex.AspNetIdentity.Api.Services
                 return null;
             }
 
-            var roleNames = await _dbContext.Set<UserRole>()
-                .Where(ur => ur.UserId == user.Id)
-                .Join(_dbContext.Set<Role>(), ur => ur.RoleId, r => r.Id, (ur, r) => r.Name!)
-                .Distinct()
-                .ToListAsync(cancellationToken);
+            var roleNames = await _userRepository.GetRoleNamesAsync(user.Id, cancellationToken);
 
+            // Include standard claims
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypesApp.Jti,  Guid.NewGuid().ToString()),
@@ -69,6 +66,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 new Claim(ClaimTypesApp.Email, user.Email ?? string.Empty),
             };
 
+            // Include role claims
             claims.AddRange(roleNames.Select(role => new Claim(ClaimTypesAsp.Role, role)));
 
             var token = _jwtBacklistTokenService.GenerateToken(_jwtSettings, claims);

@@ -4,11 +4,12 @@ using Flex.Contracts.Domains.Interfaces;
 
 namespace Flex.AspNetIdentity.Api.Repositories.Interfaces
 {
-	public interface IUserRepository : IRepositoryBase<User, long, IdentityDbContext>
+    public interface IUserRepository : IRepositoryBase<User, long, IdentityDbContext>
     {
-		Task<User?> GetByUserNameAsync(string userName, CancellationToken ct = default);
-		Task<bool> ExistsByUserNameAsync(string userName, CancellationToken ct = default);
-		Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default);
+        Task<User?> GetByUserNameAsync(string userName, CancellationToken ct = default);
+        Task<bool> ExistsByUserNameAsync(string userName, CancellationToken ct = default);
+        Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default);
+        Task<IReadOnlyList<string>> GetRoleNamesAsync(long userId, CancellationToken ct = default);
     }
 }
 
