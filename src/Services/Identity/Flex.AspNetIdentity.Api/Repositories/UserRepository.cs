@@ -40,10 +40,15 @@ namespace Flex.AspNetIdentity.Api.Repositories
 
         public async Task<IReadOnlyList<string>> GetRoleNamesAsync(long userId, CancellationToken ct = default)
         {
-            var roleNames = await _context.Set<UserRole>()
-                .Where(ur => ur.UserId == userId)
-                .Join(_context.Set<Role>(), ur => ur.RoleId, r => r.Id, (ur, r) => r.Name!)
+            var roleNames = await _context.UserRoles
                 .AsNoTracking()
+                .Where(ur => ur.UserId == userId)
+                .Join(
+                    _context.Roles.AsNoTracking(),
+                    ur => ur.RoleId,
+                    r => r.Id,
+                    (ur, r) => r.Name!
+                )
                 .Distinct()
                 .ToListAsync(ct);
 

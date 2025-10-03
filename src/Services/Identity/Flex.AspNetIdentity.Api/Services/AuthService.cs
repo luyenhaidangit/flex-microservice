@@ -5,7 +5,6 @@ using Flex.AspNetIdentity.Api.Services.Interfaces;
 using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.Security;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using ClaimTypesApp = Flex.Security.ClaimTypes;
