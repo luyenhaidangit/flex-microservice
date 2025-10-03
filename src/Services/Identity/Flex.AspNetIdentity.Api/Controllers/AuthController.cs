@@ -5,22 +5,22 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ClaimTypesApp = Flex.Security.ClaimTypes;
+using Flex.AspNetIdentity.Api.Services.Interfaces;
 
 namespace Flex.AspNetIdentity.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize(Roles = "Admin")]
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
         private readonly IMapper _mapper;
-        private readonly Services.Interfaces.IAuthService _authService;
+        private readonly IAuthService _authService;
 
         public AuthController(
             ILogger<AuthController> logger,
             IMapper mapper,
-            Services.Interfaces.IAuthService authService)
+            IAuthService authService)
         {
             _logger = logger;
             _mapper = mapper;
