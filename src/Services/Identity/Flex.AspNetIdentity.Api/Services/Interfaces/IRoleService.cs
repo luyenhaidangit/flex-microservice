@@ -4,6 +4,10 @@ using Flex.Shared.SeedWork;
 
 namespace Flex.AspNetIdentity.Api.Services.Interfaces
 {
+    /// <summary>
+    /// RULE:
+    /// Tạo role không được trùng tên nhau.
+    /// </summary>
     public interface IRoleService
     {
         Task<PagedResult<RoleApprovedListItemDto>> GetApprovedRolesPagedAsync(GetApproveRolesPagingRequest request);
