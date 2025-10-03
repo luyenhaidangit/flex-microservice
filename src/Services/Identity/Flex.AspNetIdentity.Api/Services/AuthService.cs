@@ -2,6 +2,7 @@ using Flex.AspNetIdentity.Api.Entities;
 using Flex.AspNetIdentity.Api.Models.Auth;
 using Flex.AspNetIdentity.Api.Persistence;
 using Flex.AspNetIdentity.Api.Services.Interfaces;
+using Flex.AspNetIdentity.Api.Repositories.Interfaces;
 using Flex.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ namespace Flex.AspNetIdentity.Api.Services
     public class AuthService : IAuthService
     {
         private readonly IdentityDbContext _dbContext;
+        private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IJwtTokenBlacklistService _jwtBacklistTokenService;
         private readonly JwtSettings _jwtSettings;
@@ -23,17 +25,19 @@ namespace Flex.AspNetIdentity.Api.Services
             IdentityDbContext dbContext,
             IPasswordHasher<User> passwordHasher,
             IJwtTokenBlacklistService jwtBacklistTokenService,
-            IOptions<JwtSettings> jwtSettings)
+            IOptions<JwtSettings> jwtSettings,
+            IUserRepository userRepository)
         {
             _dbContext = dbContext;
             _passwordHasher = passwordHasher;
             _jwtBacklistTokenService = jwtBacklistTokenService;
             _jwtSettings = jwtSettings.Value;
+            _userRepository = userRepository;
         }
 
         public async Task<LoginResult?> LoginAsync(LoginByUserNameRequest request, CancellationToken cancellationToken = default)
         {
-            var user = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserName == request.UserName, cancellationToken);
+            var user = await _userRepository.GetByUserNameAsync(request.UserName, cancellationToken);
             if (user is null)
             {
                 return null;
@@ -104,7 +108,7 @@ namespace Flex.AspNetIdentity.Api.Services
                 return null;
             }
 
-            var entity = await _dbContext.Set<User>().AsNoTracking().FirstOrDefaultAsync(u => u.UserName == userName, cancellationToken);
+            var entity = await _userRepository.GetByUserNameAsync(userName, cancellationToken);
             if (entity is null)
             {
                 return null;

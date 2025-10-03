@@ -80,6 +80,7 @@ namespace Flex.AspNetIdentity.Api.Extensions
             services.AddScoped<IBranchCacheRepository, BranchCacheRepository>();
 
             // Services
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();

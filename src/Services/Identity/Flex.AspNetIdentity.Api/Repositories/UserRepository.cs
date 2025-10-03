@@ -17,6 +17,12 @@ namespace Flex.AspNetIdentity.Api.Repositories
 			_context = context;
 		}
 
+        public async Task<User?> GetByUserNameAsync(string userName, CancellationToken ct = default)
+        {
+            return await _context.Users.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.UserName!.ToLower() == userName.ToLower(), ct);
+        }
+
         public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken ct = default)
 		{
 			var count = await _context.Users.AsNoTracking()
