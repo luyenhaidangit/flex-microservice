@@ -10,3 +10,5 @@ Database:
 - Thiết kế database trường Id kiểu Guid nếu ít record, vài trăm đến vài nghìn template thì dùng Guid thoải mái, không lo hiệu năng, nhưng hiện tại thì ưu tiên kiểu số tự tăng cho tôi.
 - Thiết kế bảng, cá nhân tôi không thích tạo ràng buộc.
 - Các bảng có trường ID để tự động tăng.
+- Thiết kế db khi có những trường như ENTITY_KEY ref tới key của một bảng khác mà không biết kiểu dữ liệu của key bảng kia thì nên đặt là NVARCHAR.
+- Khi thiết kế tên cột cần lưu ý tránh trùng với từ khóa hệ thống, ví dụ COMMENT.

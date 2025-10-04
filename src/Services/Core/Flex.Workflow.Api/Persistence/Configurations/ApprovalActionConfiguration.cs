@@ -10,6 +10,12 @@ namespace Flex.Workflow.Api.Persistence.Configurations
         {
             builder.ToTable("WORKFLOW_ACTIONS");
             builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Id)
+                   .HasColumnName("ID")
+                   .HasColumnType("NUMBER(19)")
+                   .UseIdentityColumn();
+
             builder.Property(x => x.Step).HasColumnType("NUMBER(10)");
 
             builder.Property(x => x.Action)
@@ -21,6 +27,7 @@ namespace Flex.Workflow.Api.Persistence.Configurations
                    .IsRequired();
 
             builder.Property(x => x.Comment)
+                   .HasColumnName("ACTION_COMMENT")
                    .HasColumnType("NVARCHAR2(500)");
 
             builder.Property(x => x.EvidenceUrl)

@@ -10,6 +10,11 @@ namespace Flex.Workflow.Api.Persistence.Configurations
         {
             builder.ToTable("WORKFLOW_IDEMPOTENCY_KEYS");
             builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Id)
+                   .HasColumnName("ID")
+                   .HasColumnType("NUMBER(19)")
+                   .UseIdentityColumn();
             builder.HasIndex(x => x.Key)
                    .IsUnique()
                    .HasDatabaseName("UX_WORKFLOW_IDEMPOTENCY_KEYS_KEY");

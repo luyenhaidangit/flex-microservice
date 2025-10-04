@@ -12,6 +12,11 @@ namespace Flex.Workflow.Api.Persistence.Configurations
 
             builder.HasKey(x => x.Id);
 
+            builder.Property(x => x.Id)
+                   .HasColumnName("ID")
+                   .HasColumnType("NUMBER(19)")
+                   .UseIdentityColumn();
+
             builder.Property(x => x.Code)
                    .HasColumnType("VARCHAR2(100)")
                    .IsRequired();

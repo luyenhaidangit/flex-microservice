@@ -27,6 +27,13 @@ namespace Flex.Infrastructure.EntityFrameworkCore.Configurations
                        .HasColumnType("RAW(16)")
                        .IsRequired();
             }
+            else if (typeof(TKey) == typeof(string))
+            {
+                builder.Property(x => x.EntityId)
+                       .HasColumnName("ENTITY_ID")
+                       .HasColumnType("VARCHAR2(200)")
+                       .IsRequired();
+            }
             else
             {
                 builder.Property(x => x.EntityId)

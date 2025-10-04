@@ -3,7 +3,7 @@ using Flex.Shared.SeedWork.Workflow;
 namespace Flex.Workflow.Api.Entities
 {
     // Centralized approval request header for cross-domain orchestration
-    public class ApprovalRequest : RequestBase<long>
+    public class ApprovalRequest : RequestBase<string>
     {
         // Business domain/module that raised this request (e.g., IDENTITY, SYSTEM, PAYMENTS)
         public string Domain { get; set; } = string.Empty;

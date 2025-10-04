@@ -10,6 +10,11 @@ namespace Flex.Workflow.Api.Persistence.Configurations
         {
             builder.ToTable("WORKFLOW_AUDIT_LOGS");
             builder.HasKey(x => x.Id);
+
+            builder.Property(x => x.Id)
+                   .HasColumnName("ID")
+                   .HasColumnType("NUMBER(19)")
+                   .UseIdentityColumn();
             builder.Property(x => x.Event)
                    .HasColumnType("VARCHAR2(50)")
                    .IsRequired();

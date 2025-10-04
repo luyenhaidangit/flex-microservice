@@ -64,7 +64,7 @@ namespace Flex.Workflow.Api.Services
                 WorkflowCode = dto.WorkflowCode.Trim(),
                 Action = dto.Action.Trim().ToUpperInvariant(),
                 Status = RequestStatus.Unauthorised,
-                EntityId = 0,
+                EntityId = dto.BusinessId ?? Guid.NewGuid().ToString("N"),
                 MakerId = dto.MakerId,
                 RequestedDate = DateTime.UtcNow,
                 Comments = dto.Comments,
