@@ -6,14 +6,14 @@ namespace Flex.Workflow.Api.Services
     public class OutboxDispatcherHostedService : BackgroundService
     {
         private readonly ILogger<OutboxDispatcherHostedService> _logger;
-        private readonly IOutboxRepository _outboxRepository;
+        private readonly IWorkflowOutboxRepository _outboxRepository;
         private readonly IPublishEndpoint _publishEndpoint;
         private readonly IServiceProvider _sp;
         private readonly IConfiguration _configuration;
 
         public OutboxDispatcherHostedService(
             ILogger<OutboxDispatcherHostedService> logger,
-            IOutboxRepository outboxRepository,
+            IWorkflowOutboxRepository outboxRepository,
             IPublishEndpoint publishEndpoint,
             IServiceProvider sp,
             IConfiguration configuration)
@@ -67,7 +67,7 @@ namespace Flex.Workflow.Api.Services
             }
         }
 
-        private async Task TrySendWebhooksAsync(Flex.Workflow.Api.Entities.OutboxEvent ev, CancellationToken ct)
+        private async Task TrySendWebhooksAsync(Flex.Workflow.Api.Entities.WorkflowOutboxEvent ev, CancellationToken ct)
         {
             var endpoints = _configuration.GetSection("Webhooks:EventEndpoints").Get<string[]>() ?? Array.Empty<string>();
             if (endpoints.Length == 0) return;
@@ -90,4 +90,3 @@ namespace Flex.Workflow.Api.Services
         public DateTime CreatedAt { get; set; }
     }
 }
-

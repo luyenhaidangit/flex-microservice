@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Flex.Workflow.Api.Persistence.Configurations
 {
-    public class IdempotencyKeyConfiguration : IEntityTypeConfiguration<IdempotencyKey>
+    public class WorkflowIdempotencyKeyConfiguration : IEntityTypeConfiguration<WorkflowIdempotencyKey>
     {
-        public void Configure(EntityTypeBuilder<IdempotencyKey> builder)
+        public void Configure(EntityTypeBuilder<WorkflowIdempotencyKey> builder)
         {
             builder.ToTable("WORKFLOW_IDEMPOTENCY_KEYS");
             builder.HasKey(x => x.Id);

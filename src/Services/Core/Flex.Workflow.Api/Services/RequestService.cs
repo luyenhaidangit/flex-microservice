@@ -18,20 +18,20 @@ namespace Flex.Workflow.Api.Services
 {
     public class RequestService : IRequestService
     {
-        private readonly IApprovalRequestRepository _requestRepo;
-        private readonly IApprovalActionRepository _actionRepo;
+        private readonly IWorkflowRequestRepository _requestRepo;
+        private readonly IWorkflowActionRepository _actionRepo;
         private readonly IWorkflowAuditLogRepository _auditRepo;
-        private readonly IOutboxRepository _outboxRepo;
+        private readonly IWorkflowOutboxRepository _outboxRepo;
         private readonly IWorkflowDefinitionRepository _definitionRepo;
         private readonly IMapper _mapper;
         private readonly IPolicyEvaluator _policy;
         private readonly IStepResolver _steps;
 
         public RequestService(
-            IApprovalRequestRepository requestRepo,
-            IApprovalActionRepository actionRepo,
+            IWorkflowRequestRepository requestRepo,
+            IWorkflowActionRepository actionRepo,
             IWorkflowAuditLogRepository auditRepo,
-            IOutboxRepository outboxRepo,
+            IWorkflowOutboxRepository outboxRepo,
             IWorkflowDefinitionRepository definitionRepo,
             IMapper mapper,
             IPolicyEvaluator policy,
@@ -58,7 +58,7 @@ namespace Flex.Workflow.Api.Services
             var definition = await _definitionRepo.GetActiveByCodeAsync(dto.WorkflowCode, ct)
                 ?? throw new InvalidOperationException($"Workflow definition '{dto.WorkflowCode}' not found or inactive.");
 
-            var request = new ApprovalRequest
+            var request = new WorkflowRequest
             {
                 Domain = dto.Domain.Trim().ToUpperInvariant(),
                 WorkflowCode = dto.WorkflowCode.Trim(),
@@ -85,7 +85,7 @@ namespace Flex.Workflow.Api.Services
 
             // Steps parse
             var stepDoc = _steps.Parse(definition.Steps);
-            var totalStages = _steps.GetCurrentStage(Array.Empty<ApprovalAction>(), stepDoc).totalStages;
+            var totalStages = _steps.GetCurrentStage(Array.Empty<WorkflowAction>(), stepDoc).totalStages;
 
             if (decision.Result.Equals("auto", StringComparison.OrdinalIgnoreCase) && totalStages == 0)
             {
@@ -96,13 +96,13 @@ namespace Flex.Workflow.Api.Services
                 await _requestRepo.UpdateAsync(request);
 
                 await WriteAuditAsync(request.Id, "request.auto_approved", request.CheckerId!, new { decision = decision.Result }, ct);
-                await _outboxRepo.CreateAsync(new OutboxEvent
-                {
-                    Aggregate = "workflow.request",
-                    AggregateId = request.Id.ToString(),
-                    EventType = "request.auto_approved",
-                    Payload = JsonSerializer.Serialize(new { request.Id, request.Domain, request.WorkflowCode, request.Action, request.Status })
-                });
+            await _outboxRepo.CreateAsync(new WorkflowOutboxEvent
+            {
+                Aggregate = "workflow.request",
+                AggregateId = request.Id.ToString(),
+                EventType = "request.auto_approved",
+                Payload = JsonSerializer.Serialize(new { request.Id, request.Domain, request.WorkflowCode, request.Action, request.Status })
+            });
             }
             else
             {
@@ -110,7 +110,7 @@ namespace Flex.Workflow.Api.Services
                 await WriteAuditAsync(request.Id, "request.created", dto.MakerId, new { dto.Domain, dto.WorkflowCode, dto.Action, dto.BusinessId }, ct);
 
                 // Outbox
-                await _outboxRepo.CreateAsync(new OutboxEvent
+                await _outboxRepo.CreateAsync(new WorkflowOutboxEvent
                 {
                     Aggregate = "workflow.request",
                     AggregateId = request.Id.ToString(),
@@ -181,7 +181,7 @@ namespace Flex.Workflow.Api.Services
             if (string.Equals(request.MakerId, dto.ApproverId, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Approver cannot be the same as maker (SoD)");
 
-            var action = new ApprovalAction
+            var action = new WorkflowAction
             {
                 RequestId = requestId,
                 Step = nextStep,
@@ -206,7 +206,7 @@ namespace Flex.Workflow.Api.Services
 
             await WriteAuditAsync(requestId, "request.approved", dto.ApproverId, new { action.Step, dto.Comment }, ct);
 
-            await _outboxRepo.CreateAsync(new OutboxEvent
+            await _outboxRepo.CreateAsync(new WorkflowOutboxEvent
             {
                 Aggregate = "workflow.request",
                 AggregateId = requestId.ToString(),
@@ -223,7 +223,7 @@ namespace Flex.Workflow.Api.Services
             var existingActions = await _actionRepo.GetByRequestAsync(requestId, ct);
             var nextStep = (existingActions?.Count ?? 0) + 1;
 
-            var action = new ApprovalAction
+            var action = new WorkflowAction
             {
                 RequestId = requestId,
                 Step = nextStep,
@@ -243,7 +243,7 @@ namespace Flex.Workflow.Api.Services
 
             await WriteAuditAsync(requestId, "request.rejected", dto.ApproverId, new { action.Step, dto.Reason }, ct);
 
-            await _outboxRepo.CreateAsync(new OutboxEvent
+            await _outboxRepo.CreateAsync(new WorkflowOutboxEvent
             {
                 Aggregate = "workflow.request",
                 AggregateId = requestId.ToString(),

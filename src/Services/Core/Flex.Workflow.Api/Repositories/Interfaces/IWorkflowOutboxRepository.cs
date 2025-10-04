@@ -4,8 +4,7 @@ using Flex.Workflow.Api.Persistence;
 
 namespace Flex.Workflow.Api.Repositories.Interfaces
 {
-    public interface IOutboxRepository : IRepositoryBase<OutboxEvent, long, WorkflowDbContext>
+    public interface IWorkflowOutboxRepository : IRepositoryBase<WorkflowOutboxEvent, long, WorkflowDbContext>
     {
     }
 }
-

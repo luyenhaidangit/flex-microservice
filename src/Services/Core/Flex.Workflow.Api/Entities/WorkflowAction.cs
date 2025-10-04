@@ -2,7 +2,7 @@ using Flex.Contracts.Domains;
 
 namespace Flex.Workflow.Api.Entities
 {
-    public class ApprovalAction : EntityBase<long>
+    public class WorkflowAction : EntityBase<long>
     {
         public long RequestId { get; set; }
         

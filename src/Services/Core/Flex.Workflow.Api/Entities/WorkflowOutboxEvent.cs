@@ -2,7 +2,7 @@ using Flex.Contracts.Domains;
 
 namespace Flex.Workflow.Api.Entities
 {
-    public class OutboxEvent : EntityBase<long>
+    public class WorkflowOutboxEvent : EntityBase<long>
     {
         public string Aggregate { get; set; } = string.Empty; // workflow.request
         

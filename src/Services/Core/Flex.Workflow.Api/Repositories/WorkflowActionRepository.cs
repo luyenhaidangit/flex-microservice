@@ -7,22 +7,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Workflow.Api.Repositories
 {
-    public class ApprovalActionRepository : RepositoryBase<ApprovalAction, long, WorkflowDbContext>, IApprovalActionRepository
+    public class WorkflowActionRepository : RepositoryBase<WorkflowAction, long, WorkflowDbContext>, IWorkflowActionRepository
     {
         private readonly WorkflowDbContext _context;
-        public ApprovalActionRepository(WorkflowDbContext dbContext, IUnitOfWork<WorkflowDbContext> unitOfWork)
+        public WorkflowActionRepository(WorkflowDbContext dbContext, IUnitOfWork<WorkflowDbContext> unitOfWork)
             : base(dbContext, unitOfWork)
         {
             _context = dbContext;
         }
 
-        public Task<List<ApprovalAction>> GetByRequestAsync(long requestId, CancellationToken ct = default)
+        public Task<List<WorkflowAction>> GetByRequestAsync(long requestId, CancellationToken ct = default)
         {
-            return _context.ApprovalActions.AsNoTracking()
+            return _context.WorkflowActions.AsNoTracking()
                 .Where(x => x.RequestId == requestId)
                 .OrderBy(x => x.CreatedAt)
                 .ToListAsync(ct);
         }
     }
 }
-

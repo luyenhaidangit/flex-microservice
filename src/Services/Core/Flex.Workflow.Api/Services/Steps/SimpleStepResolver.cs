@@ -19,7 +19,7 @@ namespace Flex.Workflow.Api.Services.Steps
             }
         }
 
-        public (int currentStage, int totalStages) GetCurrentStage(IEnumerable<ApprovalAction> actions, WorkflowStepsDocument doc)
+        public (int currentStage, int totalStages) GetCurrentStage(IEnumerable<WorkflowAction> actions, WorkflowStepsDocument doc)
         {
             var stages = BuildStages(doc);
             int completed = 0;
@@ -31,7 +31,7 @@ namespace Flex.Workflow.Api.Services.Steps
             return (completed, stages.Count);
         }
 
-        public bool IsStageComplete(int stageIndex, IEnumerable<ApprovalAction> actions, WorkflowStepsDocument doc)
+        public bool IsStageComplete(int stageIndex, IEnumerable<WorkflowAction> actions, WorkflowStepsDocument doc)
         {
             return StageApproved(stageIndex, actions, doc);
         }
@@ -54,7 +54,7 @@ namespace Flex.Workflow.Api.Services.Steps
             return stages;
         }
 
-        private static bool StageApproved(int stageIndex, IEnumerable<ApprovalAction> actions, WorkflowStepsDocument doc)
+        private static bool StageApproved(int stageIndex, IEnumerable<WorkflowAction> actions, WorkflowStepsDocument doc)
         {
             var stages = BuildStages(doc);
             if (stageIndex < 0 || stageIndex >= stages.Count) return false;
@@ -80,4 +80,3 @@ namespace Flex.Workflow.Api.Services.Steps
         }
     }
 }
-

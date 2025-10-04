@@ -7,25 +7,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Flex.Workflow.Api.Repositories
 {
-    public class ApprovalRequestRepository : RepositoryBase<ApprovalRequest, long, WorkflowDbContext>, IApprovalRequestRepository
+    public class WorkflowRequestRepository : RepositoryBase<WorkflowRequest, long, WorkflowDbContext>, IWorkflowRequestRepository
     {
         private readonly WorkflowDbContext _context;
-        public ApprovalRequestRepository(WorkflowDbContext dbContext, IUnitOfWork<WorkflowDbContext> unitOfWork)
+        public WorkflowRequestRepository(WorkflowDbContext dbContext, IUnitOfWork<WorkflowDbContext> unitOfWork)
             : base(dbContext, unitOfWork)
         {
             _context = dbContext;
         }
 
-        public IQueryable<ApprovalRequest> QueryPending()
+        public IQueryable<WorkflowRequest> QueryPending()
         {
-            return _context.ApprovalRequests.AsNoTracking().Where(x => x.Status == Infrastructure.Workflow.Constants.RequestStatus.Unauthorised);
+            return _context.WorkflowRequests.AsNoTracking().Where(x => x.Status == Infrastructure.Workflow.Constants.RequestStatus.Unauthorised);
         }
 
-        public Task<ApprovalRequest?> GetPendingByIdAsync(long requestId, CancellationToken ct = default)
+        public Task<WorkflowRequest?> GetPendingByIdAsync(long requestId, CancellationToken ct = default)
         {
-            return _context.ApprovalRequests
+            return _context.WorkflowRequests
                 .FirstOrDefaultAsync(x => x.Id == requestId && x.Status == Infrastructure.Workflow.Constants.RequestStatus.Unauthorised, ct);
         }
     }
 }
-

@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Flex.Workflow.Api.Persistence.Configurations
 {
-    public class ApprovalRequestConfiguration : RequestBaseConfiguration<ApprovalRequest, string>, IEntityTypeConfiguration<ApprovalRequest>
+    public class WorkflowRequestConfiguration : RequestBaseConfiguration<WorkflowRequest, string>, IEntityTypeConfiguration<WorkflowRequest>
     {
-        public override void Configure(EntityTypeBuilder<ApprovalRequest> builder)
+        public override void Configure(EntityTypeBuilder<WorkflowRequest> builder)
         {
             base.Configure(builder);
 

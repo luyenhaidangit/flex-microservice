@@ -2,7 +2,7 @@ using Flex.Contracts.Domains;
 
 namespace Flex.Workflow.Api.Entities
 {
-    public class IdempotencyKey : EntityBase<long>
+    public class WorkflowIdempotencyKey : EntityBase<long>
     {
         public string Key { get; set; } = string.Empty;
         

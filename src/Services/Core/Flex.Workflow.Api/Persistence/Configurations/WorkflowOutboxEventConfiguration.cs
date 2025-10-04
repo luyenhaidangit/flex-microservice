@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Flex.Workflow.Api.Persistence.Configurations
 {
-    public class OutboxEventConfiguration : IEntityTypeConfiguration<OutboxEvent>
+    public class WorkflowOutboxEventConfiguration : IEntityTypeConfiguration<WorkflowOutboxEvent>
     {
-        public void Configure(EntityTypeBuilder<OutboxEvent> builder)
+        public void Configure(EntityTypeBuilder<WorkflowOutboxEvent> builder)
         {
             builder.ToTable("WORKFLOW_OUTBOX_EVENTS");
             builder.HasKey(x => x.Id);

@@ -9,13 +9,13 @@ namespace Flex.Workflow.Api.Models
     {
         public MappingProfile()
         {
-            CreateMap<ApprovalRequest, PendingRequestListItemDto>()
+            CreateMap<WorkflowRequest, PendingRequestListItemDto>()
                 .ForMember(d => d.RequestId, o => o.MapFrom(s => s.Id));
 
-            CreateMap<ApprovalAction, RequestActionDto>();
+            CreateMap<WorkflowAction, RequestActionDto>();
             CreateMap<WorkflowAuditLog, RequestAuditDto>();
 
-            CreateMap<ApprovalRequest, RequestDetailDto>()
+            CreateMap<WorkflowRequest, RequestDetailDto>()
                 .ForMember(d => d.RequestId, o => o.MapFrom(s => s.Id));
         }
     }

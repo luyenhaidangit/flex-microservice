@@ -10,11 +10,11 @@ namespace Flex.Workflow.Api.Persistence
         }
 
         public DbSet<WorkflowDefinition> WorkflowDefinitions => Set<WorkflowDefinition>();
-        public DbSet<ApprovalRequest> ApprovalRequests => Set<ApprovalRequest>();
-        public DbSet<ApprovalAction> ApprovalActions => Set<ApprovalAction>();
+        public DbSet<WorkflowRequest> WorkflowRequests => Set<WorkflowRequest>();
+        public DbSet<WorkflowAction> WorkflowActions => Set<WorkflowAction>();
         public DbSet<WorkflowAuditLog> WorkflowAuditLogs => Set<WorkflowAuditLog>();
-        public DbSet<OutboxEvent> OutboxEvents => Set<OutboxEvent>();
-        public DbSet<IdempotencyKey> IdempotencyKeys => Set<IdempotencyKey>();
+        public DbSet<WorkflowOutboxEvent> WorkflowOutboxEvents => Set<WorkflowOutboxEvent>();
+        public DbSet<WorkflowIdempotencyKey> WorkflowIdempotencyKeys => Set<WorkflowIdempotencyKey>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -24,4 +24,3 @@ namespace Flex.Workflow.Api.Persistence
         }
     }
 }
-

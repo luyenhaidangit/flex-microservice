@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Flex.Workflow.Api.Persistence.Configurations
 {
-    public class ApprovalActionConfiguration : IEntityTypeConfiguration<ApprovalAction>
+    public class WorkflowActionConfiguration : IEntityTypeConfiguration<WorkflowAction>
     {
-        public void Configure(EntityTypeBuilder<ApprovalAction> builder)
+        public void Configure(EntityTypeBuilder<WorkflowAction> builder)
         {
             builder.ToTable("WORKFLOW_ACTIONS");
             builder.HasKey(x => x.Id);
