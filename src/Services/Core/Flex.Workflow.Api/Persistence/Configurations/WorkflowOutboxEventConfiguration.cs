@@ -16,26 +16,32 @@ namespace Flex.Workflow.Api.Persistence.Configurations
                    .HasColumnType("NUMBER(19)")
                    .UseIdentityColumn();
             builder.Property(x => x.Aggregate)
+                   .HasColumnName("AGGREGATE")
                    .HasColumnType("VARCHAR2(100)")
                    .IsRequired();
 
             builder.Property(x => x.AggregateId)
+                   .HasColumnName("AGGREGATE_ID")
                    .HasColumnType("VARCHAR2(100)")
                    .IsRequired();
 
             builder.Property(x => x.EventType)
+                   .HasColumnName("EVENT_TYPE")
                    .HasColumnType("VARCHAR2(100)")
                    .IsRequired();
 
             builder.Property(x => x.Payload)
+                   .HasColumnName("PAYLOAD")
                    .HasColumnType("CLOB")
                    .IsRequired();
 
             builder.Property(x => x.CreatedAt)
+                   .HasColumnName("CREATED_AT")
                    .HasColumnType("TIMESTAMP")
                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             builder.Property(x => x.SentAt)
+                   .HasColumnName("SENT_AT")
                    .HasColumnType("TIMESTAMP");
             builder.HasIndex(x => new { x.Aggregate, x.AggregateId, x.EventType })
                    .HasDatabaseName("IX_WORKFLOW_OUTBOX_AGGREGATE_EVENT");

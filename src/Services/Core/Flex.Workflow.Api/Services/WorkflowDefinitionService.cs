@@ -41,7 +41,7 @@ namespace Flex.Workflow.Api.Services
             }
             else
             {
-                if (string.IsNullOrWhiteSpace(input.State)) input.State = "Draft";
+                if (string.IsNullOrWhiteSpace(input.State)) input.State = "D"; // Draft
                 await _repo.CreateAsync(input);
                 return input;
             }
@@ -62,7 +62,7 @@ namespace Flex.Workflow.Api.Services
             var def = await _repo.FindAll().FirstOrDefaultAsync(x => x.Code == code && x.Version == version, ct)
                 ?? throw new Exception($"Definition {code} v{version} not found");
 
-            if (def.State.Equals("Active", StringComparison.OrdinalIgnoreCase))
+            if (def.State.Equals("A", StringComparison.OrdinalIgnoreCase))
                 throw new Exception("Definition already active");
 
             var pending = await _pubRepo.GetPendingAsync(code, version, ct);
@@ -92,12 +92,12 @@ namespace Flex.Workflow.Api.Services
             {
                 if (d.Version == req.Version)
                 {
-                    d.State = "Active";
+                    d.State = "A"; // Active
                     d.IsActive = true;
                 }
-                else if (d.State.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                else if (d.State.Equals("A", StringComparison.OrdinalIgnoreCase))
                 {
-                    d.State = "Deprecated";
+                    d.State = "X"; // Deprecated
                     d.IsActive = false;
                 }
             }

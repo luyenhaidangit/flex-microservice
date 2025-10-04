@@ -15,6 +15,12 @@ namespace Flex.Workflow.Api.Persistence.Configurations
                    .HasColumnName("ID")
                    .HasColumnType("NUMBER(19)")
                    .UseIdentityColumn();
+            builder.Property(x => x.Key)
+                   .HasColumnName("KEY");
+            builder.Property(x => x.Fingerprint)
+                   .HasColumnName("FINGERPRINT");
+            builder.Property(x => x.CreatedAt)
+                   .HasColumnName("CREATED_AT");
             builder.HasIndex(x => x.Key)
                    .IsUnique()
                    .HasDatabaseName("UX_WORKFLOW_IDEMPOTENCY_KEYS_KEY");

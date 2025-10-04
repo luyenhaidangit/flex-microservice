@@ -15,7 +15,8 @@ namespace Flex.Workflow.Api.Persistence.Configurations
 
             builder.Property(x => x.Id)
                    .UseIdentityColumn()
-                   .HasColumnType("NUMBER(19)");
+                   .HasColumnType("NUMBER(19)")
+                   .HasColumnName("ID");
 
             builder.Property(x => x.EntityId)
                    .HasColumnName("ENTITY_KEY")
@@ -23,17 +24,21 @@ namespace Flex.Workflow.Api.Persistence.Configurations
                    .IsRequired();
 
             builder.Property(x => x.Domain)
+                   .HasColumnName("DOMAIN")
                    .HasColumnType("VARCHAR2(50)")
                    .IsRequired();
 
             builder.Property(x => x.WorkflowCode)
+                   .HasColumnName("WORKFLOW_CODE")
                    .HasColumnType("VARCHAR2(100)")
                    .IsRequired();
 
             builder.Property(x => x.BusinessId)
+                   .HasColumnName("BUSINESS_ID")
                    .HasColumnType("VARCHAR2(200)");
 
             builder.Property(x => x.CorrelationId)
+                   .HasColumnName("CORRELATION_ID")
                    .HasColumnType("VARCHAR2(100)");
 
             builder.HasIndex(x => new { x.Domain, x.WorkflowCode, x.Action, x.Status })
