@@ -41,14 +41,16 @@ namespace Flex.Workflow.Api.Extensions
             // Redis Cache (optional)
             services.ConfigureStackExchangeRedisCache(configuration);
 
-            // RabbitMQ (MassTransit)
-            services.ConfigureRabbitMQ(configuration);
+            // RabbitMQ (MassTransit) - optional by config
+            var mqEnabled = configuration.GetSection("RabbitMQ").GetValue<bool>("Enabled");
+            if (mqEnabled)
+            {
+                services.ConfigureRabbitMQ(configuration);
+                services.AddHostedService<OutboxDispatcherHostedService>();
+            }
 
             // DI
             services.AddInfrastructureServices();
-
-            // Hosted services
-            services.AddHostedService<OutboxDispatcherHostedService>();
 
             return services;
         }

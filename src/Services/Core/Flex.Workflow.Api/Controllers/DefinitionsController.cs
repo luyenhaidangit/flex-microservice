@@ -2,6 +2,7 @@ using Flex.Workflow.Api.Entities;
 using Flex.Workflow.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Flex.Shared.SeedWork;
 
 namespace Flex.Workflow.Api.Controllers
 {
@@ -17,10 +18,40 @@ namespace Flex.Workflow.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] bool onlyActive = true, CancellationToken ct = default)
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int pageIndex = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? keyword = null,
+            [FromQuery] string? state = null,
+            [FromQuery] bool? onlyActive = null,
+            CancellationToken ct = default)
         {
-            var list = await _service.GetAllAsync(onlyActive, ct);
-            return Ok(list);
+            var list = await _service.GetAllAsync(onlyActive ?? false, ct);
+            
+            // Apply filters
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                list = list.Where(x => 
+                    (x.Code?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (x.Name?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
+                ).ToList();
+            }
+            
+            if (!string.IsNullOrWhiteSpace(state))
+            {
+                list = list.Where(x => x.State == state).ToList();
+            }
+            
+            // Apply paging
+            var totalItems = list.Count;
+            var pagedItems = list.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
+            
+            var pagedResult = Flex.Shared.SeedWork.PagedResult<WorkflowDefinition>.Create(
+                pageIndex, pageSize, totalItems, pagedItems);
+            
+            var result = Result.Success(pagedResult);
+            
+            return Ok(result);
         }
 
         [HttpGet("{code}")]

@@ -6,22 +6,16 @@ namespace Flex.Workflow.Api.Services
     public class OutboxDispatcherHostedService : BackgroundService
     {
         private readonly ILogger<OutboxDispatcherHostedService> _logger;
-        private readonly IWorkflowOutboxRepository _outboxRepository;
-        private readonly IPublishEndpoint _publishEndpoint;
-        private readonly IServiceProvider _sp;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IConfiguration _configuration;
 
         public OutboxDispatcherHostedService(
             ILogger<OutboxDispatcherHostedService> logger,
-            IWorkflowOutboxRepository outboxRepository,
-            IPublishEndpoint publishEndpoint,
-            IServiceProvider sp,
+            IServiceScopeFactory scopeFactory,
             IConfiguration configuration)
         {
             _logger = logger;
-            _outboxRepository = outboxRepository;
-            _publishEndpoint = publishEndpoint;
-            _sp = sp;
+            _scopeFactory = scopeFactory;
             _configuration = configuration;
         }
 
@@ -33,8 +27,12 @@ namespace Flex.Workflow.Api.Services
             {
                 try
                 {
+                    using var scope = _scopeFactory.CreateScope();
+                    var outboxRepository = scope.ServiceProvider.GetRequiredService<IWorkflowOutboxRepository>();
+                    var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+                    
                     // Dispatch up to batch size
-                    var items = _outboxRepository.FindByCondition(e => e.SentAt == null)
+                    var items = outboxRepository.FindByCondition(e => e.SentAt == null)
                         .OrderBy(e => e.CreatedAt)
                         .Take(50)
                         .ToList();
@@ -42,7 +40,7 @@ namespace Flex.Workflow.Api.Services
                     foreach (var ev in items)
                     {
                         // Publish generic event
-                        await _publishEndpoint.Publish(new WorkflowEventMessage
+                        await publishEndpoint.Publish(new WorkflowEventMessage
                         {
                             Aggregate = ev.Aggregate,
                             AggregateId = ev.AggregateId,
@@ -55,7 +53,7 @@ namespace Flex.Workflow.Api.Services
                         await TrySendWebhooksAsync(ev, stoppingToken);
 
                         ev.SentAt = DateTime.UtcNow;
-                        await _outboxRepository.UpdateAsync(ev);
+                        await outboxRepository.UpdateAsync(ev);
                     }
                 }
                 catch (Exception ex)
