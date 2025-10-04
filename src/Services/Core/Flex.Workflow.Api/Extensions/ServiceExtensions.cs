@@ -62,6 +62,7 @@ namespace Flex.Workflow.Api.Extensions
                 .AddScoped<IWorkflowRequestRepository, WorkflowRequestRepository>()
                 .AddScoped<IWorkflowActionRepository, WorkflowActionRepository>()
                 .AddScoped<IWorkflowAuditLogRepository, WorkflowAuditLogRepository>()
+                .AddScoped<IWorkflowDefinitionPublishRequestRepository, WorkflowDefinitionPublishRequestRepository>()
                 .AddScoped<IWorkflowOutboxRepository, WorkflowOutboxRepository>()
                 .AddScoped<IWorkflowDefinitionService, WorkflowDefinitionService>()
                 .AddScoped<IRequestService, RequestService>()

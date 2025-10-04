@@ -41,6 +41,10 @@ namespace Flex.Workflow.Api.Persistence.Configurations
                    .HasColumnType("NUMBER(1)")
                    .HasConversion<int>();
 
+            builder.Property(x => x.State)
+                   .HasColumnType("VARCHAR2(20)")
+                   .IsRequired();
+
             builder.Property(x => x.Version)
                    .HasColumnType("NUMBER(10)");
             builder.HasIndex(x => new { x.Code, x.Version })
@@ -49,6 +53,9 @@ namespace Flex.Workflow.Api.Persistence.Configurations
 
             builder.HasIndex(x => x.IsActive)
                    .HasDatabaseName("IX_WORKFLOW_DEFINITIONS_IS_ACTIVE");
+
+            builder.HasIndex(x => new { x.Code, x.State })
+                   .HasDatabaseName("IX_WORKFLOW_DEFINITIONS_CODE_STATE");
         }
     }
 }

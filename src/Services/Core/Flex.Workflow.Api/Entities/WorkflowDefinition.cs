@@ -8,6 +8,8 @@ namespace Flex.Workflow.Api.Entities
         public string Name { get; set; } = string.Empty;
         public int Version { get; set; } = 1;
         public bool IsActive { get; set; } = true;
+        // Draft | Active | Deprecated
+        public string State { get; set; } = "Draft";
         // JSON: step definitions, routing strategies, quorum, parallel groups
         public string Steps { get; set; } = string.Empty;
         // JSON: policy rules (simple expression or OPA-like inputs)

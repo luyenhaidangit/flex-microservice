@@ -8,10 +8,12 @@ namespace Flex.Workflow.Api.Services
     public class WorkflowDefinitionService : IWorkflowDefinitionService
     {
         private readonly IWorkflowDefinitionRepository _repo;
+        private readonly IWorkflowDefinitionPublishRequestRepository _pubRepo;
 
-        public WorkflowDefinitionService(IWorkflowDefinitionRepository repo)
+        public WorkflowDefinitionService(IWorkflowDefinitionRepository repo, IWorkflowDefinitionPublishRequestRepository pubRepo)
         {
             _repo = repo;
+            _pubRepo = pubRepo;
         }
 
         public async Task<List<WorkflowDefinition>> GetAllAsync(bool onlyActive = true, CancellationToken ct = default)
@@ -39,10 +41,86 @@ namespace Flex.Workflow.Api.Services
             }
             else
             {
+                if (string.IsNullOrWhiteSpace(input.State)) input.State = "Draft";
                 await _repo.CreateAsync(input);
                 return input;
             }
         }
+
+        public async Task<List<WorkflowDefinition>> GetVersionsAsync(string code, CancellationToken ct = default)
+        {
+            return await _repo.FindAll()
+                .Where(x => x.Code == code)
+                .OrderByDescending(x => x.Version)
+                .ThenByDescending(x => x.UpdatedAt)
+                .AsNoTracking()
+                .ToListAsync(ct);
+        }
+
+        public async Task<long> RequestPublishAsync(string code, int version, string makerId, string? comment, CancellationToken ct = default)
+        {
+            var def = await _repo.FindAll().FirstOrDefaultAsync(x => x.Code == code && x.Version == version, ct)
+                ?? throw new Exception($"Definition {code} v{version} not found");
+
+            if (def.State.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Definition already active");
+
+            var pending = await _pubRepo.GetPendingAsync(code, version, ct);
+            if (pending != null) return pending.Id;
+
+            var req = new WorkflowDefinitionPublishRequest
+            {
+                Code = code,
+                Version = version,
+                MakerId = makerId,
+                Status = "UNA",
+                Comment = comment
+            };
+            await _pubRepo.CreateAsync(req);
+            return req.Id;
+        }
+
+        public async Task ApprovePublishAsync(long requestId, string approverId, string? comment, CancellationToken ct = default)
+        {
+            var req = await _pubRepo.GetByIdAsync(requestId) ?? throw new Exception("Publish request not found");
+            if (!string.Equals(req.Status, "UNA", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Request is not pending");
+
+            // Update states: set requested version Active, others with same code Deprecated
+            var defs = await _repo.FindAll().Where(x => x.Code == req.Code).ToListAsync(ct);
+            foreach (var d in defs)
+            {
+                if (d.Version == req.Version)
+                {
+                    d.State = "Active";
+                    d.IsActive = true;
+                }
+                else if (d.State.Equals("Active", StringComparison.OrdinalIgnoreCase))
+                {
+                    d.State = "Deprecated";
+                    d.IsActive = false;
+                }
+            }
+            await _repo.UpdateListAsync(defs);
+
+            req.Status = "AUT";
+            req.CheckerId = approverId;
+            req.ApprovedAt = DateTime.UtcNow;
+            req.Comment = comment ?? req.Comment;
+            await _pubRepo.UpdateAsync(req);
+        }
+
+        public async Task RejectPublishAsync(long requestId, string approverId, string? comment, CancellationToken ct = default)
+        {
+            var req = await _pubRepo.GetByIdAsync(requestId) ?? throw new Exception("Publish request not found");
+            if (!string.Equals(req.Status, "UNA", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Request is not pending");
+
+            req.Status = "REJ";
+            req.CheckerId = approverId;
+            req.ApprovedAt = DateTime.UtcNow;
+            req.Comment = comment ?? req.Comment;
+            await _pubRepo.UpdateAsync(req);
+        }
     }
 }
-
