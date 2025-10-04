@@ -8,14 +8,35 @@ namespace Flex.Workflow.Api.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<OutboxEvent> builder)
         {
-            builder.ToTable("WF_OUTBOX_EVENTS");
+            builder.ToTable("WORKFLOW_OUTBOX_EVENTS");
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.Aggregate).HasMaxLength(100);
-            builder.Property(x => x.AggregateId).HasMaxLength(100);
-            builder.Property(x => x.EventType).HasMaxLength(100);
-            builder.Property(x => x.Payload).HasColumnType("clob");
-            builder.HasIndex(x => new { x.Aggregate, x.AggregateId, x.EventType });
-            builder.HasIndex(x => x.SentAt);
+            builder.Property(x => x.Aggregate)
+                   .HasColumnType("VARCHAR2(100)")
+                   .IsRequired();
+
+            builder.Property(x => x.AggregateId)
+                   .HasColumnType("VARCHAR2(100)")
+                   .IsRequired();
+
+            builder.Property(x => x.EventType)
+                   .HasColumnType("VARCHAR2(100)")
+                   .IsRequired();
+
+            builder.Property(x => x.Payload)
+                   .HasColumnType("CLOB")
+                   .IsRequired();
+
+            builder.Property(x => x.CreatedAt)
+                   .HasColumnType("TIMESTAMP")
+                   .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            builder.Property(x => x.SentAt)
+                   .HasColumnType("TIMESTAMP");
+            builder.HasIndex(x => new { x.Aggregate, x.AggregateId, x.EventType })
+                   .HasDatabaseName("IX_WORKFLOW_OUTBOX_AGGREGATE_EVENT");
+
+            builder.HasIndex(x => x.SentAt)
+                   .HasDatabaseName("IX_WORKFLOW_OUTBOX_SENT_AT");
         }
     }
 }
