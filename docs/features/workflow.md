@@ -424,3 +424,72 @@ public class ApprovalWorkflowImpl implements ApprovalWorkflow {
 * Unit test policy & SoD; integration test Temporal; load test: 500 RPS tạo yêu cầu, 100 RPS hành động duyệt.
 
 ---
+
+Tài liệu UI/Backoffice – Quản Trị WorkflowDefinition
+
+1) Mục Tiêu
+- Quản trị WorkflowDefinition an toàn, có versioning, kiểm thử (simulate), và publish theo maker–checker; đảm bảo backward‑compat cho request đang chạy.
+
+2) Màn Hình
+- Danh sách
+  - Cột: Code, Name, Version, State (Draft/Active/Deprecated), IsActive, UpdatedAt/By.
+  - Tìm kiếm: Code/Name, State, IsActive.
+  - Hành động: View, Edit (Draft), Duplicate (tạo Draft từ bản đang xem), Publish, Deprecate, History.
+- Chi tiết/Chỉnh sửa (Draft)
+  - Thông tin chung: Code (read‑only nếu đã có version trước), Name, Description, Version (tự tăng khi duplicate), State (Draft/Active/Deprecated), IsActive.
+  - Cấu hình Steps (JSON/Designer):
+    - Steps: id, name, group (tùy chọn), quorum, approverRoles[].
+    - Groups: code, type (sequential/parallel), quorum.
+  - UI Designer (nếu có): thêm/sửa/xóa bước, kéo thả, gán nhóm, set quorum.
+  - Policy (JSON): cho nhập rule đơn giản (mode=simple) hoặc Rego (OPA).
+- Tham số chung
+  - Timeout từng bước (optional), Escalation (optional), Webhooks (optional).
+  - Preview & Validate: Validate JSON (schema), Validate roles tồn tại.
+  - Simulate: nhập payload mẫu → decision (auto/manual) và pipeline dự kiến.
+  - Lưu: Save Draft / Save & Request Publish.
+- Lịch sử/So sánh Version
+  - Danh sách version theo Code: v1, v2, … (State, UpdatedBy/At).
+  - Diff view: so sánh Steps/Policy giữa 2 version.
+
+3) Phê Duyệt Publish (Maker–Checker)
+- Hàng đợi: các yêu cầu “Publish WorkflowDefinition”.
+- Xem chi tiết thay đổi + Simulate trước khi Approve.
+- Hành động: Approve/Reject (lý do).
+- Sau khi Approve: State=Active cho version mới; (tùy chọn) Deprecate bản Active cũ.
+
+4) Trường Dữ Liệu Cần Nhập
+- General: Code, Name, Description, Version (auto), State, IsActive.
+- Steps JSON: steps: [{ id, name, group?, quorum, approverRoles[] }]; groups: [{ code, type: sequential|parallel, quorum }].
+- Policy JSON (simple): { mode: "simple", rules: [{ when, op, value, then: "auto|manual|reject" }] }.
+- Tuỳ chọn: timeouts/escalation, webhooks, notes thay đổi (change log).
+
+5) Quyền Hạn
+- Viewer: xem list/chi tiết/version/history.
+- Editor (Maker): tạo Draft, sửa Draft, simulate, gửi request Publish.
+- Approver (Checker): xem request Publish, simulate, Approve/Reject.
+- Admin/Architect: Deprecate/Activate thủ công (có log), sửa role mapping, global settings.
+
+6) Luồng Nghiệp Vụ
+- Tạo mới/nhân bản Definition (Draft) → soạn Steps/Policy → Validate/Simulate → Gửi Publish.
+- Checker mở request Publish → đọc diff + simulate → Approve.
+- Hệ thống Publish: State vN = Active; v(N‑1) = Deprecated (tùy chọn).
+- Request mới trong WorkflowRequest chạy theo version Active tại thời điểm tạo.
+- Theo dõi: audit (ai sửa, ai duyệt), outbox events (definition.published) → UI/BI.
+
+7) Ràng Buộc & Kiểm Tra
+- Code unique theo domain (toàn hệ thống).
+- Không cho sửa in‑place bản Active; chỉ cho duplicate thành Draft.
+- Validate: JSON đúng schema; id/nhóm/quorum hợp lệ; approverRoles phải tồn tại trên IAM; quorum ≤ số bước group; group code không trùng.
+- Backward compatibility: Request đang chạy giữ version cũ; version mới áp dụng cho request mới.
+
+8) Tích Hợp
+- API
+  - GET /api/definitions?onlyActive
+  - GET /api/definitions/{code}
+  - POST /api/definitions (Upsert Draft)
+  - POST /api/definitions/{code}/publish (create publish request)
+  - GET /api/definitions/{code}/versions
+  - POST /api/definitions/{code}/simulate
+- Events (Outbox)
+  - definition.published, definition.deprecated
+- Webhooks: (tuỳ chọn) khi publish/rollback.
