@@ -21,7 +21,7 @@ namespace Flex.Workflow.Api.Persistence.Configurations
             builder.Property(x => x.MakerId).HasColumnType("VARCHAR2(100)").IsRequired();
             builder.Property(x => x.CheckerId).HasColumnType("VARCHAR2(100)");
             builder.Property(x => x.Status).HasColumnType("VARCHAR2(10)").IsRequired();
-            builder.Property(x => x.Comment).HasColumnType("NVARCHAR2(500)");
+            builder.Property(x => x.RequestComment).HasColumnType("NVARCHAR2(500)");
             builder.Property(x => x.CreatedAt).HasColumnType("TIMESTAMP").HasDefaultValueSql("CURRENT_TIMESTAMP");
             builder.Property(x => x.ApprovedAt).HasColumnType("TIMESTAMP");
 

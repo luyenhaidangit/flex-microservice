@@ -2,6 +2,7 @@ Backend:
 - Không sử dụng Data Annotation mapping DB khi khai báo entity mà sử dụng Fluent API trong IEntityTypeConfiguration<T>
 - Tên bảng database đặt dựa theo tên class trong source Backend theo quy tắc in hoa, dùng số nhiều, tên class là PascalCase thì bảng sẽ dùng snake case với dấu gạch dưới giữa các từ. (VD: WorkflowDefinition → WORKFLOW_DEFINITIONS)
 - Tại Configuration cần khai rõ kiểu dữ liệu database
+- Khi tạo một file mới không thực hiện thêm mới dư 1 dòng cuối file khi tạo.
 -----------------------------------------------
 Database:
 - Khi tạo bảng cần đặt tên constraint rõ ràng, tránh để hệ thống tự sinh tên vì dễ lệch giữa các môi trường (UAT, Prod) và gây khó khăn khi cần drop.

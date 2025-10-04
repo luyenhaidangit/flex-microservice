@@ -10,7 +10,7 @@ namespace Flex.Workflow.Api.Entities
         public string MakerId { get; set; } = string.Empty;
         public string? CheckerId { get; set; }
         public string Status { get; set; } = "UNA"; // UNA | AUT | REJ
-        public string? Comment { get; set; }
+        public string? RequestComment { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? ApprovedAt { get; set; }
     }

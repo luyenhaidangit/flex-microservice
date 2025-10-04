@@ -74,7 +74,7 @@ namespace Flex.Workflow.Api.Services
                 Version = version,
                 MakerId = makerId,
                 Status = "UNA",
-                Comment = comment
+                RequestComment = comment
             };
             await _pubRepo.CreateAsync(req);
             return req.Id;
@@ -106,7 +106,7 @@ namespace Flex.Workflow.Api.Services
             req.Status = "AUT";
             req.CheckerId = approverId;
             req.ApprovedAt = DateTime.UtcNow;
-            req.Comment = comment ?? req.Comment;
+            req.RequestComment = comment ?? req.RequestComment;
             await _pubRepo.UpdateAsync(req);
         }
 
@@ -119,7 +119,7 @@ namespace Flex.Workflow.Api.Services
             req.Status = "REJ";
             req.CheckerId = approverId;
             req.ApprovedAt = DateTime.UtcNow;
-            req.Comment = comment ?? req.Comment;
+            req.RequestComment = comment ?? req.RequestComment;
             await _pubRepo.UpdateAsync(req);
         }
     }
